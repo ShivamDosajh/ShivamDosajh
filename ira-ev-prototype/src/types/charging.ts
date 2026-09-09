@@ -84,4 +84,5 @@ export interface ExperimentConfig {
   stickyCTA: boolean;
   simplifiedChargingFlow: boolean;
   stationCardVariant: StationCardVariant;
+  showStationCarousel: boolean;
 }

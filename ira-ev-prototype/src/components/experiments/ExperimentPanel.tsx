@@ -15,6 +15,7 @@ const toggleDefs: { key: keyof ExperimentConfig; label: string }[] = [
   { key: "showMegaChargerBadge", label: "Mega Charger badge" },
   { key: "showStationLastUsed", label: "Last-used information" },
   { key: "showAvailability", label: "Availability indicator" },
+  { key: "showStationCarousel", label: "Station carousel on map" },
   { key: "compactStationCards", label: "Compact station cards" },
   { key: "stickyCTA", label: "Sticky CTA" },
   { key: "simplifiedChargingFlow", label: "Simplified charging flow" },

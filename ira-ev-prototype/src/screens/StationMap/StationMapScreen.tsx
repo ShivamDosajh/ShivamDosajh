@@ -8,6 +8,7 @@ import { FiltersModal, type FilterKey } from "../../components/map/FiltersModal"
 import { Chip } from "../../components/common/Chip";
 import { StationCard } from "../../components/station/StationCard";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
+import { useExperiments } from "../../hooks/useExperiments";
 import type { ChargingFlowApi } from "../../hooks/useChargingFlow";
 
 interface StationMapScreenProps {
@@ -15,6 +16,7 @@ interface StationMapScreenProps {
 }
 
 export function StationMapScreen({ flow }: StationMapScreenProps) {
+  const { config } = useExperiments();
   const [query, setQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(new Set());
   const [legendOpen, setLegendOpen] = useState(false);
@@ -102,7 +104,7 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
           onRefresh={() => setMapKey((k) => k + 1)}
         />
 
-        {!flow.selectedStationId && filteredStations.length > 0 && (
+        {config.showStationCarousel && !flow.selectedStationId && filteredStations.length > 0 && (
           <div className="absolute inset-x-0 bottom-4 z-10">
             <div className="flex gap-3 overflow-x-auto no-scrollbar px-4 pb-1">
               {filteredStations.map((station) => (

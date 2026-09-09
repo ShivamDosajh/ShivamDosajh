@@ -12,13 +12,13 @@ export function Toggle({ checked, onChange, label }: ToggleProps) {
       aria-label={label}
       onClick={() => onChange(!checked)}
       className={[
-        "w-12 h-7 rounded-pill relative transition-colors shrink-0 min-h-[28px]",
+        "inline-flex items-center w-12 h-7 rounded-pill shrink-0 min-h-[28px] transition-colors",
         checked ? "bg-primary" : "bg-border",
       ].join(" ")}
     >
       <span
         className={[
-          "absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform",
+          "inline-block w-6 h-6 rounded-full bg-white transition-transform",
           checked ? "translate-x-[22px]" : "translate-x-0.5",
         ].join(" ")}
       />

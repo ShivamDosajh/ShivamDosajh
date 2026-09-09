@@ -1,12 +1,17 @@
-import { Star } from "lucide-react";
+import { useState } from "react";
+import { Star, Phone, Navigation2, ChevronUp, ChevronDown } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
 import { CpoLogo } from "../common/CpoLogo";
+import { IconAction } from "../common/IconAction";
 import { PaymentStatus } from "./PaymentStatus";
 import { ChargerSummary } from "./ChargerSummary";
 import { RangePrediction } from "./RangePrediction";
+import { StationTabs } from "./StationTabs";
+import { ConnectorGroupRow } from "./ConnectorGroupRow";
 import { useExperiments } from "../../hooks/useExperiments";
+import { groupChargersByConnector } from "../../utils/connectors";
 
 interface StationDetailsSheetProps {
   station: Station | undefined;
@@ -24,17 +29,23 @@ function formatLastUsed(minutes: number | null): string {
 
 export function StationDetailsSheet({ station, onClose, onNavigate, onSelectCharger }: StationDetailsSheetProps) {
   const { config } = useExperiments();
+  const [expanded, setExpanded] = useState(false);
+  const [tab, setTab] = useState<"overview" | "reviews">("overview");
 
   if (!station) return null;
+
+  const connectorGroups = groupChargersByConnector(station.chargers);
 
   return (
     <BottomSheet
       open={!!station}
       onClose={onClose}
+      maxHeight={expanded ? "92dvh" : "78dvh"}
+      onHandleToggle={() => setExpanded((v) => !v)}
       footer={
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onNavigate}>
-            navigate
+          <Button variant="outline" onClick={expanded ? () => setExpanded(false) : onNavigate}>
+            {expanded ? "check in" : "navigate"}
           </Button>
           <Button variant="primary" onClick={onSelectCharger}>
             select charger
@@ -43,6 +54,21 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
       }
     >
       <div className="flex flex-col gap-4 pb-2">
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="flex items-center justify-center gap-1 text-[11px] text-secondaryText -mt-1"
+        >
+          {expanded ? (
+            <>
+              <ChevronDown size={13} /> show less
+            </>
+          ) : (
+            <>
+              <ChevronUp size={13} /> view all chargers
+            </>
+          )}
+        </button>
+
         <PaymentStatus status={station.paymentStatus} />
 
         <div className="flex items-start justify-between gap-3">
@@ -59,51 +85,84 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           <CpoLogo cpo={station.cpo} />
         </div>
 
-        <div className="flex items-center gap-1.5 text-[13px]">
-          <span className="text-primary font-medium">ev rating</span>
-          <span className="text-secondaryText">
-            {station.rating !== null ? (
-              <span className="flex items-center gap-1 text-text">
-                <Star size={13} className="fill-warning text-warning" />
-                {station.rating.toFixed(1)}
-              </span>
-            ) : (
-              "--"
+        {!expanded && (
+          <div className="flex items-center gap-1.5 text-[13px]">
+            <span className="text-primary font-medium">ev rating</span>
+            <span className="text-secondaryText">
+              {station.rating !== null ? (
+                <span className="flex items-center gap-1 text-text">
+                  <Star size={13} className="fill-warning text-warning" />
+                  {station.rating.toFixed(1)}
+                </span>
+              ) : (
+                "--"
+              )}
+            </span>
+          </div>
+        )}
+
+        {!expanded && (
+          <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
+            <div className="flex-1 text-center">
+              <p className="text-[11px] text-secondaryText lowercase">distance</p>
+              <p className="text-[14px] font-semibold mt-0.5">{station.distance} km</p>
+            </div>
+            <div className="w-px bg-border" />
+            <div className="flex-1 text-center">
+              <p className="text-[11px] text-secondaryText lowercase">ETA</p>
+              <p className="text-[14px] font-semibold mt-0.5">{station.eta} mins</p>
+            </div>
+            {config.showStationLastUsed && (
+              <>
+                <div className="w-px bg-border" />
+                <div className="flex-1 text-center">
+                  <p className="text-[11px] text-secondaryText lowercase">last used</p>
+                  <p className="text-[13px] font-semibold mt-0.5">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
+                </div>
+              </>
             )}
-          </span>
-        </div>
-
-        <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
-          <div className="flex-1 text-center">
-            <p className="text-[11px] text-secondaryText lowercase">distance</p>
-            <p className="text-[14px] font-semibold mt-0.5">{station.distance} km</p>
           </div>
-          <div className="w-px bg-border" />
-          <div className="flex-1 text-center">
-            <p className="text-[11px] text-secondaryText lowercase">ETA</p>
-            <p className="text-[14px] font-semibold mt-0.5">{station.eta} mins</p>
-          </div>
-          {config.showStationLastUsed && (
-            <>
-              <div className="w-px bg-border" />
-              <div className="flex-1 text-center">
-                <p className="text-[11px] text-secondaryText lowercase">last used</p>
-                <p className="text-[13px] font-semibold mt-0.5">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
-              </div>
-            </>
-          )}
-        </div>
+        )}
 
-        <ChargerSummary chargers={station.chargers} showSpeed={config.showChargingSpeed} />
+        {!expanded && <ChargerSummary chargers={station.chargers} showSpeed={config.showChargingSpeed} />}
 
-        {config.showRangePrediction && (
+        {!expanded && config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
 
-        {config.showEstimatedCost && (
+        {!expanded && config.showEstimatedCost && (
           <p className="text-[12px] text-secondaryText">
             estimated cost from ₹{Math.min(...station.chargers.map((c) => c.pricePerKwh))}/kWh
           </p>
+        )}
+
+        {expanded && config.showRangePrediction && (
+          <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
+        )}
+
+        {expanded && (
+          <>
+            <div className="flex items-stretch">
+              <IconAction icon={Phone} label="call" onClick={() => {}} />
+              <div className="w-px bg-border my-2" />
+              <IconAction icon={Navigation2} label="navigate" onClick={onNavigate} />
+            </div>
+
+            <StationTabs active={tab} onChange={setTab} />
+
+            {tab === "overview" ? (
+              <div className="rounded-card bg-surfaceRaised border border-border px-3.5">
+                <div className="flex items-center gap-2.5 py-3 border-b border-border">
+                  <span className="text-[13px] font-semibold">available connectors</span>
+                </div>
+                {connectorGroups.map((group) => (
+                  <ConnectorGroupRow key={group.connector} group={group} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-[13px] text-secondaryText text-center py-8">no reviews yet</p>
+            )}
+          </>
         )}
       </div>
     </BottomSheet>

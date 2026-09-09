@@ -12,6 +12,7 @@ export const defaultExperimentConfig: ExperimentConfig = {
   stickyCTA: true,
   simplifiedChargingFlow: false,
   stationCardVariant: "current",
+  showStationCarousel: true,
 };
 
 export const EXPERIMENT_STORAGE_KEY = "ira-ev-experiment-config";

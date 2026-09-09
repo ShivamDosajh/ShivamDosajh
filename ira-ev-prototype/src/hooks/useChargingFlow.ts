@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChargeType, ChargingFlowState, FlowStep } from "../types/charging";
 
 const initialState: ChargingFlowState = {
@@ -11,6 +11,25 @@ const initialState: ChargingFlowState = {
   units: null,
   selectedPaymentMethodId: null,
 };
+
+const STORAGE_KEY = "ira-ev-charging-flow";
+
+/**
+ * iOS can discard the WebView for a backgrounded home-screen PWA and reload it fresh,
+ * which reads as "the app crashed and I had to start over". Restoring from sessionStorage
+ * means a reload picks the flow back up instead of dumping the user back at the map.
+ */
+function loadPersistedState(): ChargingFlowState {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return initialState;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.step !== "string") return initialState;
+    return { ...initialState, ...parsed };
+  } catch {
+    return initialState;
+  }
+}
 
 export interface ChargingFlowApi extends ChargingFlowState {
   goTo: (step: FlowStep) => void;
@@ -34,7 +53,15 @@ export interface ChargingFlowApi extends ChargingFlowState {
 }
 
 export function useChargingFlow(): ChargingFlowApi {
-  const [state, setState] = useState<ChargingFlowState>(initialState);
+  const [state, setState] = useState<ChargingFlowState>(loadPersistedState);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // private browsing / storage full — the flow just won't survive a reload
+    }
+  }, [state]);
 
   const goTo = useCallback((step: FlowStep) => {
     setState((prev) => ({ ...prev, history: [...prev.history, prev.step], step }));
@@ -124,6 +151,11 @@ export function useChargingFlow(): ChargingFlowApi {
   }, [goTo]);
 
   const reset = useCallback(() => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
     setState(initialState);
   }, []);
 
