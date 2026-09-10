@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Star, Phone, Navigation2, ChevronUp, ChevronDown } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
@@ -11,6 +11,7 @@ import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
 import { ConnectorGroupRow } from "./ConnectorGroupRow";
 import { useExperiments } from "../../hooks/useExperiments";
+import { useSheetDrag } from "../../hooks/useSheetDrag";
 import { groupChargersByConnector } from "../../utils/connectors";
 
 interface StationDetailsSheetProps {
@@ -19,6 +20,9 @@ interface StationDetailsSheetProps {
   onNavigate: () => void;
   onSelectCharger: () => void;
 }
+
+const COLLAPSED_VH = 64;
+const EXPANDED_VH = 92;
 
 function formatLastUsed(minutes: number | null): string {
   if (minutes === null) return "not used yet";
@@ -31,6 +35,18 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
   const { config } = useExperiments();
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState<"overview" | "reviews">("overview");
+  const { heightPx, isDragging, visualExpanded, handleProps } = useSheetDrag({
+    collapsedVh: COLLAPSED_VH,
+    expandedVh: EXPANDED_VH,
+    expanded,
+    onExpandedChange: setExpanded,
+  });
+
+  // Reset per-station UI state whenever a different station sheet opens.
+  useEffect(() => {
+    setExpanded(false);
+    setTab("overview");
+  }, [station?.id]);
 
   if (!station) return null;
 
@@ -40,12 +56,13 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
     <BottomSheet
       open={!!station}
       onClose={onClose}
-      maxHeight={expanded ? "92dvh" : "78dvh"}
-      onHandleToggle={() => setExpanded((v) => !v)}
+      heightPx={heightPx}
+      isDragging={isDragging}
+      dragHandleProps={handleProps}
       footer={
         <div className="flex gap-3">
-          <Button variant="outline" onClick={expanded ? () => setExpanded(false) : onNavigate}>
-            {expanded ? "check in" : "navigate"}
+          <Button variant="outline" onClick={visualExpanded ? () => setExpanded(false) : onNavigate}>
+            {visualExpanded ? "check in" : "navigate"}
           </Button>
           <Button variant="primary" onClick={onSelectCharger}>
             select charger
@@ -58,7 +75,7 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           onClick={() => setExpanded((v) => !v)}
           className="flex items-center justify-center gap-1 text-[11px] text-secondaryText -mt-1"
         >
-          {expanded ? (
+          {visualExpanded ? (
             <>
               <ChevronDown size={13} /> show less
             </>
@@ -85,7 +102,7 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           <CpoLogo cpo={station.cpo} />
         </div>
 
-        {!expanded && (
+        {!visualExpanded && (
           <div className="flex items-center gap-1.5 text-[13px]">
             <span className="text-primary font-medium">ev rating</span>
             <span className="text-secondaryText">
@@ -101,7 +118,7 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           </div>
         )}
 
-        {!expanded && (
+        {!visualExpanded && (
           <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
             <div className="flex-1 text-center">
               <p className="text-[11px] text-secondaryText lowercase">distance</p>
@@ -124,23 +141,23 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           </div>
         )}
 
-        {!expanded && <ChargerSummary chargers={station.chargers} showSpeed={config.showChargingSpeed} />}
+        {!visualExpanded && <ChargerSummary chargers={station.chargers} showSpeed={config.showChargingSpeed} />}
 
-        {!expanded && config.showRangePrediction && (
+        {!visualExpanded && config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
 
-        {!expanded && config.showEstimatedCost && (
+        {!visualExpanded && config.showEstimatedCost && (
           <p className="text-[12px] text-secondaryText">
             estimated cost from ₹{Math.min(...station.chargers.map((c) => c.pricePerKwh))}/kWh
           </p>
         )}
 
-        {expanded && config.showRangePrediction && (
+        {visualExpanded && config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
 
-        {expanded && (
+        {visualExpanded && (
           <>
             <div className="flex items-stretch">
               <IconAction icon={Phone} label="call" onClick={() => {}} />

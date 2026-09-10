@@ -18,6 +18,7 @@ export function StationMarker({ station, selected, onClick }: StationMarkerProps
     <button
       onClick={onClick}
       aria-label={station.name}
+      data-marker-id={station.id}
       style={{ left: `${station.coordinates.x}%`, top: `${station.coordinates.y}%` }}
       className={[
         "absolute -translate-x-1/2 -translate-y-full flex flex-col items-center",

@@ -24,8 +24,8 @@ interface MockMapProps {
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const CLUSTER_ZOOM_STEP = 1.9;
-/** Below this movement, a single-finger touch is still a tap — don't steal it from marker buttons. */
-const PAN_ACTIVATION_PX = 8;
+/** Net movement below this, over the whole gesture, still counts as a tap on whatever was underneath. */
+const CLICK_SUPPRESS_PX = 8;
 
 function clampScale(scale: number) {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
@@ -37,12 +37,11 @@ interface PointerInfo {
 }
 
 interface PanGesture {
-  kind: "pan" | "pan-pending";
-  pointerId: number;
-  startClientX: number;
-  startClientY: number;
+  kind: "pan";
   originX: number;
   originY: number;
+  startClientX: number;
+  startClientY: number;
 }
 
 interface PinchGesture {
@@ -67,6 +66,37 @@ export function MockMap({
 
   const pointers = useRef<Map<number, PointerInfo>>(new Map());
   const gesture = useRef<PanGesture | PinchGesture | null>(null);
+  const totalMovement = useRef(0);
+
+  // rAF-coalesced transform updates: pointermove can fire faster than the display
+  // refreshes, so we stash the latest computed transform in a ref and flush at most
+  // once per frame instead of triggering a React re-render on every raw event.
+  const pendingTransform = useRef<MapTransform | null>(null);
+  const rafId = useRef<number | null>(null);
+
+  const flushTransform = useCallback(() => {
+    rafId.current = null;
+    if (pendingTransform.current) {
+      setTransform(pendingTransform.current);
+      pendingTransform.current = null;
+    }
+  }, []);
+
+  const queueTransform = useCallback(
+    (next: MapTransform) => {
+      pendingTransform.current = next;
+      if (rafId.current === null) {
+        rafId.current = requestAnimationFrame(flushTransform);
+      }
+    },
+    [flushTransform]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+    };
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -98,28 +128,43 @@ export function MockMap({
     });
   }, []);
 
+  const handleClusterClick = useCallback((centroid: { x: number; y: number }) => {
+    setTransform((prev) => {
+      const size = containerRef.current?.getBoundingClientRect();
+      if (!size) return prev;
+      const nextScale = clampScale(prev.scale * CLUSTER_ZOOM_STEP);
+      const pan = panToCenter(centroid, { width: size.width, height: size.height }, nextScale);
+      return { scale: nextScale, x: pan.x, y: pan.y };
+    });
+  }, []);
+
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // Suppress the browser's synthetic touch->mouse compatibility click. Without this,
+    // a tap that opens the station sheet gets a delayed "ghost" click a moment later —
+    // by then pointer capture is released and the sheet's own backdrop is on top, so
+    // that ghost click lands on the backdrop's close button and shuts the sheet again.
+    e.preventDefault();
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // Capture immediately so panning tracks the finger from the very first pixel —
+    // any resulting click on a marker underneath is dispatched manually in endPointer
+    // (via elementFromPoint) rather than relying on capture-retargeted native clicks.
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // ignore capture failures
+    }
 
     if (pointers.current.size === 1) {
-      // Don't capture yet — a lone finger might just be tapping a marker button.
-      // Capture only kicks in once handlePointerMove sees real drag movement.
+      totalMovement.current = 0;
+      setIsGesturing(true);
       gesture.current = {
-        kind: "pan-pending",
-        pointerId: e.pointerId,
-        startClientX: e.clientX,
-        startClientY: e.clientY,
+        kind: "pan",
         originX: transform.x,
         originY: transform.y,
+        startClientX: e.clientX,
+        startClientY: e.clientY,
       };
     } else if (pointers.current.size === 2) {
-      // A second finger arriving is unambiguously a pinch gesture, never a tap.
-      setIsGesturing(true);
-      try {
-        pointers.current.forEach((_info, id) => (e.currentTarget as HTMLElement).setPointerCapture(id));
-      } catch {
-        // ignore capture failures
-      }
       const pts = [...pointers.current.values()];
       const dx = pts[0].x - pts[1].x;
       const dy = pts[0].y - pts[1].y;
@@ -144,29 +189,18 @@ export function MockMap({
 
   const handlePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (!pointers.current.has(e.pointerId)) return;
+    const prevInfo = pointers.current.get(e.pointerId)!;
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    totalMovement.current += Math.hypot(e.clientX - prevInfo.x, e.clientY - prevInfo.y);
 
     const g = gesture.current;
     if (!g) return;
 
     try {
-      if (g.kind === "pan-pending" && pointers.current.size === 1) {
+      if (g.kind === "pan" && pointers.current.size === 1) {
         const dx = e.clientX - g.startClientX;
         const dy = e.clientY - g.startClientY;
-        if (Math.hypot(dx, dy) > PAN_ACTIVATION_PX) {
-          try {
-            (e.currentTarget as HTMLElement).setPointerCapture(g.pointerId);
-          } catch {
-            // ignore capture failures
-          }
-          setIsGesturing(true);
-          gesture.current = { ...g, kind: "pan" };
-          setTransform((prev) => ({ ...prev, x: g.originX + dx, y: g.originY + dy }));
-        }
-      } else if (g.kind === "pan" && pointers.current.size === 1) {
-        const dx = e.clientX - g.startClientX;
-        const dy = e.clientY - g.startClientY;
-        setTransform((prev) => ({ ...prev, x: g.originX + dx, y: g.originY + dy }));
+        queueTransform({ ...transform, x: g.originX + dx, y: g.originY + dy });
       } else if (g.kind === "pinch" && pointers.current.size === 2) {
         const pts = [...pointers.current.values()];
         const dx = pts[0].x - pts[1].x;
@@ -180,7 +214,7 @@ export function MockMap({
         const relX = midX - (rect?.left ?? 0);
         const relY = midY - (rect?.top ?? 0);
         const nextScale = clampScale(g.startScale * (distance / g.startDistance));
-        setTransform({
+        queueTransform({
           scale: nextScale,
           x: relX - cx - nextScale * (g.anchor.x - cx),
           y: relY - cy - nextScale * (g.anchor.y - cy),
@@ -192,7 +226,14 @@ export function MockMap({
   };
 
   const endPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // Touch input can deliver a redundant pointerup+pointercancel pair for one lift-off
+    // (observed on real touch dispatch, not just mouse) — .has() before the delete makes
+    // this whole handler a no-op for the second, spurious event instead of re-dispatching
+    // a tap against a DOM that's already changed (e.g. onto a sheet's own backdrop).
+    const wasTracked = pointers.current.has(e.pointerId);
     pointers.current.delete(e.pointerId);
+    if (!wasTracked) return;
+
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {
@@ -200,17 +241,42 @@ export function MockMap({
     }
 
     if (pointers.current.size === 0) {
+      // Flush any rAF-pending transform immediately so the map doesn't lag one frame behind the finger.
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = null;
+      }
+      if (pendingTransform.current) {
+        setTransform(pendingTransform.current);
+        pendingTransform.current = null;
+      }
+
+      // Pointer capture retargets the native click to this container, so it never
+      // reaches marker/cluster buttons underneath — dispatch taps ourselves instead
+      // of relying on that click. A "tap" is any gesture that barely moved.
+      if (totalMovement.current <= CLICK_SUPPRESS_PX) {
+        const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+        const markerEl = target?.closest<HTMLElement>("[data-marker-id]");
+        const clusterEl = target?.closest<HTMLElement>("[data-cluster-marker]");
+        if (markerEl?.dataset.markerId) {
+          onSelectStation(markerEl.dataset.markerId);
+        } else if (clusterEl) {
+          const cx = parseFloat(clusterEl.dataset.clusterX ?? "");
+          const cy = parseFloat(clusterEl.dataset.clusterY ?? "");
+          if (!Number.isNaN(cx) && !Number.isNaN(cy)) handleClusterClick({ x: cx, y: cy });
+        }
+      }
+
       gesture.current = null;
       setIsGesturing(false);
     } else if (pointers.current.size === 1) {
-      const [[pointerId, info]] = pointers.current;
+      const [[, info]] = pointers.current;
       gesture.current = {
         kind: "pan",
-        pointerId,
-        startClientX: info.x,
-        startClientY: info.y,
         originX: transform.x,
         originY: transform.y,
+        startClientX: info.x,
+        startClientY: info.y,
       };
     }
   };
@@ -234,13 +300,6 @@ export function MockMap({
     zoomAtPoint(rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0, transform.scale / 1.4);
   };
 
-  const handleClusterClick = (centroid: { x: number; y: number }) => {
-    if (!containerSize.width || !containerSize.height) return;
-    const nextScale = clampScale(transform.scale * CLUSTER_ZOOM_STEP);
-    const pan = panToCenter(centroid, containerSize, nextScale);
-    setTransform({ scale: nextScale, x: pan.x, y: pan.y });
-  };
-
   const clusters =
     enableClustering && containerSize.width > 0
       ? clusterStations(stations, containerSize, transform)
@@ -249,7 +308,7 @@ export function MockMap({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-[#dff0e4] touch-none"
+      className="relative w-full h-full overflow-hidden bg-[#dff0e4] touch-none select-none"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endPointer}
@@ -258,10 +317,10 @@ export function MockMap({
       onWheel={handleWheel}
     >
       <div
-        className="absolute inset-0 origin-center"
+        className="absolute inset-0 origin-center [will-change:transform]"
         style={{
-          transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
-          transition: isGesturing ? "none" : "transform 0.15s ease-out",
+          transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`,
+          transition: isGesturing ? "none" : "transform 0.2s cubic-bezier(0.22,1,0.36,1)",
         }}
       >
         <MockMapBackground />

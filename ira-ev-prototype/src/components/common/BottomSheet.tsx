@@ -1,79 +1,69 @@
 import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 
+interface DragHandleProps {
+  onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void;
+  onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => void;
+  onPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => void;
+  onPointerCancel: (e: ReactPointerEvent<HTMLDivElement>) => void;
+}
+
 interface BottomSheetProps {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
-  maxHeight?: string;
-  /** Called once per decisive tap or drag on the handle — the consumer decides what "toggle" means. */
-  onHandleToggle?: () => void;
+  /** Explicit sheet height in px — pair with a drag hook (see useSheetDrag) for gesture-driven sheets. */
+  heightPx: number;
+  /** Disables the settle transition while the user is actively dragging, for 1:1 tracking. */
+  isDragging?: boolean;
+  dragHandleProps?: DragHandleProps;
 }
 
-const DRAG_THRESHOLD_PX = 32;
+/**
+ * Mobile browsers fire a delayed synthetic "click" after a touchend, for compatibility
+ * with mouse-only pages. The tap that opens this sheet is handled entirely through
+ * Pointer Events (see MockMap), but that trailing ghost click still lands moments later
+ * — right on this freshly-mounted backdrop, closing the sheet immediately after it opened.
+ * Ignoring backdrop clicks in the first instant after mount absorbs that ghost click
+ * without adding any perceptible delay to a real, intentional tap-to-dismiss.
+ */
+const BACKDROP_GUARD_MS = 400;
 
 export function BottomSheet({
   open,
   onClose,
   children,
   footer,
-  maxHeight = "78dvh",
-  onHandleToggle,
+  heightPx,
+  isDragging = false,
+  dragHandleProps,
 }: BottomSheetProps) {
-  const dragStartY = useRef<number | null>(null);
-  const dragFired = useRef(false);
+  const mountedAt = useRef(Date.now());
 
   if (!open) return null;
 
-  const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    dragStartY.current = e.clientY;
-    dragFired.current = false;
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // ignore capture failures
-    }
-  };
-
-  const handlePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (dragStartY.current === null || dragFired.current || !onHandleToggle) return;
-    const delta = Math.abs(e.clientY - dragStartY.current);
-    if (delta > DRAG_THRESHOLD_PX) {
-      dragFired.current = true;
-      onHandleToggle();
-    }
-  };
-
-  const handlePointerUp = () => {
-    dragStartY.current = null;
-  };
-
-  const handleClick = () => {
-    if (dragFired.current) {
-      dragFired.current = false;
-      return;
-    }
-    onHandleToggle?.();
+  const handleBackdropClick = () => {
+    if (Date.now() - mountedAt.current < BACKDROP_GUARD_MS) return;
+    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col justify-end">
       <button
         aria-label="Close"
-        onClick={onClose}
+        onClick={handleBackdropClick}
         className="absolute inset-0 bg-black/60 animate-fade-in"
       />
       <div
-        className="relative bg-surface rounded-t-[24px] border-t border-border flex flex-col animate-sheet-up transition-[max-height] duration-200 ease-out"
-        style={{ maxHeight }}
+        className="relative bg-surface rounded-t-[24px] border-t border-border flex flex-col animate-sheet-up overflow-hidden"
+        style={{
+          height: heightPx,
+          transition: isDragging ? "none" : "height 0.28s cubic-bezier(0.22,1,0.36,1)",
+        }}
       >
         <div
           className="flex justify-center pt-2.5 pb-2 shrink-0 touch-none cursor-grab active:cursor-grabbing"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          onClick={handleClick}
+          {...dragHandleProps}
         >
           <div className="w-10 h-1 rounded-pill bg-border" />
         </div>
