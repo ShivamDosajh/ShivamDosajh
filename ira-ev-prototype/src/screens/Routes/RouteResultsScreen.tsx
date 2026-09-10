@@ -20,7 +20,7 @@ export function RouteResultsScreen({ planner, onStartNavigation }: { planner: Ro
             plan={plan}
             startId={planner.startId}
             destinationId={planner.destinationId}
-            waypointIds={planner.waypointIds}
+            waypointRefs={planner.waypointRefs}
           />
 
           <TripSummaryCard plan={plan} />

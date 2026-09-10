@@ -1,4 +1,4 @@
-import { Route as RouteIcon, Clock, Zap, IndianRupee } from "lucide-react";
+import { Route as RouteIcon, Clock, Zap, IndianRupee, Mountain, Recycle, TrafficCone } from "lucide-react";
 import type { RoutePlan } from "../../types/route";
 import { formatDuration } from "../../utils/routePlanner";
 
@@ -7,7 +7,7 @@ export function TripSummaryCard({ plan }: { plan: RoutePlan }) {
     { icon: RouteIcon, label: "distance", value: `${plan.totalDistanceKm} km` },
     { icon: Clock, label: "total trip time", value: formatDuration(plan.totalTripMin) },
     { icon: Zap, label: "charging stops", value: `${plan.stopCount}` },
-    { icon: IndianRupee, label: "est. charging cost", value: `₹${plan.totalCost}` },
+    { icon: IndianRupee, label: "est. cost", value: `₹${plan.totalCost + plan.tollCost}` },
   ];
 
   return (
@@ -36,9 +36,29 @@ export function TripSummaryCard({ plan }: { plan: RoutePlan }) {
         <span className="text-secondaryText">
           drive {formatDuration(plan.totalDriveMin)} · charge {formatDuration(plan.totalChargeMin)}
         </span>
-        <span className="text-text font-medium">
-          arrive at {plan.arrivalSoc}%
+        <span className="text-text font-medium">arrive at {plan.arrivalSoc}%</span>
+      </div>
+      <div className="h-px bg-border my-3.5" />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-secondaryText">
+        <span className="flex items-center gap-1.5">
+          <Mountain size={13} className="text-secondaryText" />
+          {plan.totalElevationGainM} m climb
         </span>
+        <span className="flex items-center gap-1.5">
+          <Recycle size={13} className="text-primary" />
+          {plan.totalRegenRecoveredKwh} kWh regen recovered
+        </span>
+        {plan.totalTrafficDelayMin > 0 && (
+          <span className="flex items-center gap-1.5">
+            <TrafficCone size={13} className="text-warning" />+{formatDuration(plan.totalTrafficDelayMin)} traffic
+          </span>
+        )}
+        {plan.tollCost > 0 && (
+          <span className="flex items-center gap-1.5">
+            <IndianRupee size={13} className="text-secondaryText" />
+            {plan.tollCost} tolls
+          </span>
+        )}
       </div>
     </div>
   );

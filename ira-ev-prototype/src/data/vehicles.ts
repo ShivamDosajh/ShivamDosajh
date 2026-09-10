@@ -9,6 +9,7 @@ export const vehicles: VehicleProfile[] = [
     efficiencyWhPerKm: 145,
     maxChargeRateKw: 50,
     connector: "CCS2",
+    massKg: 1450,
   },
   {
     id: "tata-punch-ev",
@@ -18,6 +19,7 @@ export const vehicles: VehicleProfile[] = [
     efficiencyWhPerKm: 140,
     maxChargeRateKw: 70,
     connector: "CCS2",
+    massKg: 1350,
   },
   {
     id: "tata-curvv-ev",
@@ -27,6 +29,7 @@ export const vehicles: VehicleProfile[] = [
     efficiencyWhPerKm: 150,
     maxChargeRateKw: 120,
     connector: "CCS2",
+    massKg: 1550,
   },
   {
     id: "mg-zs-ev",
@@ -36,6 +39,7 @@ export const vehicles: VehicleProfile[] = [
     efficiencyWhPerKm: 160,
     maxChargeRateKw: 76,
     connector: "CCS2",
+    massKg: 1620,
   },
   {
     id: "hyundai-ioniq5",
@@ -45,6 +49,7 @@ export const vehicles: VehicleProfile[] = [
     efficiencyWhPerKm: 165,
     maxChargeRateKw: 175,
     connector: "CCS2",
+    massKg: 2000,
   },
   {
     id: "byd-atto3",
@@ -54,6 +59,7 @@ export const vehicles: VehicleProfile[] = [
     efficiencyWhPerKm: 155,
     maxChargeRateKw: 88,
     connector: "CCS2",
+    massKg: 1750,
   },
 ];
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon, TrafficCone, Ban } from "lucide-react";
 import { Chip } from "../common/Chip";
 import { SegmentedControl } from "../common/SegmentedControl";
 import { Toggle } from "../common/Toggle";
-import type { DrivingStyle, RoutePreferences } from "../../types/route";
+import type { ChargeStopStrategy, DrivingStyle, RoutePreferences, TrafficLevel } from "../../types/route";
 
 interface AdvancedOptionsPanelProps {
   preferences: RoutePreferences;
@@ -22,6 +22,16 @@ const DRIVING_STYLE_OPTIONS: { value: DrivingStyle; label: string }[] = [
   { value: "eco", label: "eco" },
   { value: "normal", label: "normal" },
   { value: "spirited", label: "spirited" },
+];
+const TRAFFIC_OPTIONS: { value: TrafficLevel; label: string }[] = [
+  { value: "light", label: "light" },
+  { value: "moderate", label: "moderate" },
+  { value: "heavy", label: "heavy" },
+];
+const CHARGE_STRATEGY_OPTIONS: { value: ChargeStopStrategy; label: string }[] = [
+  { value: "optimal", label: "optimal" },
+  { value: "fewer", label: "fewer stops" },
+  { value: "fewest", label: "fewest stops" },
 ];
 
 function toggleInArray(list: string[], value: string): string[] {
@@ -100,6 +110,39 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
               value={preferences.drivingStyle}
               onChange={(v) => onChange({ drivingStyle: v })}
             />
+          </div>
+
+          <div>
+            <p className="text-[12px] text-secondaryText mb-2 lowercase">charging strategy</p>
+            <SegmentedControl
+              options={CHARGE_STRATEGY_OPTIONS}
+              value={preferences.chargeStopStrategy}
+              onChange={(v) => onChange({ chargeStopStrategy: v })}
+            />
+            <p className="text-[11px] text-secondaryText mt-1.5">
+              optimal balances stop count against charging time · fewer/fewest stops charge closer to full each
+              time to skip stations
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[12px] text-secondaryText mb-2 lowercase flex items-center gap-1.5">
+              <TrafficCone size={12} />
+              expected traffic
+            </p>
+            <SegmentedControl
+              options={TRAFFIC_OPTIONS}
+              value={preferences.trafficLevel}
+              onChange={(v) => onChange({ trafficLevel: v })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2 text-[14px] text-text">
+              <Ban size={15} className="text-secondaryText" />
+              avoid tolls
+            </span>
+            <Toggle checked={preferences.avoidTolls} onChange={(v) => onChange({ avoidTolls: v })} label="avoid tolls" />
           </div>
 
           <div className="flex items-center justify-between">

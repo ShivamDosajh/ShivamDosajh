@@ -2,12 +2,13 @@ import { Navigation, Flag, Zap, MapPinned } from "lucide-react";
 import { MockMapBackground } from "../map/MockMapBackground";
 import type { RoutePlan } from "../../types/route";
 import { getLocationById } from "../../data/routeLocations";
+import { resolveStopPoint } from "../../data/routeStops";
 
 interface RouteMapPreviewProps {
   plan: RoutePlan;
   startId: string;
   destinationId: string;
-  waypointIds: string[];
+  waypointRefs: string[];
 }
 
 interface PreviewPoint {
@@ -16,19 +17,19 @@ interface PreviewPoint {
   kind: "start" | "destination" | "charge" | "waypoint";
 }
 
-export function RouteMapPreview({ plan, startId, destinationId, waypointIds }: RouteMapPreviewProps) {
+export function RouteMapPreview({ plan, startId, destinationId, waypointRefs }: RouteMapPreviewProps) {
   const start = getLocationById(startId);
   const destination = getLocationById(destinationId);
   if (!start || !destination) return null;
 
-  const waypointSet = new Set(waypointIds);
+  const waypointStops = waypointRefs.map(resolveStopPoint).filter((w): w is NonNullable<typeof w> => !!w);
   const points: PreviewPoint[] = [{ ...start.coordinates, kind: "start" }];
 
   for (const leg of plan.legs) {
     if (leg.kind === "charge") {
       points.push({ ...leg.charger.coordinates, kind: "charge" });
     } else if (leg.isWaypointArrival) {
-      const wp = [...waypointSet].map(getLocationById).find((l) => l?.label === leg.toLabel);
+      const wp = waypointStops.find((w) => w.label === leg.toLabel);
       if (wp) points.push({ ...wp.coordinates, kind: "waypoint" });
     }
   }

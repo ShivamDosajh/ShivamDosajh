@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { MapPin, Flag, ArrowUpDown, BatteryCharging, BatteryFull } from "lucide-react";
+import { MapPin, Flag, ArrowUpDown, BatteryCharging, BatteryFull, Car } from "lucide-react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
 import { Slider } from "../../components/common/Slider";
+import { Toggle } from "../../components/common/Toggle";
 import { LocationField } from "../../components/route/LocationField";
 import { LocationPickerModal } from "../../components/route/LocationPickerModal";
 import { WaypointList } from "../../components/route/WaypointList";
@@ -46,29 +47,47 @@ export function RouteSetupScreen({ planner }: { planner: RoutePlannerApi }) {
           </div>
 
           <WaypointList
-            waypointIds={planner.waypointIds}
+            waypointRefs={planner.waypointRefs}
             onAdd={planner.addWaypoint}
             onRemove={planner.removeWaypoint}
-            excludeIds={[planner.startId, planner.destinationId]}
+            onReorder={planner.reorderWaypoints}
+            excludeRefs={[`loc:${planner.startId}`, `loc:${planner.destinationId}`]}
           />
 
           <div className="h-px bg-border" />
 
-          <div>
-            <p className="text-[14px] font-medium mb-2.5">your vehicle</p>
-            <VehicleSelector selectedId={planner.preferences.vehicleId} onSelect={(id) => planner.updatePreferences({ vehicleId: id })} />
+          <div className="rounded-card bg-surfaceRaised border border-border overflow-hidden">
+            <div className="flex items-center justify-between px-3.5 py-3 min-h-[44px]">
+              <span className="flex items-center gap-2 text-[14px] font-medium text-text">
+                <Car size={15} className="text-secondaryText" />
+                your vehicle
+              </span>
+              <Toggle
+                checked={planner.preferences.useCustomVehicle}
+                onChange={(v) => planner.updatePreferences({ useCustomVehicle: v })}
+                label="customize your vehicle"
+              />
+            </div>
+            {planner.preferences.useCustomVehicle && (
+              <div className="px-3.5 pb-3.5 border-t border-border pt-3.5">
+                <VehicleSelector
+                  selectedId={planner.preferences.vehicleId}
+                  onSelect={(id) => planner.updatePreferences({ vehicleId: id })}
+                />
+              </div>
+            )}
           </div>
 
           <div className="rounded-card bg-surfaceRaised border border-border p-3.5 flex flex-col gap-4">
             <Slider
-              label="starting charge"
+              label="starting SoC"
               value={planner.preferences.startSocPercent}
               onChange={(v) => planner.updatePreferences({ startSocPercent: v })}
               min={5}
               max={100}
             />
             <Slider
-              label="minimum charge on arrival"
+              label="minimum SoC on arrival"
               value={planner.preferences.targetArrivalSocPercent}
               onChange={(v) => planner.updatePreferences({ targetArrivalSocPercent: v })}
               min={5}
@@ -76,7 +95,7 @@ export function RouteSetupScreen({ planner }: { planner: RoutePlannerApi }) {
               helperText="how much battery you'd like left when you reach your destination"
             />
             <Slider
-              label="never charge below"
+              label="Minimum acceptable SoC during trip"
               value={planner.preferences.minChargeSocPercent}
               onChange={(v) => planner.updatePreferences({ minChargeSocPercent: v })}
               min={5}
