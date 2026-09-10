@@ -2,7 +2,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+// GitHub Pages serves this as a project site at /ShivamDosajh/, so assets need
+// that prefix there. Local dev (npm run dev) and any other host keep base "/".
+const base = process.env.GITHUB_PAGES ? "/ShivamDosajh/" : "/";
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -16,8 +21,8 @@ export default defineConfig({
         orientation: "portrait",
         theme_color: "#000000",
         background_color: "#000000",
-        start_url: "/",
-        scope: "/",
+        start_url: base,
+        scope: base,
         icons: [
           {
             src: "icons/icon-192.png",
