@@ -1,4 +1,4 @@
-import type { VehicleProfile } from "../types/route";
+import type { ConnectedVehicle, VehicleProfile } from "../types/route";
 
 export const vehicles: VehicleProfile[] = [
   {
@@ -66,3 +66,16 @@ export const vehicles: VehicleProfile[] = [
 export function getVehicleById(id: string): VehicleProfile {
   return vehicles.find((v) => v.id === id) ?? vehicles[0];
 }
+
+/**
+ * The signed-in user's own EV, as read from the app's connected-car telemetry — this is a
+ * connected-car app, so trip planning always uses the car actually parked in the driveway
+ * rather than asking the driver to pick a model from a list.
+ */
+export const myConnectedVehicle: ConnectedVehicle = {
+  ...vehicles[0],
+  currentSocPercent: 78,
+  efficiencyScore: 91,
+  drivingHistoryKm: 14280,
+  lastSyncedMinutesAgo: 2,
+};

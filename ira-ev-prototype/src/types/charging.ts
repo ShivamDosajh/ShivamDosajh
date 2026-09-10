@@ -85,4 +85,5 @@ export interface ExperimentConfig {
   simplifiedChargingFlow: boolean;
   stationCardVariant: StationCardVariant;
   showStationCarousel: boolean;
+  showZomatoOrdering: boolean;
 }

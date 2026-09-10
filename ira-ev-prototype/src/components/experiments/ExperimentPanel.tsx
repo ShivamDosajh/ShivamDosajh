@@ -16,6 +16,7 @@ const toggleDefs: { key: keyof ExperimentConfig; label: string }[] = [
   { key: "showStationLastUsed", label: "Last-used information" },
   { key: "showAvailability", label: "Availability indicator" },
   { key: "showStationCarousel", label: "Station carousel on map" },
+  { key: "showZomatoOrdering", label: "Order food at charger (Zomato)" },
   { key: "compactStationCards", label: "Compact station cards" },
   { key: "stickyCTA", label: "Sticky CTA" },
   { key: "simplifiedChargingFlow", label: "Simplified charging flow" },

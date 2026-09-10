@@ -13,6 +13,7 @@ export const defaultExperimentConfig: ExperimentConfig = {
   simplifiedChargingFlow: false,
   stationCardVariant: "current",
   showStationCarousel: true,
+  showZomatoOrdering: true,
 };
 
 export const EXPERIMENT_STORAGE_KEY = "ira-ev-experiment-config";

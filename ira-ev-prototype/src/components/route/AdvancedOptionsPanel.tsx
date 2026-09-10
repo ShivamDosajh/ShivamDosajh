@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon, TrafficCone, Ban } from "lucide-react";
+import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon } from "lucide-react";
 import { Chip } from "../common/Chip";
 import { SegmentedControl } from "../common/SegmentedControl";
 import { Toggle } from "../common/Toggle";
-import type { ChargeStopStrategy, DrivingStyle, RoutePreferences, TrafficLevel } from "../../types/route";
+import type { ChargeStopStrategy, DrivingStyle, RoutePreferences } from "../../types/route";
 
 interface AdvancedOptionsPanelProps {
   preferences: RoutePreferences;
@@ -22,11 +22,6 @@ const DRIVING_STYLE_OPTIONS: { value: DrivingStyle; label: string }[] = [
   { value: "eco", label: "eco" },
   { value: "normal", label: "normal" },
   { value: "spirited", label: "spirited" },
-];
-const TRAFFIC_OPTIONS: { value: TrafficLevel; label: string }[] = [
-  { value: "light", label: "light" },
-  { value: "moderate", label: "moderate" },
-  { value: "heavy", label: "heavy" },
 ];
 const CHARGE_STRATEGY_OPTIONS: { value: ChargeStopStrategy; label: string }[] = [
   { value: "optimal", label: "optimal" },
@@ -125,26 +120,6 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
             </p>
           </div>
 
-          <div>
-            <p className="text-[12px] text-secondaryText mb-2 lowercase flex items-center gap-1.5">
-              <TrafficCone size={12} />
-              expected traffic
-            </p>
-            <SegmentedControl
-              options={TRAFFIC_OPTIONS}
-              value={preferences.trafficLevel}
-              onChange={(v) => onChange({ trafficLevel: v })}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-[14px] text-text">
-              <Ban size={15} className="text-secondaryText" />
-              avoid tolls
-            </span>
-            <Toggle checked={preferences.avoidTolls} onChange={(v) => onChange({ avoidTolls: v })} label="avoid tolls" />
-          </div>
-
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-[14px] text-text">
               <Wind size={15} className="text-secondaryText" />
@@ -160,12 +135,12 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-[14px] text-text">
               <RouteIcon size={15} className="text-secondaryText" />
-              avoid highways
+              avoid highways &amp; tolls
             </span>
             <Toggle
               checked={preferences.avoidHighways}
               onChange={(v) => onChange({ avoidHighways: v })}
-              label="avoid highways"
+              label="avoid highways and tolls"
             />
           </div>
         </div>

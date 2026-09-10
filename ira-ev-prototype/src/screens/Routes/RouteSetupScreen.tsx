@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { MapPin, Flag, ArrowUpDown, BatteryCharging, BatteryFull, Car } from "lucide-react";
+import { BatteryCharging, BatteryFull } from "lucide-react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
 import { Slider } from "../../components/common/Slider";
-import { Toggle } from "../../components/common/Toggle";
-import { LocationField } from "../../components/route/LocationField";
 import { LocationPickerModal } from "../../components/route/LocationPickerModal";
-import { WaypointList } from "../../components/route/WaypointList";
-import { VehicleSelector } from "../../components/route/VehicleSelector";
+import { TripStopsList } from "../../components/route/TripStopsList";
+import { ConnectedVehicleCard } from "../../components/route/ConnectedVehicleCard";
 import { AdvancedOptionsPanel } from "../../components/route/AdvancedOptionsPanel";
 import { getLocationById } from "../../data/routeLocations";
 import type { RoutePlannerApi } from "../../hooks/useRoutePlanner";
@@ -23,30 +21,12 @@ export function RouteSetupScreen({ planner }: { planner: RoutePlannerApi }) {
       <ScreenHeader title="plan a trip" onBack={() => {}} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <div className="flex flex-col gap-4 py-4">
-          <div className="relative flex flex-col gap-2">
-            <LocationField
-              icon={MapPin}
-              label="from"
-              value={startLoc?.label ?? "select start"}
-              onClick={() => setPickerTarget("start")}
-            />
-            <LocationField
-              icon={Flag}
-              iconColor="text-error"
-              label="to"
-              value={destLoc?.label ?? "select destination"}
-              onClick={() => setPickerTarget("destination")}
-            />
-            <button
-              onClick={planner.reverseTrip}
-              aria-label="Swap start and destination"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background border border-border flex items-center justify-center active:opacity-70"
-            >
-              <ArrowUpDown size={15} className="text-primary" />
-            </button>
-          </div>
-
-          <WaypointList
+          <TripStopsList
+            startLabel={startLoc?.label ?? "select start"}
+            destinationLabel={destLoc?.label ?? "select destination"}
+            onStartClick={() => setPickerTarget("start")}
+            onDestinationClick={() => setPickerTarget("destination")}
+            onSwap={planner.reverseTrip}
             waypointRefs={planner.waypointRefs}
             onAdd={planner.addWaypoint}
             onRemove={planner.removeWaypoint}
@@ -54,29 +34,7 @@ export function RouteSetupScreen({ planner }: { planner: RoutePlannerApi }) {
             excludeRefs={[`loc:${planner.startId}`, `loc:${planner.destinationId}`]}
           />
 
-          <div className="h-px bg-border" />
-
-          <div className="rounded-card bg-surfaceRaised border border-border overflow-hidden">
-            <div className="flex items-center justify-between px-3.5 py-3 min-h-[44px]">
-              <span className="flex items-center gap-2 text-[14px] font-medium text-text">
-                <Car size={15} className="text-secondaryText" />
-                your vehicle
-              </span>
-              <Toggle
-                checked={planner.preferences.useCustomVehicle}
-                onChange={(v) => planner.updatePreferences({ useCustomVehicle: v })}
-                label="customize your vehicle"
-              />
-            </div>
-            {planner.preferences.useCustomVehicle && (
-              <div className="px-3.5 pb-3.5 border-t border-border pt-3.5">
-                <VehicleSelector
-                  selectedId={planner.preferences.vehicleId}
-                  onSelect={(id) => planner.updatePreferences({ vehicleId: id })}
-                />
-              </div>
-            )}
-          </div>
+          <ConnectedVehicleCard />
 
           <div className="rounded-card bg-surfaceRaised border border-border p-3.5 flex flex-col gap-4">
             <Slider
@@ -85,6 +43,7 @@ export function RouteSetupScreen({ planner }: { planner: RoutePlannerApi }) {
               onChange={(v) => planner.updatePreferences({ startSocPercent: v })}
               min={5}
               max={100}
+              helperText="auto-filled from your car's live battery — adjust if you'll leave later"
             />
             <Slider
               label="minimum SoC on arrival"

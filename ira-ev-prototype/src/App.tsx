@@ -15,15 +15,18 @@ import { BottomNavigation, type BottomTab } from "./components/navigation/Bottom
 import { ExperimentPanel } from "./components/experiments/ExperimentPanel";
 import { useChargingFlow } from "./hooks/useChargingFlow";
 import { useExperiments } from "./hooks/useExperiments";
+import { useZomatoOrder } from "./hooks/useZomatoOrder";
 import { getStationById } from "./data/stations";
 
 function AppShell() {
   const flow = useChargingFlow();
   const { config } = useExperiments();
+  const { clearOrder } = useZomatoOrder();
   const [tab, setTab] = useState<BottomTab>("station");
 
   const handleResetPrototype = () => {
     flow.reset();
+    clearOrder();
     setTab("station");
   };
 

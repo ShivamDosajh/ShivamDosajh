@@ -1,11 +1,25 @@
 import type { RouteStopPoint } from "../types/route";
 import { routeLocations, getLocationById } from "./routeLocations";
-import { routeChargers, getChargerById } from "./routeChargers";
+import { restaurants, getRestaurantById, getChargerForRestaurant, type RestaurantStop } from "./restaurants";
 
 const LOCATION_PREFIX = "loc:";
-const CHARGER_PREFIX = "charger:";
+const RESTAURANT_PREFIX = "food:";
 
-/** Every addable stop — named places, plus charging stations that also have food nearby. */
+function restaurantToStop(r: RestaurantStop): RouteStopPoint | undefined {
+  const charger = getChargerForRestaurant(r);
+  if (!charger) return undefined;
+  return {
+    ref: `${RESTAURANT_PREFIX}${r.id}`,
+    kind: "restaurant",
+    label: r.name,
+    subtitle: `${r.cuisine} · ⭐${r.rating.toFixed(1)} · charging nearby (${charger.powerKw}kW ${charger.connector})`,
+    distanceKm: charger.distanceKm,
+    coordinates: charger.coordinates,
+    elevationM: charger.elevationM,
+  };
+}
+
+/** Every addable stop — named places, plus restaurants that have EV charging nearby. */
 export const routeStops: RouteStopPoint[] = [
   ...routeLocations.map(
     (loc): RouteStopPoint => ({
@@ -18,19 +32,7 @@ export const routeStops: RouteStopPoint[] = [
       elevationM: loc.elevationM,
     })
   ),
-  ...routeChargers
-    .filter((c) => c.amenities.includes("food"))
-    .map(
-      (c): RouteStopPoint => ({
-        ref: `${CHARGER_PREFIX}${c.id}`,
-        kind: "charger-amenity",
-        label: c.name,
-        subtitle: `${c.cpo} · restaurant nearby · ${c.powerKw}kW ${c.connector}`,
-        distanceKm: c.distanceKm,
-        coordinates: c.coordinates,
-        elevationM: c.elevationM,
-      })
-    ),
+  ...restaurants.map(restaurantToStop).filter((s): s is RouteStopPoint => !!s),
 ].sort((a, b) => a.distanceKm - b.distanceKm);
 
 export function resolveStopPoint(ref: string): RouteStopPoint | undefined {
@@ -47,24 +49,20 @@ export function resolveStopPoint(ref: string): RouteStopPoint | undefined {
       elevationM: loc.elevationM,
     };
   }
-  if (ref.startsWith(CHARGER_PREFIX)) {
-    const c = getChargerById(ref.slice(CHARGER_PREFIX.length));
-    if (!c) return undefined;
-    return {
-      ref,
-      kind: "charger-amenity",
-      label: c.name,
-      subtitle: `${c.cpo} · restaurant nearby · ${c.powerKw}kW ${c.connector}`,
-      distanceKm: c.distanceKm,
-      coordinates: c.coordinates,
-      elevationM: c.elevationM,
-    };
+  if (ref.startsWith(RESTAURANT_PREFIX)) {
+    const r = getRestaurantById(ref.slice(RESTAURANT_PREFIX.length));
+    if (!r) return undefined;
+    return restaurantToStop(r);
   }
   return undefined;
 }
 
 export function locationRef(locationId: string): string {
   return `${LOCATION_PREFIX}${locationId}`;
+}
+
+export function restaurantRef(restaurantId: string): string {
+  return `${RESTAURANT_PREFIX}${restaurantId}`;
 }
 
 export function searchStopPoints(query: string, excludeRefs: string[] = []): RouteStopPoint[] {

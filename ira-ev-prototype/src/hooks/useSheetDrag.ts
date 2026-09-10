@@ -7,6 +7,8 @@ interface UseSheetDragOptions {
   expandedVh: number;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
+  /** Dragged down past the collapsed height by more than the close threshold — dismiss the sheet entirely. */
+  onDismiss?: () => void;
 }
 
 interface UseSheetDragResult {
@@ -25,18 +27,25 @@ interface UseSheetDragResult {
 
 const TAP_THRESHOLD_PX = 6;
 const OVERDRAG_RESISTANCE = 0.35;
+/** How far (in raw, pre-resistance finger travel) the sheet must be dragged below the
+ * collapsed height before release dismisses it instead of springing back. */
+const CLOSE_DRAG_PX = 90;
 
 export function useSheetDrag({
   collapsedVh,
   expandedVh,
   expanded,
   onExpandedChange,
+  onDismiss,
 }: UseSheetDragOptions): UseSheetDragResult {
   const [dragHeightPx, setDragHeightPx] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const startY = useRef(0);
   const startHeightPx = useRef(0);
   const movedPastTapThreshold = useRef(false);
+  /** Unclamped drag target, tracked separately from the resisted/rubber-banded visual
+   * height so the close-threshold check reflects actual finger travel. */
+  const rawHeightPx = useRef(0);
   /** Only true between a real pointerdown and its matching up/cancel — guards against
    * stray pointermove events (e.g. hover-before-press with no button held) touching
    * refs that haven't been initialized for this gesture yet. */
@@ -85,6 +94,7 @@ export function useSheetDrag({
         setIsDragging(true);
       }
       const next = startHeightPx.current - dy; // dragging up (negative dy) grows the sheet
+      rawHeightPx.current = next;
       setDragHeightPx(clamp(next));
     },
     [clamp]
@@ -109,12 +119,19 @@ export function useSheetDrag({
       }
 
       setIsDragging(false);
+
+      if (onDismiss && rawHeightPx.current < collapsedPx - CLOSE_DRAG_PX) {
+        onDismiss();
+        setDragHeightPx(null);
+        return;
+      }
+
       const current = dragHeightPx ?? targetPx;
       const midpoint = (collapsedPx + expandedPx) / 2;
       onExpandedChange(current > midpoint);
       setDragHeightPx(null);
     },
-    [dragHeightPx, targetPx, collapsedPx, expandedPx, expanded, onExpandedChange]
+    [dragHeightPx, targetPx, collapsedPx, expandedPx, expanded, onExpandedChange, onDismiss]
   );
 
   const heightPx = dragHeightPx ?? targetPx;

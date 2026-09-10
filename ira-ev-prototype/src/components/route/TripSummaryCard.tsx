@@ -1,4 +1,4 @@
-import { Route as RouteIcon, Clock, Zap, IndianRupee, Mountain, Recycle, TrafficCone } from "lucide-react";
+import { Route as RouteIcon, Clock, Zap, IndianRupee, Mountain, Recycle } from "lucide-react";
 import type { RoutePlan } from "../../types/route";
 import { formatDuration } from "../../utils/routePlanner";
 
@@ -48,11 +48,6 @@ export function TripSummaryCard({ plan }: { plan: RoutePlan }) {
           <Recycle size={13} className="text-primary" />
           {plan.totalRegenRecoveredKwh} kWh regen recovered
         </span>
-        {plan.totalTrafficDelayMin > 0 && (
-          <span className="flex items-center gap-1.5">
-            <TrafficCone size={13} className="text-warning" />+{formatDuration(plan.totalTrafficDelayMin)} traffic
-          </span>
-        )}
         {plan.tollCost > 0 && (
           <span className="flex items-center gap-1.5">
             <IndianRupee size={13} className="text-secondaryText" />

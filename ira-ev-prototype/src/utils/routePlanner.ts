@@ -1,6 +1,7 @@
 import type {
   ChargeLeg,
   ChargeStopStrategy,
+  ConnectedVehicle,
   DriveLeg,
   DrivingStyle,
   RouteCharger,
@@ -9,8 +10,6 @@ import type {
   RoutePlan,
   RoutePreferences,
   RouteStopPoint,
-  TrafficLevel,
-  VehicleProfile,
 } from "../types/route";
 import { elevationAtDistance } from "../data/routeLocations";
 
@@ -18,12 +17,6 @@ const DRIVING_STYLE_CONSUMPTION_FACTOR: Record<DrivingStyle, number> = {
   eco: 0.88,
   normal: 1.0,
   spirited: 1.18,
-};
-
-const TRAFFIC_SPEED_FACTOR: Record<TrafficLevel, number> = {
-  light: 1.0,
-  moderate: 0.82,
-  heavy: 0.62,
 };
 
 /** Per-stop targets: [intermediate charge cap %, fraction of max range to push before stopping]. */
@@ -45,14 +38,17 @@ const GRAVITY = 9.81;
 const DRIVETRAIN_CLIMB_EFFICIENCY = 0.9;
 const REGEN_RECOVERY_EFFICIENCY = 0.65;
 const TOLL_RATE_PER_KM = 2.4;
-/** Extra distance/time incurred by routing around toll roads. */
-const AVOID_TOLLS_DISTANCE_PENALTY = 1.12;
-const AVOID_TOLLS_TIME_PENALTY = 1.15;
+/** Surface roads (avoiding highways) are also toll-free, but less direct. */
+const AVOID_HIGHWAYS_DISTANCE_PENALTY = 1.12;
+const AVOID_HIGHWAYS_TIME_PENALTY = 1.15;
 
-export function effectiveConsumptionWhPerKm(vehicle: VehicleProfile, prefs: RoutePreferences): number {
+export function effectiveConsumptionWhPerKm(vehicle: ConnectedVehicle, prefs: RoutePreferences): number {
   const styleFactor = DRIVING_STYLE_CONSUMPTION_FACTOR[prefs.drivingStyle];
   const climateFactor = prefs.climateControlOn ? CLIMATE_CONSUMPTION_FACTOR : 1;
-  return vehicle.efficiencyWhPerKm * styleFactor * climateFactor;
+  // A car that's been achieving less than its rated efficiency on recent drives (lower
+  // score) is modeled as consuming proportionally more than the rated Wh/km.
+  const efficiencyFactor = 100 / vehicle.efficiencyScore;
+  return vehicle.efficiencyWhPerKm * styleFactor * climateFactor * efficiencyFactor;
 }
 
 export function filterEligibleChargers(chargers: RouteCharger[], prefs: RoutePreferences): RouteCharger[] {
@@ -91,7 +87,7 @@ export function planRoute(
   startLoc: RouteLocation,
   destinationLoc: RouteLocation,
   waypoints: RouteStopPoint[],
-  vehicle: VehicleProfile,
+  vehicle: ConnectedVehicle,
   prefs: RoutePreferences,
   allChargers: RouteCharger[],
   departureTime: Date = new Date()
@@ -105,11 +101,9 @@ export function planRoute(
   ];
 
   const consumptionWhPerKm = effectiveConsumptionWhPerKm(vehicle, prefs);
-  const baseAvgSpeedKmh = prefs.avoidHighways ? NON_HIGHWAY_AVG_SPEED_KMH : HIGHWAY_AVG_SPEED_KMH;
-  const avgSpeedKmh = baseAvgSpeedKmh * TRAFFIC_SPEED_FACTOR[prefs.trafficLevel];
-  const lightTrafficSpeedKmh = baseAvgSpeedKmh * TRAFFIC_SPEED_FACTOR.light;
-  const distanceMultiplier = prefs.avoidTolls ? AVOID_TOLLS_DISTANCE_PENALTY : 1;
-  const timeMultiplier = prefs.avoidTolls ? AVOID_TOLLS_TIME_PENALTY : 1;
+  const avgSpeedKmh = prefs.avoidHighways ? NON_HIGHWAY_AVG_SPEED_KMH : HIGHWAY_AVG_SPEED_KMH;
+  const distanceMultiplier = prefs.avoidHighways ? AVOID_HIGHWAYS_DISTANCE_PENALTY : 1;
+  const timeMultiplier = prefs.avoidHighways ? AVOID_HIGHWAYS_TIME_PENALTY : 1;
   const eligibleChargers = filterEligibleChargers(allChargers, prefs);
   const { cap: intermediateCap, reachFraction } = CHARGE_STRATEGY[prefs.chargeStopStrategy];
 
@@ -131,7 +125,6 @@ export function planRoute(
   let fromLabel = startLoc.label;
   let elapsedMin = 0;
   let totalDriveMin = 0;
-  let totalIdealDriveMin = 0;
   let totalChargeMin = 0;
   let totalCost = 0;
   let totalElevationGainM = 0;
@@ -144,7 +137,6 @@ export function planRoute(
     if (rawDistanceKm <= 0) return;
     const distanceKm = rawDistanceKm * distanceMultiplier;
     const durationMin = ((distanceKm / avgSpeedKmh) * 60) * timeMultiplier;
-    const idealDurationMin = (distanceKm / lightTrafficSpeedKmh) * 60;
 
     const elevFrom = elevationAtDistance(posKm);
     const elevTo = elevationAtDistance(toKm);
@@ -179,7 +171,6 @@ export function planRoute(
     } satisfies DriveLeg);
 
     totalDriveMin += durationMin;
-    totalIdealDriveMin += idealDurationMin;
     totalElevationGainM += elevationGainM;
     totalRegenRecoveredKwh += regenRecoveredKwh;
     soc = socEnd;
@@ -240,7 +231,9 @@ export function planRoute(
     // the final top-up instead of overcharging just to idle at a charger longer.
     const isLikelyFinalStop = socNeededForRest <= intermediateCap;
     const targetCap = isLikelyFinalStop ? Math.max(prefs.targetArrivalSocPercent, socNeededForRest) : intermediateCap;
-    const departureSoc = Math.min(100, Math.max(targetCap, socNeededForRest));
+    // Never "charge" to below what the car already arrived with — targetCap/socNeededForRest
+    // can come out just under arrivalSoc when the final leg barely needs a top-up.
+    const departureSoc = Math.min(100, Math.max(targetCap, socNeededForRest, arrivalSoc));
 
     const energyAddedKwh = ((departureSoc - arrivalSoc) / 100) * vehicle.batteryCapacityKwh;
     const effectiveChargeRateKw = Math.min(charger.powerKw, vehicle.maxChargeRateKw) * CHARGE_CURVE_EFFICIENCY;
@@ -266,15 +259,13 @@ export function planRoute(
   const stopCount = legs.filter((l) => l.kind === "charge").length;
   const totalDistanceKmRaw = chain.reduce((sum, pt, i) => (i === 0 ? 0 : sum + Math.abs(pt.distanceKm - chain[i - 1].distanceKm)), 0);
   const totalDistanceKm = Math.round(totalDistanceKmRaw * distanceMultiplier);
-  const tollCost = prefs.avoidTolls ? 0 : Math.round(totalDistanceKm * TOLL_RATE_PER_KM);
-  const totalTrafficDelayMin = Math.round(totalDriveMin - totalIdealDriveMin);
+  const tollCost = prefs.avoidHighways ? 0 : Math.round(totalDistanceKm * TOLL_RATE_PER_KM);
 
   return {
     legs,
     totalDistanceKm,
     totalDriveMin: Math.round(totalDriveMin),
     totalChargeMin: Math.round(totalChargeMin),
-    totalTrafficDelayMin,
     totalTripMin: Math.round(totalDriveMin + totalChargeMin),
     totalCost: Math.round(totalCost),
     tollCost,

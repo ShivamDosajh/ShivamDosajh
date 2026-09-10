@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Star, Phone, Navigation2, ChevronUp, ChevronDown } from "lucide-react";
+import { Star, Phone, Navigation2, ChevronUp, ChevronDown, UtensilsCrossed } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
@@ -12,7 +12,10 @@ import { StationTabs } from "./StationTabs";
 import { ConnectorGroupRow } from "./ConnectorGroupRow";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useSheetDrag } from "../../hooks/useSheetDrag";
+import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { groupChargersByConnector } from "../../utils/connectors";
+import { ZomatoOrderModal } from "../zomato/ZomatoOrderModal";
+import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
 
 interface StationDetailsSheetProps {
   station: Station | undefined;
@@ -33,13 +36,16 @@ function formatLastUsed(minutes: number | null): string {
 
 export function StationDetailsSheet({ station, onClose, onNavigate, onSelectCharger }: StationDetailsSheetProps) {
   const { config } = useExperiments();
+  const { order, clearOrder } = useZomatoOrder();
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState<"overview" | "reviews">("overview");
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const { heightPx, isDragging, visualExpanded, handleProps } = useSheetDrag({
     collapsedVh: COLLAPSED_VH,
     expandedVh: EXPANDED_VH,
     expanded,
     onExpandedChange: setExpanded,
+    onDismiss: onClose,
   });
 
   // Reset per-station UI state whenever a different station sheet opens.
@@ -153,6 +159,27 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           </p>
         )}
 
+        {!visualExpanded && config.showZomatoOrdering && (
+          <>
+            {order && order.stationId === station.id ? (
+              <ZomatoOrderStatusCard order={order} onDismiss={clearOrder} />
+            ) : (
+              <button
+                onClick={() => setOrderModalOpen(true)}
+                className="flex items-center gap-3 rounded-card border border-dashed border-primary/40 px-3.5 py-3 min-h-[44px] text-left"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0 text-primary">
+                  <UtensilsCrossed size={15} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] text-text font-medium">order food for pickup here</p>
+                  <p className="text-[11px] text-secondaryText">arrives right when you get to the charger</p>
+                </div>
+              </button>
+            )}
+          </>
+        )}
+
         {visualExpanded && config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
@@ -182,6 +209,14 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           </>
         )}
       </div>
+
+      <ZomatoOrderModal
+        open={orderModalOpen}
+        onClose={() => setOrderModalOpen(false)}
+        stationId={station.id}
+        stationName={station.name}
+        etaMinutes={station.eta}
+      />
     </BottomSheet>
   );
 }

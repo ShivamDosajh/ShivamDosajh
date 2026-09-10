@@ -12,9 +12,18 @@ export interface VehicleProfile {
 }
 
 export type DrivingStyle = "eco" | "normal" | "spirited";
-export type TrafficLevel = "light" | "moderate" | "heavy";
 export type ChargeStopStrategy = "optimal" | "fewer" | "fewest";
 export type Amenity = "food" | "restroom" | "wifi";
+
+/** The user's actual EV, read from the app's live connected-car telemetry — never picked from a list. */
+export interface ConnectedVehicle extends VehicleProfile {
+  /** Live battery level as of last sync. */
+  currentSocPercent: number;
+  /** How closely the car has been achieving its rated efficiency over recent drives, 0-100. */
+  efficiencyScore: number;
+  drivingHistoryKm: number;
+  lastSyncedMinutesAgo: number;
+}
 
 export interface RouteLocation {
   id: string;
@@ -42,11 +51,11 @@ export interface RouteCharger {
   amenities: Amenity[];
 }
 
-/** A point that can appear in a trip's stop sequence — either a named place or a charger-side amenity stop. */
+/** A point that can appear in a trip's stop sequence — either a named place, or a restaurant that has EV charging nearby. */
 export interface RouteStopPoint {
-  /** Compound ref: "loc:<RouteLocation.id>" or "charger:<RouteCharger.id>". */
+  /** Compound ref: "loc:<RouteLocation.id>" or "food:<RestaurantStop.id>". */
   ref: string;
-  kind: "location" | "charger-amenity";
+  kind: "location" | "restaurant";
   label: string;
   subtitle: string;
   distanceKm: number;
@@ -55,9 +64,6 @@ export interface RouteStopPoint {
 }
 
 export interface RoutePreferences {
-  vehicleId: string;
-  /** When false, planning uses the default vehicle profile and the vehicle picker stays hidden. */
-  useCustomVehicle: boolean;
   startSocPercent: number;
   targetArrivalSocPercent: number;
   minChargeSocPercent: number;
@@ -66,9 +72,8 @@ export interface RoutePreferences {
   minChargerPowerKw: number;
   drivingStyle: DrivingStyle;
   climateControlOn: boolean;
+  /** Sticks to surface roads instead of the highway — also means no tolls. */
   avoidHighways: boolean;
-  avoidTolls: boolean;
-  trafficLevel: TrafficLevel;
   chargeStopStrategy: ChargeStopStrategy;
 }
 
@@ -105,7 +110,6 @@ export interface RoutePlan {
   totalDistanceKm: number;
   totalDriveMin: number;
   totalChargeMin: number;
-  totalTrafficDelayMin: number;
   totalTripMin: number;
   totalCost: number;
   tollCost: number;

@@ -1,31 +1,28 @@
 import { useCallback, useMemo, useState } from "react";
 import type { RoutePlan, RoutePreferences } from "../types/route";
 import { getLocationById } from "../data/routeLocations";
-import { getVehicleById } from "../data/vehicles";
+import { myConnectedVehicle } from "../data/vehicles";
 import { routeChargers } from "../data/routeChargers";
 import { resolveStopPoint } from "../data/routeStops";
 import { planRoute } from "../utils/routePlanner";
 
 export type RoutePlannerStep = "setup" | "results";
 
-const DEFAULT_VEHICLE_ID = "tata-nexon-ev-lr";
-
-const defaultPreferences: RoutePreferences = {
-  vehicleId: DEFAULT_VEHICLE_ID,
-  useCustomVehicle: false,
-  startSocPercent: 90,
-  targetArrivalSocPercent: 20,
-  minChargeSocPercent: 10,
-  preferredConnectors: [],
-  preferredNetworks: [],
-  minChargerPowerKw: 0,
-  drivingStyle: "normal",
-  climateControlOn: false,
-  avoidHighways: false,
-  avoidTolls: false,
-  trafficLevel: "light",
-  chargeStopStrategy: "optimal",
-};
+function buildDefaultPreferences(): RoutePreferences {
+  return {
+    // Starting charge defaults to the connected car's live battery level.
+    startSocPercent: myConnectedVehicle.currentSocPercent,
+    targetArrivalSocPercent: 20,
+    minChargeSocPercent: 10,
+    preferredConnectors: [],
+    preferredNetworks: [],
+    minChargerPowerKw: 0,
+    drivingStyle: "normal",
+    climateControlOn: false,
+    avoidHighways: false,
+    chargeStopStrategy: "optimal",
+  };
+}
 
 export interface RoutePlannerApi {
   step: RoutePlannerStep;
@@ -52,7 +49,7 @@ export function useRoutePlanner(): RoutePlannerApi {
   const [startId, setStartId] = useState("panvel");
   const [destinationId, setDestinationId] = useState("bengaluru");
   const [waypointRefs, setWaypointRefs] = useState<string[]>([]);
-  const [preferences, setPreferences] = useState<RoutePreferences>(defaultPreferences);
+  const [preferences, setPreferences] = useState<RoutePreferences>(buildDefaultPreferences);
   const [plan, setPlan] = useState<RoutePlan | null>(null);
 
   const addWaypoint = useCallback((ref: string) => {
@@ -90,8 +87,7 @@ export function useRoutePlanner(): RoutePlannerApi {
     const destination = getLocationById(destinationId);
     if (!start || !destination) return;
     const waypoints = waypointRefs.map(resolveStopPoint).filter((w): w is NonNullable<typeof w> => !!w);
-    const vehicle = getVehicleById(preferences.useCustomVehicle ? preferences.vehicleId : DEFAULT_VEHICLE_ID);
-    const nextPlan = planRoute(start, destination, waypoints, vehicle, preferences, routeChargers);
+    const nextPlan = planRoute(start, destination, waypoints, myConnectedVehicle, preferences, routeChargers);
     setPlan(nextPlan);
     setStep("results");
   }, [startId, destinationId, waypointRefs, preferences]);
@@ -103,7 +99,7 @@ export function useRoutePlanner(): RoutePlannerApi {
     setStartId("panvel");
     setDestinationId("bengaluru");
     setWaypointRefs([]);
-    setPreferences(defaultPreferences);
+    setPreferences(buildDefaultPreferences());
     setPlan(null);
   }, []);
 
