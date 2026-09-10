@@ -29,7 +29,7 @@ export interface ZomatoOrder {
   lines: CartLine[];
   totalPrice: number;
   placedAt: number;
-  /** Minutes until the driver reaches the station — the order is timed to land at zero. */
-  etaMinutesAtOrder: number;
+  /** How arrival was described to the user at order time — "~5 min" for a nearby station, an ETA clock time ("12:31") for a stop on a planned trip. */
+  arrivalLabel: string;
   status: ZomatoOrderStatus;
 }

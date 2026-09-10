@@ -1,21 +1,21 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Minus, Plus, Star, ShoppingBag } from "lucide-react";
 import { Modal } from "../common/Modal";
 import { Button } from "../common/Button";
-import { getZomatoRestaurantForStation } from "../../data/zomatoRestaurants";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
-import type { CartLine, MenuItem } from "../../types/zomato";
+import type { CartLine, MenuItem, ZomatoRestaurant } from "../../types/zomato";
 
 interface ZomatoOrderModalProps {
   open: boolean;
   onClose: () => void;
   stationId: string;
   stationName: string;
-  etaMinutes: number;
+  restaurant: ZomatoRestaurant;
+  /** How arrival is described to the user — "~5 min" near a station, or an ETA clock time on a planned trip. */
+  arrivalLabel: string;
 }
 
-export function ZomatoOrderModal({ open, onClose, stationId, stationName, etaMinutes }: ZomatoOrderModalProps) {
-  const restaurant = useMemo(() => getZomatoRestaurantForStation(stationId), [stationId]);
+export function ZomatoOrderModal({ open, onClose, stationId, stationName, restaurant, arrivalLabel }: ZomatoOrderModalProps) {
   const { placeOrder } = useZomatoOrder();
   const [qtyByItem, setQtyByItem] = useState<Record<string, number>>({});
 
@@ -33,7 +33,7 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, etaMin
 
   const handlePlaceOrder = () => {
     if (lines.length === 0) return;
-    placeOrder(stationId, stationName, restaurant, lines, etaMinutes);
+    placeOrder(stationId, stationName, restaurant, lines, arrivalLabel);
     setQtyByItem({});
     onClose();
   };
@@ -51,8 +51,8 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, etaMin
         </span>
       </div>
       <p className="text-[11px] text-primary bg-primary/10 rounded-button px-2.5 py-2 mt-2 mb-3">
-        order now — it'll be ready and delivered to your charging bay at {stationName}, right as you arrive (~
-        {etaMinutes} min)
+        order now — it'll be ready and delivered to your charging bay at {stationName}, right as you arrive (
+        {arrivalLabel})
       </p>
 
       <div className="flex flex-col gap-4">

@@ -16,6 +16,7 @@ function restaurantToStop(r: RestaurantStop): RouteStopPoint | undefined {
     distanceKm: charger.distanceKm,
     coordinates: charger.coordinates,
     elevationM: charger.elevationM,
+    chargerId: charger.id,
   };
 }
 

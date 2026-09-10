@@ -66,14 +66,15 @@ function formatClock(date: Date): string {
 interface ChainPoint {
   label: string;
   distanceKm: number;
+  /** Set for restaurant stops — planning stops and charges at this exact charger rather
+   * than treating the point as a generic pass-through waypoint. */
+  chargerId?: string;
+  restaurantId?: string;
 }
 
 /**
  * Plans start -> waypoints (in the exact order given — drag-to-reorder in the UI maps
- * straight onto this order) -> destination. Charging decisions always look at the
- * distance remaining across the *entire rest of the trip*, not just to the next
- * waypoint, so a waypoint sitting at the edge of the car's range can't strand the trip
- * right after it.
+ * straight onto this order) -> destination.
  *
  * Waypoints are re-sorted along the direction of travel before planning: dragging a
  * stop to a new position in the UI still controls which order it's *shown and visited
@@ -82,6 +83,15 @@ interface ChainPoint {
  * leg would make the trip loop on itself. (An earlier version respected raw manual
  * order and produced exactly that — a chain that isn't monotonic in one direction
  * bounced between two chargers indefinitely; caught via the sanity-test harness.)
+ *
+ * A restaurant waypoint always gets its own charge leg at its specific charger, labeled
+ * with the restaurant's name, whenever that charger is reachable in one hop — checked
+ * fresh every iteration, so a stop several charges away from the start still gets
+ * visited once the car works its way close enough. (An earlier version only allowed
+ * jumping straight to the next chain point when the *entire remaining trip* fit in
+ * range, which on any multi-charge trip was almost never true — so restaurant stops
+ * were silently skipped in favor of whatever charger a generic reach-distance search
+ * happened to prefer, and never appeared in the itinerary at all.)
  */
 export function planRoute(
   startLoc: RouteLocation,
@@ -96,7 +106,12 @@ export function planRoute(
   const sortedWaypoints = [...waypoints].sort((a, b) => direction * (a.distanceKm - b.distanceKm));
   const chain: ChainPoint[] = [
     { label: startLoc.label, distanceKm: startLoc.distanceKm },
-    ...sortedWaypoints.map((w) => ({ label: w.label, distanceKm: w.distanceKm })),
+    ...sortedWaypoints.map((w) => ({
+      label: w.label,
+      distanceKm: w.distanceKm,
+      chargerId: w.chargerId,
+      restaurantId: w.kind === "restaurant" ? w.ref.slice("food:".length) : undefined,
+    })),
     { label: destinationLoc.label, distanceKm: destinationLoc.distanceKm },
   ];
 
@@ -179,32 +194,79 @@ export function planRoute(
   };
 
   // Skips segIdx past any chain waypoints already at-or-behind posKm (in the overall
-  // travel direction) — needed because a charging stop can legitimately overshoot a
-  // pass-through waypoint to reach a farther charger. Without this, the next loop
-  // iteration would target a waypoint now behind the car and (re-deriving direction
-  // from position) start driving backwards, which is how the algorithm used to bounce
-  // indefinitely between two chargers — caught via the sanity-test harness.
+  // travel direction) — defensive only: the loop below never lets maxReachable exceed
+  // the distance to the very next chain point when searching for a generic charger, so
+  // a candidate can't actually overshoot a waypoint. Kept as a safety net for edge cases
+  // (e.g. two points at nearly the same distance).
   const advanceSegIdx = () => {
     while (segIdx < chain.length - 1 && (chain[segIdx + 1].distanceKm - posKm) * direction <= 0) {
       segIdx++;
     }
   };
 
+  /** Charges at `charger`, sized against everything left in the trip *after* the chain
+   * point at the current segIdx (so a stop at the edge of range can't strand the rest
+   * of the journey), and tags the leg with `restaurantId` when this stop is one the
+   * user picked, so the itinerary can offer ordering food there. */
+  const chargeAt = (charger: RouteCharger, restaurantId?: string) => {
+    const arrivalSoc = soc;
+    const remainingAfterCharger = chainRemainingKm(segIdx, posKm);
+    const socNeededForRest = (remainingAfterCharger * consumptionWhPerKm) / (vehicle.batteryCapacityKwh * 1000) * 100 + prefs.minChargeSocPercent;
+    // If even the strategy's standard cap would comfortably get us home, size this as
+    // the final top-up instead of overcharging just to idle at a charger longer.
+    const isLikelyFinalStop = socNeededForRest <= intermediateCap;
+    const targetCap = isLikelyFinalStop ? Math.max(prefs.targetArrivalSocPercent, socNeededForRest) : intermediateCap;
+    // Never "charge" to below what the car already arrived with — targetCap/socNeededForRest
+    // can come out just under arrivalSoc when the final leg barely needs a top-up. A
+    // restaurant stop always gets at least a modest top-up even if not strictly needed,
+    // since the point of the stop is charging while you eat.
+    const minDepartureSoc = restaurantId ? Math.min(100, Math.max(intermediateCap, arrivalSoc + 10)) : 0;
+    const departureSoc = Math.min(100, Math.max(targetCap, socNeededForRest, arrivalSoc, minDepartureSoc));
+
+    const energyAddedKwh = ((departureSoc - arrivalSoc) / 100) * vehicle.batteryCapacityKwh;
+    const effectiveChargeRateKw = Math.min(charger.powerKw, vehicle.maxChargeRateKw) * CHARGE_CURVE_EFFICIENCY;
+    const chargeDurationMin = (energyAddedKwh / effectiveChargeRateKw) * 60;
+    const cost = energyAddedKwh * charger.pricePerKwh;
+
+    elapsedMin += chargeDurationMin;
+    legs.push({
+      kind: "charge",
+      charger,
+      arrivalSocPercent: Math.round(arrivalSoc),
+      departureSocPercent: Math.round(departureSoc),
+      energyAddedKwh: Math.round(energyAddedKwh * 10) / 10,
+      chargeDurationMin: Math.round(chargeDurationMin),
+      costEstimate: Math.round(cost),
+      etaClock: formatClock(new Date(departureTime.getTime() + elapsedMin * 60_000)),
+      restaurantId,
+    } satisfies ChargeLeg);
+    totalChargeMin += chargeDurationMin;
+    totalCost += cost;
+    soc = departureSoc;
+  };
+
   let guard = 0;
   while (guard++ < MAX_LEG_ITERATIONS && segIdx < chain.length - 1) {
-    const segTargetKm = chain[segIdx + 1].distanceKm;
-    const remainingToFinal = chainRemainingKm(segIdx, posKm);
+    const nextPoint = chain[segIdx + 1];
+    const distToNext = Math.abs(nextPoint.distanceKm - posKm);
     const maxReachable = rangeKmAtSoc(soc - prefs.minChargeSocPercent);
 
-    if (maxReachable >= remainingToFinal) {
-      driveSegment(segTargetKm, chain[segIdx + 1].label, segIdx + 1 < chain.length - 1);
-      advanceSegIdx();
+    if (maxReachable >= distToNext) {
+      // The next chain point — waypoint or destination — is reachable in one hop.
+      driveSegment(nextPoint.distanceKm, nextPoint.label, segIdx + 1 < chain.length - 1);
+      segIdx++;
+      if (nextPoint.chargerId) {
+        const charger = allChargers.find((c) => c.id === nextPoint.chargerId);
+        if (charger) chargeAt(charger, nextPoint.restaurantId);
+      }
       continue;
     }
 
     const reachTargetKm = posKm + direction * Math.max(maxReachable * reachFraction, 20);
-    // Only consider chargers ahead of us in the overall direction of travel — a
-    // charger "reachable" only by driving backwards isn't a real candidate.
+    // Only consider chargers ahead of us in the overall direction of travel, and never
+    // past the next chain point itself (maxReachable < distToNext here, so this can't
+    // overshoot it) — a charger "reachable" only by driving backwards isn't a real
+    // candidate, and picking one beyond an upcoming stop would skip it.
     const candidates = eligibleChargers.filter((c) => {
       const aheadKm = (c.distanceKm - posKm) * direction;
       return aheadKm > 1 && aheadKm <= maxReachable;
@@ -223,37 +285,7 @@ export function planRoute(
 
     driveSegment(charger.distanceKm, charger.name, false);
     advanceSegIdx();
-    const arrivalSoc = soc;
-
-    const remainingAfterCharger = chainRemainingKm(segIdx, posKm);
-    const socNeededForRest = (remainingAfterCharger * consumptionWhPerKm) / (vehicle.batteryCapacityKwh * 1000) * 100 + prefs.minChargeSocPercent;
-    // If even the strategy's standard cap would comfortably get us home, size this as
-    // the final top-up instead of overcharging just to idle at a charger longer.
-    const isLikelyFinalStop = socNeededForRest <= intermediateCap;
-    const targetCap = isLikelyFinalStop ? Math.max(prefs.targetArrivalSocPercent, socNeededForRest) : intermediateCap;
-    // Never "charge" to below what the car already arrived with — targetCap/socNeededForRest
-    // can come out just under arrivalSoc when the final leg barely needs a top-up.
-    const departureSoc = Math.min(100, Math.max(targetCap, socNeededForRest, arrivalSoc));
-
-    const energyAddedKwh = ((departureSoc - arrivalSoc) / 100) * vehicle.batteryCapacityKwh;
-    const effectiveChargeRateKw = Math.min(charger.powerKw, vehicle.maxChargeRateKw) * CHARGE_CURVE_EFFICIENCY;
-    const chargeDurationMin = (energyAddedKwh / effectiveChargeRateKw) * 60;
-    const cost = energyAddedKwh * charger.pricePerKwh;
-
-    elapsedMin += chargeDurationMin;
-    legs.push({
-      kind: "charge",
-      charger,
-      arrivalSocPercent: Math.round(arrivalSoc),
-      departureSocPercent: Math.round(departureSoc),
-      energyAddedKwh: Math.round(energyAddedKwh * 10) / 10,
-      chargeDurationMin: Math.round(chargeDurationMin),
-      costEstimate: Math.round(cost),
-      etaClock: formatClock(new Date(departureTime.getTime() + elapsedMin * 60_000)),
-    } satisfies ChargeLeg);
-    totalChargeMin += chargeDurationMin;
-    totalCost += cost;
-    soc = departureSoc;
+    chargeAt(charger);
   }
 
   const stopCount = legs.filter((l) => l.kind === "charge").length;

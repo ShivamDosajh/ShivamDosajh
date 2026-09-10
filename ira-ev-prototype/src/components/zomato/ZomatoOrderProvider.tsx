@@ -3,11 +3,11 @@ import { ZomatoOrderContext } from "../../hooks/useZomatoOrder";
 import type { CartLine, ZomatoOrder, ZomatoOrderStatus, ZomatoRestaurant } from "../../types/zomato";
 
 /**
- * Demo timing, not real time: a real order would track against the driver's actual ETA to
- * the station (order.etaMinutesAtOrder), arriving right as they park. For a prototype with
- * no live navigation feed, the same status progression is compressed into a fixed, short
- * window so the "meets you when you arrive" idea is visible without an actual multi-minute
- * wait.
+ * Demo timing, not real time: a real order would track against the driver's actual arrival
+ * (order.arrivalLabel), landing right as they park. For a prototype with no live navigation
+ * feed, the same status progression is compressed into a fixed, short window so the "meets
+ * you when you arrive" idea is visible without an actual multi-minute (or, on a planned
+ * trip, multi-hour) wait.
  */
 const DEMO_DURATION_MS = 18_000;
 const STATUS_THRESHOLDS: { status: ZomatoOrderStatus; atFraction: number }[] = [
@@ -52,7 +52,7 @@ export function ZomatoOrderProvider({ children }: { children: ReactNode }) {
   }, [order?.id, order?.status]);
 
   const placeOrder = useCallback(
-    (stationId: string, stationName: string, restaurant: ZomatoRestaurant, lines: CartLine[], etaMinutes: number) => {
+    (stationId: string, stationName: string, restaurant: ZomatoRestaurant, lines: CartLine[], arrivalLabel: string) => {
       const totalPrice = lines.reduce((sum, l) => sum + l.item.price * l.qty, 0);
       setOrder({
         id: `zo-${Date.now()}`,
@@ -62,7 +62,7 @@ export function ZomatoOrderProvider({ children }: { children: ReactNode }) {
         lines,
         totalPrice,
         placedAt: Date.now(),
-        etaMinutesAtOrder: etaMinutes,
+        arrivalLabel,
         status: "placed",
       });
     },

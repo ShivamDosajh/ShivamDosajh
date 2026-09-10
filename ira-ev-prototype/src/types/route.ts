@@ -61,6 +61,8 @@ export interface RouteStopPoint {
   distanceKm: number;
   coordinates: { x: number; y: number };
   elevationM: number;
+  /** Set only for "restaurant" stops — the co-located charger, so planning stops there specifically rather than treating it as a generic waypoint. */
+  chargerId?: string;
 }
 
 export interface RoutePreferences {
@@ -101,6 +103,8 @@ export interface ChargeLeg {
   chargeDurationMin: number;
   costEstimate: number;
   etaClock: string;
+  /** Set when this stop is a restaurant the user picked — lets the itinerary offer "order food" for that exact place. */
+  restaurantId?: string;
 }
 
 export type RouteLeg = DriveLeg | ChargeLeg;

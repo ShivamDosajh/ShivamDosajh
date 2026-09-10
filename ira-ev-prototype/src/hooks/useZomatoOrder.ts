@@ -3,7 +3,7 @@ import type { CartLine, ZomatoOrder, ZomatoRestaurant } from "../types/zomato";
 
 export interface ZomatoOrderContextValue {
   order: ZomatoOrder | null;
-  placeOrder: (stationId: string, stationName: string, restaurant: ZomatoRestaurant, lines: CartLine[], etaMinutes: number) => void;
+  placeOrder: (stationId: string, stationName: string, restaurant: ZomatoRestaurant, lines: CartLine[], arrivalLabel: string) => void;
   clearOrder: () => void;
 }
 

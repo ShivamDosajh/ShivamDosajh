@@ -14,6 +14,7 @@ import { useExperiments } from "../../hooks/useExperiments";
 import { useSheetDrag } from "../../hooks/useSheetDrag";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { groupChargersByConnector } from "../../utils/connectors";
+import { getZomatoRestaurantForStation } from "../../data/zomatoRestaurants";
 import { ZomatoOrderModal } from "../zomato/ZomatoOrderModal";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
 
@@ -215,7 +216,8 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
         onClose={() => setOrderModalOpen(false)}
         stationId={station.id}
         stationName={station.name}
-        etaMinutes={station.eta}
+        restaurant={getZomatoRestaurantForStation(station.id)}
+        arrivalLabel={`~${station.eta} min`}
       />
     </BottomSheet>
   );
