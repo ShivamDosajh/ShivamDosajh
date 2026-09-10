@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
-import { Map, History, MessageSquareText } from "lucide-react";
+import { History, MessageSquareText } from "lucide-react";
 import { StationMapScreen } from "./screens/StationMap/StationMapScreen";
+import { RoutesTabScreen } from "./screens/Routes/RoutesTabScreen";
 import { StationDetailsSheet } from "./components/station/StationDetailsSheet";
 import { ChargerSelectionScreen } from "./screens/ChargerSelection/ChargerSelectionScreen";
 import { ChargingTypeScreen } from "./screens/ChargingType/ChargingTypeScreen";
@@ -68,7 +69,9 @@ function AppShell() {
       {tab !== "station" && (
         <div className="flex-1 min-h-0 flex flex-col">
           {tab === "routes" && (
-            <PlaceholderScreen icon={Map} title="routes" description="Route planning with charging stops is coming soon in this prototype." />
+            <div className="flex-1 min-h-0 flex flex-col">
+              <RoutesTabScreen />
+            </div>
           )}
           {tab === "history" && (
             <PlaceholderScreen icon={History} title="history" description="Your past charging sessions will appear here." />
