@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Minus, Plus, Star, ShoppingBag } from "lucide-react";
+import { Minus, Plus, Star, ShoppingBag, ChevronLeft } from "lucide-react";
 import { Modal } from "../common/Modal";
 import { Button } from "../common/Button";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
@@ -13,9 +13,11 @@ interface ZomatoOrderModalProps {
   restaurant: ZomatoRestaurant;
   /** How arrival is described to the user — "~5 min" near a station, or an ETA clock time on a planned trip. */
   arrivalLabel: string;
+  /** When set, shows a "back to restaurants" link — this menu was reached via a restaurant-choice step. */
+  onBack?: () => void;
 }
 
-export function ZomatoOrderModal({ open, onClose, stationId, stationName, restaurant, arrivalLabel }: ZomatoOrderModalProps) {
+export function ZomatoOrderModal({ open, onClose, stationId, stationName, restaurant, arrivalLabel, onBack }: ZomatoOrderModalProps) {
   const { placeOrder } = useZomatoOrder();
   const [qtyByItem, setQtyByItem] = useState<Record<string, number>>({});
 
@@ -40,6 +42,15 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, restau
 
   return (
     <Modal open={open} onClose={onClose} title="Order food">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-primary text-[12px] font-medium mb-3 -mt-1 -ml-1 px-1 py-1"
+        >
+          <ChevronLeft size={14} />
+          back to restaurants
+        </button>
+      )}
       <div className="flex items-center justify-between mb-1">
         <div>
           <p className="text-[15px] font-semibold text-text">{restaurant.name}</p>

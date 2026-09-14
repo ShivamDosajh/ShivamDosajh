@@ -5,8 +5,9 @@ import { formatDuration } from "../../utils/routePlanner";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { getRestaurantById, toZomatoRestaurant } from "../../data/restaurants";
-import { getZomatoRestaurantForStation } from "../../data/zomatoRestaurants";
-import { ZomatoOrderModal } from "../zomato/ZomatoOrderModal";
+import { getZomatoRestaurantsForStation } from "../../data/zomatoRestaurants";
+import { foodStopCta } from "../../utils/foodStopWording";
+import { ZomatoOrderFlow } from "../zomato/ZomatoOrderFlow";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
 
 const AMENITY_ICON: Record<Amenity, typeof UtensilsCrossed> = {
@@ -57,10 +58,10 @@ export function ChargeLegRow({ leg }: { leg: ChargeLeg }) {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
 
   const pickedRestaurant = leg.restaurantId ? getRestaurantById(leg.restaurantId) : undefined;
-  const zomatoRestaurant = pickedRestaurant
-    ? toZomatoRestaurant(pickedRestaurant)
-    : getZomatoRestaurantForStation(leg.charger.id);
+  const fixedZomatoRestaurant = pickedRestaurant ? toZomatoRestaurant(pickedRestaurant) : undefined;
+  const restaurantChoices = fixedZomatoRestaurant ? [fixedZomatoRestaurant] : getZomatoRestaurantsForStation(leg.charger.id);
   const activeOrderHere = order && order.stationId === leg.charger.id ? order : null;
+  const chargerSubtitle = `${leg.charger.cpo} · ${leg.charger.connector} · ${leg.charger.powerKw}kW`;
 
   return (
     <div className="flex gap-3 py-2.5">
@@ -77,7 +78,7 @@ export function ChargeLegRow({ leg }: { leg: ChargeLeg }) {
               <>
                 <p className="text-[13px] text-secondaryText flex items-center gap-1">
                   <UtensilsCrossed size={11} />
-                  eating at
+                  {config.foodStopWording === "eat" ? "eating at" : "ordering from"}
                 </p>
                 <p className="text-[14px] font-medium">{pickedRestaurant.name}</p>
                 <p className="text-[11px] text-secondaryText mt-0.5">charging at {leg.charger.name}</p>
@@ -135,7 +136,7 @@ export function ChargeLegRow({ leg }: { leg: ChargeLeg }) {
                   <UtensilsCrossed size={12} />
                 </div>
                 <span className="text-[12px] text-text font-medium">
-                  order from {zomatoRestaurant.name} — arrives when you get here
+                  {foodStopCta(config.foodStopWording, fixedZomatoRestaurant?.name)} — arrives when you get here
                 </span>
               </button>
             )}
@@ -143,13 +144,15 @@ export function ChargeLegRow({ leg }: { leg: ChargeLeg }) {
         )}
       </div>
 
-      <ZomatoOrderModal
+      <ZomatoOrderFlow
         open={orderModalOpen}
         onClose={() => setOrderModalOpen(false)}
         stationId={leg.charger.id}
         stationName={leg.charger.name}
-        restaurant={zomatoRestaurant}
+        restaurants={restaurantChoices}
+        fixedRestaurant={fixedZomatoRestaurant}
         arrivalLabel={leg.etaClock}
+        chargerSubtitle={chargerSubtitle}
       />
     </div>
   );

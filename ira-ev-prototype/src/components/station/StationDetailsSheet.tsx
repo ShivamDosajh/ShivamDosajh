@@ -14,8 +14,9 @@ import { useExperiments } from "../../hooks/useExperiments";
 import { useSheetDrag } from "../../hooks/useSheetDrag";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { groupChargersByConnector } from "../../utils/connectors";
-import { getZomatoRestaurantForStation } from "../../data/zomatoRestaurants";
-import { ZomatoOrderModal } from "../zomato/ZomatoOrderModal";
+import { getZomatoRestaurantsForStation } from "../../data/zomatoRestaurants";
+import { foodStopCta } from "../../utils/foodStopWording";
+import { ZomatoOrderFlow } from "../zomato/ZomatoOrderFlow";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
 
 interface StationDetailsSheetProps {
@@ -173,7 +174,7 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
                   <UtensilsCrossed size={15} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] text-text font-medium">order food for pickup here</p>
+                  <p className="text-[13px] text-text font-medium">{foodStopCta(config.foodStopWording)}</p>
                   <p className="text-[11px] text-secondaryText">arrives right when you get to the charger</p>
                 </div>
               </button>
@@ -211,13 +212,16 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
         )}
       </div>
 
-      <ZomatoOrderModal
+      <ZomatoOrderFlow
         open={orderModalOpen}
         onClose={() => setOrderModalOpen(false)}
         stationId={station.id}
         stationName={station.name}
-        restaurant={getZomatoRestaurantForStation(station.id)}
+        restaurants={getZomatoRestaurantsForStation(station.id)}
         arrivalLabel={`~${station.eta} min`}
+        chargerSubtitle={
+          station.chargers[0] ? `${station.cpo} · ${station.chargers[0].connector} · ${station.chargers[0].power}kW` : undefined
+        }
       />
     </BottomSheet>
   );

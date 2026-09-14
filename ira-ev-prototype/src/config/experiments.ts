@@ -14,6 +14,8 @@ export const defaultExperimentConfig: ExperimentConfig = {
   stationCardVariant: "current",
   showStationCarousel: true,
   showZomatoOrdering: true,
+  foodStopWording: "order",
+  showChargingInProgress: true,
 };
 
 export const EXPERIMENT_STORAGE_KEY = "ira-ev-experiment-config";

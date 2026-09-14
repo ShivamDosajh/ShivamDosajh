@@ -63,3 +63,11 @@ export function getZomatoRestaurantForStation(stationId: string): ZomatoRestaura
   const idx = hashString(stationId) % zomatoRestaurants.length;
   return zomatoRestaurants[idx];
 }
+
+/** Deterministically picks a handful of nearby Zomato-partner restaurants for a station, so
+ * ordering food starts with a restaurant-choice step rather than assuming a single option. */
+export function getZomatoRestaurantsForStation(stationId: string, count = 3): ZomatoRestaurant[] {
+  const start = hashString(stationId) % zomatoRestaurants.length;
+  const n = Math.min(count, zomatoRestaurants.length);
+  return Array.from({ length: n }, (_, i) => zomatoRestaurants[(start + i) % zomatoRestaurants.length]);
+}

@@ -229,19 +229,21 @@ export function TripStopsList({
               <div className="flex-1 min-w-0">
                 <p className="text-[14px] text-text truncate">{stop.label}</p>
                 {restaurant ? (
-                  <p className="text-[11px] text-secondaryText truncate flex items-center gap-1.5">
-                    {restaurant.cuisine}
-                    <span className="flex items-center gap-0.5 text-warning shrink-0">
-                      <Star size={9} className="fill-warning" />
-                      {restaurant.rating.toFixed(1)}
-                    </span>
-                    {charger && (
-                      <span className="flex items-center gap-0.5 text-primary shrink-0">
-                        <Zap size={9} />
-                        {charger.powerKw}kW
+                  <>
+                    <p className="text-[11px] text-secondaryText truncate flex items-center gap-1.5">
+                      {restaurant.cuisine}
+                      <span className="flex items-center gap-0.5 text-warning shrink-0">
+                        <Star size={9} className="fill-warning" />
+                        {restaurant.rating.toFixed(1)}
                       </span>
+                    </p>
+                    {charger && (
+                      <p className="text-[10px] text-primary truncate flex items-center gap-1 mt-0.5">
+                        <Zap size={9} />
+                        {charger.cpo} · {charger.connector} · {charger.powerKw}kW
+                      </p>
                     )}
-                  </p>
+                  </>
                 ) : (
                   <p className="text-[11px] text-secondaryText truncate">{stop.subtitle}</p>
                 )}

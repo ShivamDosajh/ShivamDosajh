@@ -71,6 +71,8 @@ export interface ChargingFlowState {
 }
 
 export type StationCardVariant = "current" | "customer" | "charging";
+/** How food-stop CTAs are framed: delivery-style ("order food from X") or dine-in-style ("eat at X"). */
+export type FoodStopWording = "order" | "eat";
 
 export interface ExperimentConfig {
   showPaymentPill: boolean;
@@ -86,4 +88,6 @@ export interface ExperimentConfig {
   stationCardVariant: StationCardVariant;
   showStationCarousel: boolean;
   showZomatoOrdering: boolean;
+  foodStopWording: FoodStopWording;
+  showChargingInProgress: boolean;
 }

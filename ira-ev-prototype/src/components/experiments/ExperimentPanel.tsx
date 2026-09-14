@@ -2,7 +2,7 @@ import { FlaskConical, RotateCcw } from "lucide-react";
 import { Modal } from "../common/Modal";
 import { Toggle } from "../common/Toggle";
 import { useExperiments } from "../../hooks/useExperiments";
-import type { ExperimentConfig, StationCardVariant } from "../../types/charging";
+import type { ExperimentConfig, FoodStopWording, StationCardVariant } from "../../types/charging";
 
 interface ExperimentPanelProps {
   onResetPrototype: () => void;
@@ -17,6 +17,7 @@ const toggleDefs: { key: keyof ExperimentConfig; label: string }[] = [
   { key: "showAvailability", label: "Availability indicator" },
   { key: "showStationCarousel", label: "Station carousel on map" },
   { key: "showZomatoOrdering", label: "Order food at charger (Zomato)" },
+  { key: "showChargingInProgress", label: "Enhanced charging-in-progress screen" },
   { key: "compactStationCards", label: "Compact station cards" },
   { key: "stickyCTA", label: "Sticky CTA" },
   { key: "simplifiedChargingFlow", label: "Simplified charging flow" },
@@ -26,6 +27,11 @@ const variantOptions: { value: StationCardVariant; label: string }[] = [
   { value: "current", label: "Current" },
   { value: "customer", label: "Customer-oriented" },
   { value: "charging", label: "Charging-oriented" },
+];
+
+const foodStopWordingOptions: { value: FoodStopWording; label: string }[] = [
+  { value: "order", label: "Order food from" },
+  { value: "eat", label: "Eat at" },
 ];
 
 export function ExperimentPanel({ onResetPrototype }: ExperimentPanelProps) {
@@ -64,6 +70,26 @@ export function ExperimentPanel({ onResetPrototype }: ExperimentPanelProps) {
             <span
               className={`w-4 h-4 rounded-full border-2 shrink-0 ${
                 config.stationCardVariant === opt.value ? "border-primary bg-primary" : "border-secondaryText"
+              }`}
+            />
+            <span className="text-[14px] text-text">{opt.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <p className="text-text text-[14px] font-medium mb-3">Food stop wording</p>
+      <div className="flex flex-col gap-2 mb-6">
+        {foodStopWordingOptions.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setConfig({ foodStopWording: opt.value })}
+            className={`flex items-center gap-3 rounded-card border px-4 py-3 min-h-[44px] text-left ${
+              config.foodStopWording === opt.value ? "border-primary bg-primary/10" : "border-border bg-surfaceRaised"
+            }`}
+          >
+            <span
+              className={`w-4 h-4 rounded-full border-2 shrink-0 ${
+                config.foodStopWording === opt.value ? "border-primary bg-primary" : "border-secondaryText"
               }`}
             />
             <span className="text-[14px] text-text">{opt.label}</span>
