@@ -1,5 +1,6 @@
 import { Zap, ZapOff } from "lucide-react";
 import type { Station } from "../../types/charging";
+import { useExperiments } from "../../hooks/useExperiments";
 
 interface StationMarkerProps {
   station: Station;
@@ -8,11 +9,15 @@ interface StationMarkerProps {
 }
 
 export function StationMarker({ station, selected, onClick }: StationMarkerProps) {
+  const { config } = useExperiments();
   const baseColor = !station.available
     ? "bg-secondaryText"
     : station.isMegaCharger
     ? "bg-orange-400"
     : "bg-primary";
+
+  const totalConnectors = station.chargers.length;
+  const availableConnectors = station.chargers.filter((c) => c.available).length;
 
   return (
     <button
@@ -26,6 +31,18 @@ export function StationMarker({ station, selected, onClick }: StationMarkerProps
         selected ? "z-20" : "z-10",
       ].join(" ")}
     >
+      {config.showConnectorAvailability && (
+        <span
+          className={[
+            "mb-1 px-1.5 h-[18px] rounded-pill text-[10px] font-semibold leading-none flex items-center shadow border",
+            availableConnectors > 0
+              ? "bg-black/85 text-primary border-primary/40"
+              : "bg-black/85 text-secondaryText border-border",
+          ].join(" ")}
+        >
+          {availableConnectors}/{totalConnectors}
+        </span>
+      )}
       <div
         className={[
           "w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2",

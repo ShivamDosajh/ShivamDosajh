@@ -11,14 +11,14 @@ import { AdvancedOptionsPanel } from "../../components/route/AdvancedOptionsPane
 import { getLocationById } from "../../data/routeLocations";
 import type { RoutePlannerApi } from "../../hooks/useRoutePlanner";
 
-export function RouteSetupScreen({ planner }: { planner: RoutePlannerApi }) {
+export function RouteSetupScreen({ planner, onBack }: { planner: RoutePlannerApi; onBack: () => void }) {
   const [pickerTarget, setPickerTarget] = useState<"start" | "destination" | null>(null);
   const startLoc = getLocationById(planner.startId);
   const destLoc = getLocationById(planner.destinationId);
 
   return (
     <div className="flex flex-col h-full">
-      <ScreenHeader title="plan a trip" onBack={() => {}} />
+      <ScreenHeader title="plan a trip" onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <div className="flex flex-col gap-4 py-4">
           <TripStopsList

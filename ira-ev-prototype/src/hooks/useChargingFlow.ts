@@ -47,6 +47,7 @@ export interface ChargingFlowApi extends ChargingFlowState {
   startPayment: () => void;
   completePayment: () => void;
   startSimplifiedFlow: (stationId: string) => void;
+  startChargingSession: (stationId: string, chargerId: string, step: FlowStep) => void;
   goToNavigation: () => void;
   reset: () => void;
   canGoBack: boolean;
@@ -146,6 +147,22 @@ export function useChargingFlow(): ChargingFlowApi {
     }));
   }, []);
 
+  /** Jumps straight into a charging session for a specific station+charger — used when the
+   * driver already knows exactly which charger they want (e.g. "go to charging screen" from
+   * a route-planner stop), skipping the map lookup and charger-selection screen entirely. */
+  const startChargingSession = useCallback(
+    (stationId: string, chargerId: string, step: FlowStep) => {
+      setState((prev) => ({
+        ...prev,
+        history: [...prev.history, prev.step],
+        step,
+        selectedStationId: stationId,
+        selectedChargerId: chargerId,
+      }));
+    },
+    []
+  );
+
   const goToNavigation = useCallback(() => {
     goTo("navigating");
   }, [goTo]);
@@ -179,6 +196,7 @@ export function useChargingFlow(): ChargingFlowApi {
       startPayment,
       completePayment,
       startSimplifiedFlow,
+      startChargingSession,
       goToNavigation,
       reset,
       canGoBack,
@@ -200,6 +218,7 @@ export function useChargingFlow(): ChargingFlowApi {
       startPayment,
       completePayment,
       startSimplifiedFlow,
+      startChargingSession,
       goToNavigation,
       reset,
       canGoBack,

@@ -9,6 +9,11 @@
 html, body {
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent;
+  /* 100dvh below is the real target; this plain vh is only a fallback for
+     browsers that don't understand dvh (where the whole declaration would
+     otherwise be dropped, collapsing height to content and exposing the
+     body's background as a black bar at the bottom of the screen). */
+  height: 100%;
 }
 
 body {
@@ -22,9 +27,19 @@ body {
 }
 
 #root {
+  height: 100%;
+  min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
   overflow-x: hidden;
+}
+
+/* Fallback-then-override pair, same reasoning as html/body above — used in
+   place of Tailwind's h-dvh utility (which emits only the dvh value) on the
+   couple of elements that need to fill the full device screen. */
+.h-app-shell {
+  height: 100vh;
+  height: 100dvh;
 }
 
 /* Prevent iOS Safari from zooming in on input focus (inputs must be >=16px) */

@@ -57,6 +57,7 @@ export type FlowStep =
   | "payment-processing"
   | "payment-success"
   | "simplified-charge"
+  | "quick-pay"
   | "navigating";
 
 export interface ChargingFlowState {
@@ -90,4 +91,6 @@ export interface ExperimentConfig {
   showZomatoOrdering: boolean;
   foodStopWording: FoodStopWording;
   showChargingInProgress: boolean;
+  showConnectorAvailability: boolean;
+  quickPayFlow: boolean;
 }

@@ -1,4 +1,5 @@
 import type { Station } from "../types/charging";
+import { resolveRouteStation } from "../utils/routeChargerBridge";
 
 export const stations: Station[] = [
   {
@@ -160,7 +161,7 @@ export const stations: Station[] = [
 
 export function getStationById(id: string | null): Station | undefined {
   if (!id) return undefined;
-  return stations.find((s) => s.id === id);
+  return stations.find((s) => s.id === id) ?? resolveRouteStation(id);
 }
 
 export function getChargerById(station: Station | undefined, chargerId: string | null) {

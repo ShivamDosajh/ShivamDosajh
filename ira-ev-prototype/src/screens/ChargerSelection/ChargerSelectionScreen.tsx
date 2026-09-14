@@ -17,6 +17,14 @@ export function ChargerSelectionScreen({ flow }: ChargerSelectionScreenProps) {
 
   if (!station) return null;
 
+  const handleContinue = () => {
+    if (config.quickPayFlow) {
+      flow.goTo("quick-pay");
+    } else {
+      flow.confirmChargerSelection();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ScreenHeader title="select charger" onBack={flow.back} />
@@ -35,7 +43,7 @@ export function ChargerSelectionScreen({ flow }: ChargerSelectionScreenProps) {
         </div>
       </div>
       <StickyFooter sticky={config.stickyCTA}>
-        <Button disabled={!flow.selectedChargerId} onClick={flow.confirmChargerSelection}>
+        <Button disabled={!flow.selectedChargerId} onClick={handleContinue}>
           continue
         </Button>
       </StickyFooter>

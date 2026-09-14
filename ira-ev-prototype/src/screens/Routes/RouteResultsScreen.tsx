@@ -14,7 +14,13 @@ import type { RoutePlannerApi } from "../../hooks/useRoutePlanner";
  * to whatever row is actually near the top of the visible list, just below the sticky bar. */
 const READING_LINE_OFFSET_PX = 96;
 
-export function RouteResultsScreen({ planner, onStartNavigation }: { planner: RoutePlannerApi; onStartNavigation: () => void }) {
+interface RouteResultsScreenProps {
+  planner: RoutePlannerApi;
+  onStartNavigation: () => void;
+  onStartCharging: (routeChargerId: string) => void;
+}
+
+export function RouteResultsScreen({ planner, onStartNavigation, onStartCharging }: RouteResultsScreenProps) {
   const { plan } = planner;
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -141,7 +147,11 @@ export function RouteResultsScreen({ planner, onStartNavigation }: { planner: Ro
 
               {plan.legs.map((leg, i) => (
                 <div key={i} ref={(el) => (rowRefs.current[i + 1] = el)}>
-                  {leg.kind === "drive" ? <DriveLegRow leg={leg} /> : <ChargeLegRow leg={leg} />}
+                  {leg.kind === "drive" ? (
+                    <DriveLegRow leg={leg} />
+                  ) : (
+                    <ChargeLegRow leg={leg} onStartCharging={onStartCharging} />
+                  )}
                 </div>
               ))}
 

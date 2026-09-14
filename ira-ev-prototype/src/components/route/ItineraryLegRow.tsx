@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Car, Zap, MapPinned, IndianRupee, Mountain, Recycle, UtensilsCrossed, Wifi, Bath } from "lucide-react";
+import { Car, Zap, MapPinned, IndianRupee, Mountain, Recycle, UtensilsCrossed, Wifi, Bath, ArrowRight } from "lucide-react";
 import type { Amenity, DriveLeg, ChargeLeg } from "../../types/route";
 import { formatDuration } from "../../utils/routePlanner";
 import { useExperiments } from "../../hooks/useExperiments";
@@ -52,7 +52,14 @@ export function DriveLegRow({ leg }: { leg: DriveLeg }) {
   );
 }
 
-export function ChargeLegRow({ leg }: { leg: ChargeLeg }) {
+interface ChargeLegRowProps {
+  leg: ChargeLeg;
+  /** Present only on the route-planner itinerary — jumps straight into the real charging
+   * flow for this stop instead of making the driver find the charger on the map again. */
+  onStartCharging?: (routeChargerId: string) => void;
+}
+
+export function ChargeLegRow({ leg, onStartCharging }: ChargeLegRowProps) {
   const { config } = useExperiments();
   const { order } = useZomatoOrder();
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -122,6 +129,16 @@ export function ChargeLegRow({ leg }: { leg: ChargeLeg }) {
             {leg.costEstimate}
           </span>
         </div>
+
+        {onStartCharging && (
+          <button
+            onClick={() => onStartCharging(leg.charger.id)}
+            className="w-full flex items-center justify-center gap-1.5 rounded-button bg-primary text-black text-[12px] font-semibold h-9 mt-2.5"
+          >
+            go to charging screen
+            <ArrowRight size={13} />
+          </button>
+        )}
 
         {config.showZomatoOrdering && (
           <div className="mt-2.5">

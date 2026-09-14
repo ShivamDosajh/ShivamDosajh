@@ -16,6 +16,8 @@ export const defaultExperimentConfig: ExperimentConfig = {
   showZomatoOrdering: true,
   foodStopWording: "order",
   showChargingInProgress: true,
+  showConnectorAvailability: true,
+  quickPayFlow: false,
 };
 
 export const EXPERIMENT_STORAGE_KEY = "ira-ev-experiment-config";

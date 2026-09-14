@@ -24,7 +24,13 @@ function RouteNavigatingScreen({ destinationLabel, onEnd }: { destinationLabel: 
   );
 }
 
-export function RoutesTabScreen() {
+interface RoutesTabScreenProps {
+  /** Leaves the Routes tab entirely (back to the map) — only reachable from the setup screen, since results has its own "edit trip" back-step. */
+  onExit: () => void;
+  onStartCharging: (routeChargerId: string) => void;
+}
+
+export function RoutesTabScreen({ onExit, onStartCharging }: RoutesTabScreenProps) {
   const planner = useRoutePlanner();
   const [navigating, setNavigating] = useState(false);
 
@@ -33,8 +39,10 @@ export function RoutesTabScreen() {
   }
 
   if (planner.step === "results" && planner.plan) {
-    return <RouteResultsScreen planner={planner} onStartNavigation={() => setNavigating(true)} />;
+    return (
+      <RouteResultsScreen planner={planner} onStartNavigation={() => setNavigating(true)} onStartCharging={onStartCharging} />
+    );
   }
 
-  return <RouteSetupScreen planner={planner} />;
+  return <RouteSetupScreen planner={planner} onBack={onExit} />;
 }

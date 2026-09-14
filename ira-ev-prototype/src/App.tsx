@@ -9,6 +9,7 @@ import { RechargeCalculationScreen } from "./screens/RechargeCalculation/Recharg
 import { PaymentProcessingScreen } from "./screens/Payment/PaymentProcessingScreen";
 import { PaymentSuccessScreen } from "./screens/Payment/PaymentSuccessScreen";
 import { SimplifiedChargeScreen } from "./screens/Simplified/SimplifiedChargeScreen";
+import { QuickPayScreen } from "./screens/Payment/QuickPayScreen";
 import { NavigatingScreen } from "./screens/Placeholder/NavigatingScreen";
 import { PlaceholderScreen } from "./screens/Placeholder/PlaceholderScreen";
 import { BottomNavigation, type BottomTab } from "./components/navigation/BottomNavigation";
@@ -17,6 +18,7 @@ import { useChargingFlow } from "./hooks/useChargingFlow";
 import { useExperiments } from "./hooks/useExperiments";
 import { useZomatoOrder } from "./hooks/useZomatoOrder";
 import { getStationById } from "./data/stations";
+import { routeStationId, routeConnectorId } from "./utils/routeChargerBridge";
 
 function AppShell() {
   const flow = useChargingFlow();
@@ -36,6 +38,18 @@ function AppShell() {
     } else {
       flow.goToChargerSelection();
     }
+  };
+
+  // A route-planner stop always has exactly one connector, so there's no real charger
+  // choice to make — jump straight past station lookup and charger-selection into whatever
+  // the current charging-flow experiment expects next.
+  const handleStartChargingFromRoute = (routeChargerId: string) => {
+    flow.startChargingSession(
+      routeStationId(routeChargerId),
+      routeConnectorId(routeChargerId),
+      config.quickPayFlow ? "quick-pay" : "charging-type"
+    );
+    setTab("station");
   };
 
   const showChargingFlowScreen =
@@ -63,17 +77,20 @@ function AppShell() {
     case "simplified-charge":
       flowScreen = <SimplifiedChargeScreen flow={flow} />;
       break;
+    case "quick-pay":
+      flowScreen = <QuickPayScreen flow={flow} />;
+      break;
     default:
       flowScreen = null;
   }
 
   return (
-    <div className="h-dvh w-full flex flex-col bg-background text-text overflow-hidden">
+    <div className="h-app-shell w-full flex flex-col bg-background text-text overflow-hidden">
       {tab !== "station" && (
         <div className="flex-1 min-h-0 flex flex-col">
           {tab === "routes" && (
             <div className="flex-1 min-h-0 flex flex-col">
-              <RoutesTabScreen />
+              <RoutesTabScreen onExit={() => setTab("station")} onStartCharging={handleStartChargingFromRoute} />
             </div>
           )}
           {tab === "history" && (
