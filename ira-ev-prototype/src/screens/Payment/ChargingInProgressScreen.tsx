@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, Zap, Clock, IndianRupee } from "lucide-react";
+import { CheckCircle2, Zap, Clock, IndianRupee, Leaf } from "lucide-react";
 import { Button } from "../../components/common/Button";
 import { ChargingProgressRing } from "../../components/charging/ChargingProgressRing";
 import { PromoBannerCarousel } from "../../components/charging/PromoBannerCarousel";
@@ -8,6 +8,7 @@ import { ZomatoOrderStatusCard } from "../../components/zomato/ZomatoOrderStatus
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { myConnectedVehicle } from "../../data/vehicles";
 import { formatCurrency } from "../../utils/pricing";
+import { co2SavedKg, formatCo2 } from "../../utils/sustainability";
 import type { Charger, Station } from "../../types/charging";
 
 interface ChargingInProgressScreenProps {
@@ -82,9 +83,15 @@ export function ChargingInProgressScreen({ station, charger, units, approximateC
         </div>
 
         {complete && (
-          <div className="flex items-center gap-2 text-success text-[13px]">
-            <CheckCircle2 size={16} />
-            {formatCurrency(approximateCost)} paid · {energyAddedKwh.toFixed(1)} kWh added
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="flex items-center gap-2 text-success text-[13px]">
+              <CheckCircle2 size={16} />
+              {formatCurrency(approximateCost)} paid · {energyAddedKwh.toFixed(1)} kWh added
+            </div>
+            <div className="flex items-center gap-2 text-primary text-[13px]">
+              <Leaf size={16} />
+              you saved {formatCo2(co2SavedKg(energyAddedKwh))} of CO₂ vs. petrol
+            </div>
           </div>
         )}
 

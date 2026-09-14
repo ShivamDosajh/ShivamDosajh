@@ -32,8 +32,8 @@ interface StationDetailsSheetProps {
   onSelectGun: (chargerId: string) => void;
 }
 
-const COLLAPSED_VH = 86;
-const EXPANDED_VH = 96;
+const COLLAPSED_VH = 90;
+const EXPANDED_VH = 98;
 
 function formatLastUsed(minutes: number | null): string {
   if (minutes === null) return "not used yet";
@@ -141,17 +141,6 @@ export function StationDetailsSheet({
 
         <StationPhotoCarousel stationId={station.id} />
 
-        {/* Tabs: each panel shows only its own content — the overview tab is the actual
-            gun picker (glowing to draw the eye), open by default so it's visible the moment
-            the sheet opens, without needing to drag it up first. */}
-        <StationTabs active={tab} onChange={setTab} />
-
-        {tab === "overview" && (
-          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
-        )}
-        {tab === "reviews" && <StationReviewsList reviews={reviews} />}
-        {tab === "amenities" && <StationAmenitiesList amenities={amenities} />}
-
         <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
           <div className="flex-1 text-center">
             <p className="text-[11px] text-secondaryText lowercase">distance</p>
@@ -176,6 +165,17 @@ export function StationDetailsSheet({
         {config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
+
+        {/* Tabs: each panel shows only its own content — the overview tab is the actual
+            gun picker (glowing to draw the eye), open by default so it's visible the moment
+            the sheet opens, without needing to drag it up first. */}
+        <StationTabs active={tab} onChange={setTab} />
+
+        {tab === "overview" && (
+          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
+        )}
+        {tab === "reviews" && <StationReviewsList reviews={reviews} />}
+        {tab === "amenities" && <StationAmenitiesList amenities={amenities} />}
 
         {zomatoAvailable && (
           <>

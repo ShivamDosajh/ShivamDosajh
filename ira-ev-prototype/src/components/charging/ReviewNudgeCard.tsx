@@ -48,7 +48,7 @@ export function ReviewNudgeCard({ stationName }: { stationName: string }) {
             onClick={() => setSubmitted(true)}
             className="w-full h-10 rounded-button bg-primary text-black text-[13px] font-semibold mt-2.5"
           >
-            done
+            submit
           </button>
         </div>
       )}
