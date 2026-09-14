@@ -3,6 +3,7 @@ import { CheckCircle2, Zap, Clock, IndianRupee } from "lucide-react";
 import { Button } from "../../components/common/Button";
 import { ChargingProgressRing } from "../../components/charging/ChargingProgressRing";
 import { PromoBannerCarousel } from "../../components/charging/PromoBannerCarousel";
+import { ReviewNudgeCard } from "../../components/charging/ReviewNudgeCard";
 import { ZomatoOrderStatusCard } from "../../components/zomato/ZomatoOrderStatusCard";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { myConnectedVehicle } from "../../data/vehicles";
@@ -87,9 +88,13 @@ export function ChargingInProgressScreen({ station, charger, units, approximateC
           </div>
         )}
 
-        <div className="w-full">
-          <PromoBannerCarousel />
-        </div>
+        {complete ? (
+          <ReviewNudgeCard stationName={station.name} />
+        ) : (
+          <div className="w-full">
+            <PromoBannerCarousel />
+          </div>
+        )}
 
         {orderForThisStation && (
           <div className="w-full">

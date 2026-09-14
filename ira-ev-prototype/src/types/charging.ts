@@ -96,5 +96,4 @@ export interface ExperimentConfig {
   showChargingInProgress: boolean;
   showConnectorAvailability: boolean;
   quickPayFlow: boolean;
-  showPayNudge: boolean;
 }

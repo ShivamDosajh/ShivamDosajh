@@ -6,7 +6,6 @@ import { StationSummaryHeader } from "../../components/station/StationSummaryHea
 import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
-import { PayTrustLine } from "../../components/payment/PayTrustLine";
 import { getStationById, getChargerById } from "../../data/stations";
 import { useExperiments } from "../../hooks/useExperiments";
 import {
@@ -154,7 +153,6 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
       </div>
 
       <StickyFooter sticky={config.stickyCTA}>
-        {config.showPayNudge && <PayTrustLine />}
         <Button disabled={!isValid} onClick={handlePayAndStart}>
           pay {formatCurrency(breakdown.approximateValue)} &amp; start charging
         </Button>

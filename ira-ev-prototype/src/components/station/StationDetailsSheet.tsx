@@ -18,7 +18,6 @@ import { getZomatoRestaurantsForStation } from "../../data/zomatoRestaurants";
 import { foodStopCta } from "../../utils/foodStopWording";
 import { ZomatoOrderFlow } from "../zomato/ZomatoOrderFlow";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
-import { PayViaAppNudge } from "./PayViaAppNudge";
 
 interface StationDetailsSheetProps {
   station: Station | undefined;
@@ -109,6 +108,17 @@ export function StationDetailsSheet({
           <CpoLogo cpo={station.cpo} />
         </div>
 
+        {/* Overview (every gun, tap to pick — glowing to draw the eye) and reviews sit right
+            after the header, before anything else, so the guns are visible on the short card
+            without needing to scroll or expand it first. */}
+        <StationTabs active={tab} onChange={setTab} />
+
+        {tab === "overview" ? (
+          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
+        ) : (
+          <StationReviewsList reviews={reviews} />
+        )}
+
         {!visualExpanded && (
           <div className="flex items-center gap-1.5 text-[13px]">
             <span className="text-primary font-medium">ev rating</span>
@@ -148,8 +158,6 @@ export function StationDetailsSheet({
           </div>
         )}
 
-        {config.showPayNudge && <PayViaAppNudge stationId={station.id} />}
-
         {visualExpanded && config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
@@ -160,16 +168,6 @@ export function StationDetailsSheet({
             <div className="w-px bg-border my-2" />
             <IconAction icon={Navigation2} label="navigate" onClick={onNavigate} />
           </div>
-        )}
-
-        {/* Overview (every gun, tap to pick) and reviews are available on both the short and
-            long card — no separate screen needed to see them. */}
-        <StationTabs active={tab} onChange={setTab} />
-
-        {tab === "overview" ? (
-          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
-        ) : (
-          <StationReviewsList reviews={reviews} />
         )}
 
         {!visualExpanded && config.showRangePrediction && (

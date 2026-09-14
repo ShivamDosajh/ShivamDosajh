@@ -76,16 +76,20 @@ export function useChargingFlow(onExitRoutePlannerSession?: () => void): Chargin
   }, []);
 
   const back = useCallback(() => {
-    if (state.history.length === 0) return;
-
-    if (state.history.length === 1 && state.fromRoutePlanner) {
-      try {
-        sessionStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // ignore
+    // A route-planner-originated session starts its own history from scratch (see
+    // startChargingSession below), so running out of history here means this is that
+    // session's entry screen — exit to the route planner instead of a no-op that would
+    // otherwise leave whatever station-tab screen was underneath exposed.
+    if (state.history.length === 0) {
+      if (state.fromRoutePlanner) {
+        try {
+          sessionStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        setState(initialState);
+        onExitRoutePlannerSession?.();
       }
-      setState(initialState);
-      onExitRoutePlannerSession?.();
       return;
     }
 
@@ -104,6 +108,8 @@ export function useChargingFlow(onExitRoutePlannerSession?: () => void): Chargin
         history: [...prev.history, prev.step],
         step: "station-details",
         selectedStationId: stationId,
+        // Picking a station from the map is always a normal-flow entry point.
+        fromRoutePlanner: false,
         // A gun id is only unique per-station — carrying a selection over to a different
         // station could otherwise highlight an unrelated charger that happens to share an id.
         ...(stationId !== prev.selectedStationId
@@ -173,13 +179,17 @@ export function useChargingFlow(onExitRoutePlannerSession?: () => void): Chargin
   }, []);
 
   /** Jumps straight into a charging session for a specific station+charger — used when the
-   * driver already knows exactly which charger they want (e.g. "go to charging screen" from
-   * a route-planner stop), skipping the map lookup and charger-selection screen entirely. */
+   * driver already knows exactly which charger they want (e.g. "charge now" from a
+   * route-planner stop), skipping the map lookup and charger-selection screen entirely.
+   * A route-planner-originated session starts its own history from empty rather than
+   * appending to whatever the station tab's history already was — it has nothing to do with
+   * that stack, and appending to it is what let a stale, unrelated screen surface on "back"
+   * whenever the driver had touched the station tab earlier in the same session. */
   const startChargingSession = useCallback(
     (stationId: string, chargerId: string, step: FlowStep, fromRoutePlanner = false) => {
       setState((prev) => ({
         ...prev,
-        history: [...prev.history, prev.step],
+        history: fromRoutePlanner ? [] : [...prev.history, prev.step],
         step,
         selectedStationId: stationId,
         selectedChargerId: chargerId,

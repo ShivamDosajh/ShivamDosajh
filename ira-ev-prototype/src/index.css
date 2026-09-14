@@ -133,3 +133,16 @@ input, textarea {
 .animate-banner-in {
   animation: banner-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+@keyframes gun-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(15, 191, 168, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(15, 191, 168, 0);
+  }
+}
+.animate-gun-glow {
+  animation: gun-glow 1.8s ease-out infinite;
+}

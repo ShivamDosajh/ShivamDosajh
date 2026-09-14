@@ -30,7 +30,11 @@ export function GunQuickSelectList({ chargers, selectedId, onSelect }: GunQuickS
                 : "border-border bg-surfaceRaised active:bg-surface"
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center shrink-0">
+            <div
+              className={`w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center shrink-0 ${
+                !disabled && !selected ? "animate-gun-glow" : ""
+              }`}
+            >
               {charger.speed === "rapid" ? (
                 <PlugZap size={18} className="text-primary" />
               ) : (
