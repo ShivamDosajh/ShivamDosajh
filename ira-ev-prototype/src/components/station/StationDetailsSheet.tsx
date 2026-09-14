@@ -1,20 +1,24 @@
 import { useEffect, useState } from "react";
-import { Star, Phone, Navigation2, UtensilsCrossed } from "lucide-react";
+import { Star, UtensilsCrossed } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
 import { CpoLogo } from "../common/CpoLogo";
-import { IconAction } from "../common/IconAction";
 import { PaymentStatus } from "./PaymentStatus";
 import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
 import { GunQuickSelectList } from "./GunQuickSelectList";
 import { StationReviewsList } from "./StationReviewsList";
+import { StationAmenitiesList } from "./StationAmenitiesList";
+import { StationPhotoCarousel } from "./StationPhotoCarousel";
+import { ConnectorGroupRow } from "./ConnectorGroupRow";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useSheetDrag } from "../../hooks/useSheetDrag";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { getReviewsForStation } from "../../data/reviews";
+import { getAmenitiesForStation } from "../../data/amenities";
 import { getZomatoRestaurantsForStation } from "../../data/zomatoRestaurants";
+import { groupChargersByConnector } from "../../utils/connectors";
 import { foodStopCta } from "../../utils/foodStopWording";
 import { ZomatoOrderFlow } from "../zomato/ZomatoOrderFlow";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
@@ -25,13 +29,13 @@ interface StationDetailsSheetProps {
   onClose: () => void;
   onNavigate: () => void;
   onSelectCharger: () => void;
-  /** Tapping a gun directly in the overview tab — selects it, and with quick-pay on, jumps
-   * straight to the payment screen instead of waiting for the footer button. */
+  /** Tapping a gun in the gun list — selects it, and with quick-pay on, jumps straight to the
+   * payment screen instead of waiting for the footer button. */
   onSelectGun: (chargerId: string) => void;
 }
 
-const COLLAPSED_VH = 64;
-const EXPANDED_VH = 92;
+const COLLAPSED_VH = 82;
+const EXPANDED_VH = 95;
 
 function formatLastUsed(minutes: number | null): string {
   if (minutes === null) return "not used yet";
@@ -51,7 +55,7 @@ export function StationDetailsSheet({
   const { config } = useExperiments();
   const { order, clearOrder } = useZomatoOrder();
   const [expanded, setExpanded] = useState(false);
-  const [tab, setTab] = useState<"overview" | "reviews">("overview");
+  const [tab, setTab] = useState<"overview" | "reviews" | "amenities">("overview");
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const { heightPx, isDragging, visualExpanded, handleProps } = useSheetDrag({
     collapsedVh: COLLAPSED_VH,
@@ -70,6 +74,10 @@ export function StationDetailsSheet({
   if (!station) return null;
 
   const reviews = getReviewsForStation(station.id, station.rating);
+  const amenities = getAmenitiesForStation(station.id);
+  const connectorGroups = groupChargersByConnector(station.chargers);
+  const zomatoRestaurants = getZomatoRestaurantsForStation(station.id);
+  const zomatoAvailable = config.showZomatoOrdering && zomatoRestaurants.length > 0;
 
   return (
     <BottomSheet
@@ -92,7 +100,19 @@ export function StationDetailsSheet({
       }
     >
       <div className="flex flex-col gap-4 pb-2">
-        <PaymentStatus status={station.paymentStatus} />
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <PaymentStatus status={station.paymentStatus} />
+          </div>
+          {zomatoAvailable && (
+            <div
+              title="food ordering available here"
+              className="w-11 h-11 rounded-button bg-primary/15 flex items-center justify-center text-primary shrink-0"
+            >
+              <UtensilsCrossed size={18} />
+            </div>
+          )}
+        </div>
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -108,79 +128,68 @@ export function StationDetailsSheet({
           <CpoLogo cpo={station.cpo} />
         </div>
 
-        {/* Overview (every gun, tap to pick — glowing to draw the eye) and reviews sit right
-            after the header, before anything else, so the guns are visible on the short card
-            without needing to scroll or expand it first. */}
         <StationTabs active={tab} onChange={setTab} />
 
-        {tab === "overview" ? (
-          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
-        ) : (
-          <StationReviewsList reviews={reviews} />
-        )}
-
-        {!visualExpanded && (
-          <div className="flex items-center gap-1.5 text-[13px]">
-            <span className="text-primary font-medium">ev rating</span>
-            <span className="text-secondaryText">
-              {station.rating !== null ? (
-                <span className="flex items-center gap-1 text-text">
-                  <Star size={13} className="fill-warning text-warning" />
-                  {station.rating.toFixed(1)}
-                </span>
-              ) : (
-                "--"
-              )}
-            </span>
+        {tab === "overview" && (
+          <div className="rounded-card bg-surfaceRaised border border-border px-3.5">
+            {connectorGroups.map((group) => (
+              <ConnectorGroupRow key={group.connector} group={group} />
+            ))}
           </div>
         )}
+        {tab === "reviews" && <StationReviewsList reviews={reviews} />}
+        {tab === "amenities" && <StationAmenitiesList amenities={amenities} />}
 
-        {!visualExpanded && (
-          <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
-            <div className="flex-1 text-center">
-              <p className="text-[11px] text-secondaryText lowercase">distance</p>
-              <p className="text-[14px] font-semibold mt-0.5">{station.distance} km</p>
-            </div>
-            <div className="w-px bg-border" />
-            <div className="flex-1 text-center">
-              <p className="text-[11px] text-secondaryText lowercase">ETA</p>
-              <p className="text-[14px] font-semibold mt-0.5">{station.eta} mins</p>
-            </div>
-            {config.showStationLastUsed && (
-              <>
-                <div className="w-px bg-border" />
-                <div className="flex-1 text-center">
-                  <p className="text-[11px] text-secondaryText lowercase">last used</p>
-                  <p className="text-[13px] font-semibold mt-0.5">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
-                </div>
-              </>
+        <div className="flex items-center gap-1.5 text-[13px]">
+          <span className="text-primary font-medium">ev rating</span>
+          <span className="text-secondaryText">
+            {station.rating !== null ? (
+              <span className="flex items-center gap-1 text-text">
+                <Star size={13} className="fill-warning text-warning" />
+                {station.rating.toFixed(1)}
+              </span>
+            ) : (
+              "--"
             )}
-          </div>
-        )}
+          </span>
+        </div>
 
-        {visualExpanded && config.showRangePrediction && (
+        <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
+          <div className="flex-1 text-center">
+            <p className="text-[11px] text-secondaryText lowercase">distance</p>
+            <p className="text-[14px] font-semibold mt-0.5">{station.distance} km</p>
+          </div>
+          <div className="w-px bg-border" />
+          <div className="flex-1 text-center">
+            <p className="text-[11px] text-secondaryText lowercase">ETA</p>
+            <p className="text-[14px] font-semibold mt-0.5">{station.eta} mins</p>
+          </div>
+          {config.showStationLastUsed && (
+            <>
+              <div className="w-px bg-border" />
+              <div className="flex-1 text-center">
+                <p className="text-[11px] text-secondaryText lowercase">last used</p>
+                <p className="text-[13px] font-semibold mt-0.5">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        <StationPhotoCarousel stationId={station.id} />
+
+        {config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
 
-        {visualExpanded && (
-          <div className="flex items-stretch">
-            <IconAction icon={Phone} label="call" onClick={() => {}} />
-            <div className="w-px bg-border my-2" />
-            <IconAction icon={Navigation2} label="navigate" onClick={onNavigate} />
-          </div>
-        )}
+        <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
 
-        {!visualExpanded && config.showRangePrediction && (
-          <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
-        )}
-
-        {!visualExpanded && config.showEstimatedCost && (
+        {config.showEstimatedCost && (
           <p className="text-[12px] text-secondaryText">
             estimated cost from ₹{Math.min(...station.chargers.map((c) => c.pricePerKwh))}/kWh
           </p>
         )}
 
-        {!visualExpanded && config.showZomatoOrdering && (
+        {zomatoAvailable && (
           <>
             {order && order.stationId === station.id ? (
               <ZomatoOrderStatusCard order={order} onDismiss={clearOrder} />
@@ -207,7 +216,7 @@ export function StationDetailsSheet({
         onClose={() => setOrderModalOpen(false)}
         stationId={station.id}
         stationName={station.name}
-        restaurants={getZomatoRestaurantsForStation(station.id)}
+        restaurants={zomatoRestaurants}
         arrivalLabel={`~${station.eta} min`}
         chargerSubtitle={
           station.chargers[0] ? `${station.cpo} · ${station.chargers[0].connector} · ${station.chargers[0].power}kW` : undefined

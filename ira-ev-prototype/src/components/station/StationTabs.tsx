@@ -1,4 +1,4 @@
-type Tab = "overview" | "reviews";
+type Tab = "overview" | "reviews" | "amenities";
 
 interface StationTabsProps {
   active: Tab;
@@ -9,6 +9,7 @@ export function StationTabs({ active, onChange }: StationTabsProps) {
   const tabs: { id: Tab; label: string }[] = [
     { id: "overview", label: "overview" },
     { id: "reviews", label: "reviews" },
+    { id: "amenities", label: "amenities" },
   ];
 
   return (

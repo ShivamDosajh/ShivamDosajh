@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
@@ -9,6 +9,7 @@ import { TermsModal } from "../../components/payment/TermsModal";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
 import { getStationById, getChargerById } from "../../data/stations";
 import { offers } from "../../data/offers";
+import { primaryPaymentMethods } from "../../data/payments";
 import { computeCostBreakdown } from "../../utils/pricing";
 import { useExperiments } from "../../hooks/useExperiments";
 import type { ChargingFlowApi } from "../../hooks/useChargingFlow";
@@ -20,6 +21,14 @@ export function RechargeCalculationScreen({ flow }: { flow: ChargingFlowApi }) {
   const charger = getChargerById(station, flow.selectedChargerId);
   const [termsOpen, setTermsOpen] = useState(false);
   const [activeOffer, setActiveOffer] = useState<Offer | null>(null);
+
+  // Pre-select the driver's preferred payment method so the CTA is tappable immediately
+  // instead of forcing a redundant tap on the method they'd have picked anyway.
+  useEffect(() => {
+    if (!flow.selectedPaymentMethodId) {
+      flow.selectPaymentMethod(primaryPaymentMethods[0].id);
+    }
+  }, []);
 
   if (!station || !charger || !flow.units) return null;
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { IndianRupee, Battery } from "lucide-react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
@@ -7,6 +8,7 @@ import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
 import { getStationById, getChargerById } from "../../data/stations";
+import { primaryPaymentMethods } from "../../data/payments";
 import { useExperiments } from "../../hooks/useExperiments";
 import {
   amountFromUnits,
@@ -39,6 +41,14 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
   const station = getStationById(flow.selectedStationId);
   const charger = getChargerById(station, flow.selectedChargerId);
   const chargeType = flow.chargeType ?? "full-charge";
+
+  // Pre-select the driver's preferred payment method so "pay & start charging" is tappable
+  // right away instead of forcing a redundant tap on the method they'd have picked anyway.
+  useEffect(() => {
+    if (!flow.selectedPaymentMethodId) {
+      flow.selectPaymentMethod(primaryPaymentMethods[0].id);
+    }
+  }, []);
 
   if (!station || !charger) return null;
 
