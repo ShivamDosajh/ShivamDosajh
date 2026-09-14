@@ -354,15 +354,6 @@ export function MockMap({
     zoomAtPoint(px, py, transform.scale * factor);
   };
 
-  const zoomIn = () => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    zoomAtPoint(rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0, transform.scale * 1.4);
-  };
-  const zoomOut = () => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    zoomAtPoint(rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0, transform.scale / 1.4);
-  };
-
   const clusters =
     enableClustering && containerSize.width > 0
       ? clusterStations(stations, containerSize, transform)
@@ -415,23 +406,6 @@ export function MockMap({
             <Navigation size={16} className="text-white" fill="white" />
           </div>
         </div>
-      </div>
-
-      <div className="absolute left-4 bottom-6 flex flex-col rounded-full overflow-hidden shadow-lg z-10">
-        <button
-          onClick={zoomIn}
-          aria-label="Zoom in"
-          className="w-11 h-11 bg-black/85 text-white text-lg flex items-center justify-center border-b border-white/10 active:opacity-70"
-        >
-          +
-        </button>
-        <button
-          onClick={zoomOut}
-          aria-label="Zoom out"
-          className="w-11 h-11 bg-black/85 text-white text-lg flex items-center justify-center active:opacity-70"
-        >
-          −
-        </button>
       </div>
     </div>
   );

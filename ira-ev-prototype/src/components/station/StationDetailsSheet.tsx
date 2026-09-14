@@ -11,14 +11,12 @@ import { GunQuickSelectList } from "./GunQuickSelectList";
 import { StationReviewsList } from "./StationReviewsList";
 import { StationAmenitiesList } from "./StationAmenitiesList";
 import { StationPhotoCarousel } from "./StationPhotoCarousel";
-import { ConnectorGroupRow } from "./ConnectorGroupRow";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useSheetDrag } from "../../hooks/useSheetDrag";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { getReviewsForStation } from "../../data/reviews";
 import { getAmenitiesForStation } from "../../data/amenities";
 import { getZomatoRestaurantsForStation } from "../../data/zomatoRestaurants";
-import { groupChargersByConnector } from "../../utils/connectors";
 import { foodStopCta } from "../../utils/foodStopWording";
 import { ZomatoOrderFlow } from "../zomato/ZomatoOrderFlow";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
@@ -29,13 +27,13 @@ interface StationDetailsSheetProps {
   onClose: () => void;
   onNavigate: () => void;
   onSelectCharger: () => void;
-  /** Tapping a gun in the gun list — selects it, and with quick-pay on, jumps straight to the
-   * payment screen instead of waiting for the footer button. */
+  /** Tapping a gun in the overview tab — selects it, and with quick-pay on, jumps straight to
+   * the payment screen instead of waiting for the footer button. */
   onSelectGun: (chargerId: string) => void;
 }
 
-const COLLAPSED_VH = 82;
-const EXPANDED_VH = 95;
+const COLLAPSED_VH = 86;
+const EXPANDED_VH = 96;
 
 function formatLastUsed(minutes: number | null): string {
   if (minutes === null) return "not used yet";
@@ -75,7 +73,7 @@ export function StationDetailsSheet({
 
   const reviews = getReviewsForStation(station.id, station.rating);
   const amenities = getAmenitiesForStation(station.id);
-  const connectorGroups = groupChargersByConnector(station.chargers);
+  const amenityIcons = amenities.slice(0, 3);
   const zomatoRestaurants = getZomatoRestaurantsForStation(station.id);
   const zomatoAvailable = config.showZomatoOrdering && zomatoRestaurants.length > 0;
 
@@ -99,20 +97,9 @@ export function StationDetailsSheet({
         </div>
       }
     >
-      <div className="flex flex-col gap-4 pb-2">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <PaymentStatus status={station.paymentStatus} />
-          </div>
-          {zomatoAvailable && (
-            <div
-              title="food ordering available here"
-              className="w-11 h-11 rounded-button bg-primary/15 flex items-center justify-center text-primary shrink-0"
-            >
-              <UtensilsCrossed size={18} />
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col gap-3 pb-2">
+        {/* Common area: identifying info the driver needs regardless of which tab is open. */}
+        <PaymentStatus status={station.paymentStatus} />
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -128,31 +115,42 @@ export function StationDetailsSheet({
           <CpoLogo cpo={station.cpo} />
         </div>
 
+        <div className="flex items-center justify-between text-[13px]">
+          <div className="flex items-center gap-1.5">
+            <span className="text-primary font-medium">ev rating</span>
+            <span className="text-secondaryText">
+              {station.rating !== null ? (
+                <span className="flex items-center gap-1 text-text">
+                  <Star size={13} className="fill-warning text-warning" />
+                  {station.rating.toFixed(1)}
+                </span>
+              ) : (
+                "--"
+              )}
+            </span>
+          </div>
+          {amenityIcons.length > 0 && (
+            <div className="flex items-center gap-2.5 text-secondaryText">
+              {amenityIcons.map((amenity) => {
+                const AmenityIcon = amenity.icon;
+                return <AmenityIcon key={amenity.id} size={16} />;
+              })}
+            </div>
+          )}
+        </div>
+
+        <StationPhotoCarousel stationId={station.id} />
+
+        {/* Tabs: each panel shows only its own content — the overview tab is the actual
+            gun picker (glowing to draw the eye), open by default so it's visible the moment
+            the sheet opens, without needing to drag it up first. */}
         <StationTabs active={tab} onChange={setTab} />
 
         {tab === "overview" && (
-          <div className="rounded-card bg-surfaceRaised border border-border px-3.5">
-            {connectorGroups.map((group) => (
-              <ConnectorGroupRow key={group.connector} group={group} />
-            ))}
-          </div>
+          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
         )}
         {tab === "reviews" && <StationReviewsList reviews={reviews} />}
         {tab === "amenities" && <StationAmenitiesList amenities={amenities} />}
-
-        <div className="flex items-center gap-1.5 text-[13px]">
-          <span className="text-primary font-medium">ev rating</span>
-          <span className="text-secondaryText">
-            {station.rating !== null ? (
-              <span className="flex items-center gap-1 text-text">
-                <Star size={13} className="fill-warning text-warning" />
-                {station.rating.toFixed(1)}
-              </span>
-            ) : (
-              "--"
-            )}
-          </span>
-        </div>
 
         <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
           <div className="flex-1 text-center">
@@ -175,18 +173,8 @@ export function StationDetailsSheet({
           )}
         </div>
 
-        <StationPhotoCarousel stationId={station.id} />
-
         {config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
-        )}
-
-        <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
-
-        {config.showEstimatedCost && (
-          <p className="text-[12px] text-secondaryText">
-            estimated cost from ₹{Math.min(...station.chargers.map((c) => c.pricePerKwh))}/kWh
-          </p>
         )}
 
         {zomatoAvailable && (

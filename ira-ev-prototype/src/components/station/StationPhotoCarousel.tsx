@@ -29,10 +29,10 @@ export function StationPhotoCarousel({ stationId }: { stationId: string }) {
         return (
           <div
             key={slide.label}
-            className={`relative shrink-0 w-[168px] h-[110px] rounded-card overflow-hidden snap-start bg-gradient-to-br ${gradient} border border-border`}
+            className={`relative shrink-0 w-[140px] h-[88px] rounded-card overflow-hidden snap-start bg-gradient-to-br ${gradient} border border-border`}
           >
             <div className="absolute inset-0 flex items-center justify-center text-white/70">
-              <Icon size={30} />
+              <Icon size={24} />
             </div>
             <div className="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1">
               <p className="text-[11px] text-white capitalize truncate">{slide.label}</p>
