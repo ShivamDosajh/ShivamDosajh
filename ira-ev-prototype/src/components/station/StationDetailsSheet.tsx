@@ -1,33 +1,34 @@
 import { useEffect, useState } from "react";
-import { Star, Phone, Navigation2, ChevronUp, ChevronDown, UtensilsCrossed } from "lucide-react";
+import { Star, Phone, Navigation2, UtensilsCrossed } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
 import { CpoLogo } from "../common/CpoLogo";
 import { IconAction } from "../common/IconAction";
 import { PaymentStatus } from "./PaymentStatus";
-import { ChargerSummary } from "./ChargerSummary";
 import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
-import { ConnectorGroupRow } from "./ConnectorGroupRow";
 import { GunQuickSelectList } from "./GunQuickSelectList";
+import { StationReviewsList } from "./StationReviewsList";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useSheetDrag } from "../../hooks/useSheetDrag";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
-import { groupChargersByConnector } from "../../utils/connectors";
+import { getReviewsForStation } from "../../data/reviews";
 import { getZomatoRestaurantsForStation } from "../../data/zomatoRestaurants";
 import { foodStopCta } from "../../utils/foodStopWording";
 import { ZomatoOrderFlow } from "../zomato/ZomatoOrderFlow";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
+import { PayViaAppNudge } from "./PayViaAppNudge";
 
 interface StationDetailsSheetProps {
   station: Station | undefined;
+  selectedChargerId: string | null;
   onClose: () => void;
   onNavigate: () => void;
   onSelectCharger: () => void;
-  /** Quick-pay experiment only — picking a gun right from this card jumps straight into
-   * charging for it, skipping the separate charger-selection screen entirely. */
-  onQuickSelectCharger: (chargerId: string) => void;
+  /** Tapping a gun directly in the overview tab — selects it, and with quick-pay on, jumps
+   * straight to the payment screen instead of waiting for the footer button. */
+  onSelectGun: (chargerId: string) => void;
 }
 
 const COLLAPSED_VH = 64;
@@ -42,10 +43,11 @@ function formatLastUsed(minutes: number | null): string {
 
 export function StationDetailsSheet({
   station,
+  selectedChargerId,
   onClose,
   onNavigate,
   onSelectCharger,
-  onQuickSelectCharger,
+  onSelectGun,
 }: StationDetailsSheetProps) {
   const { config } = useExperiments();
   const { order, clearOrder } = useZomatoOrder();
@@ -68,7 +70,7 @@ export function StationDetailsSheet({
 
   if (!station) return null;
 
-  const connectorGroups = groupChargersByConnector(station.chargers);
+  const reviews = getReviewsForStation(station.id, station.rating);
 
   return (
     <BottomSheet
@@ -84,28 +86,13 @@ export function StationDetailsSheet({
           </Button>
           {!config.quickPayFlow && (
             <Button variant="primary" onClick={onSelectCharger}>
-              select charger
+              {selectedChargerId && !config.simplifiedChargingFlow ? "continue" : "select charger"}
             </Button>
           )}
         </div>
       }
     >
       <div className="flex flex-col gap-4 pb-2">
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="flex items-center justify-center gap-1 text-[11px] text-secondaryText -mt-1"
-        >
-          {visualExpanded ? (
-            <>
-              <ChevronDown size={13} /> show less
-            </>
-          ) : (
-            <>
-              <ChevronUp size={13} /> view all chargers
-            </>
-          )}
-        </button>
-
         <PaymentStatus status={station.paymentStatus} />
 
         <div className="flex items-start justify-between gap-3">
@@ -161,12 +148,29 @@ export function StationDetailsSheet({
           </div>
         )}
 
-        {!visualExpanded &&
-          (config.quickPayFlow ? (
-            <GunQuickSelectList chargers={station.chargers} onSelect={onQuickSelectCharger} />
-          ) : (
-            <ChargerSummary chargers={station.chargers} showSpeed={config.showChargingSpeed} />
-          ))}
+        {config.showPayNudge && <PayViaAppNudge stationId={station.id} />}
+
+        {visualExpanded && config.showRangePrediction && (
+          <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
+        )}
+
+        {visualExpanded && (
+          <div className="flex items-stretch">
+            <IconAction icon={Phone} label="call" onClick={() => {}} />
+            <div className="w-px bg-border my-2" />
+            <IconAction icon={Navigation2} label="navigate" onClick={onNavigate} />
+          </div>
+        )}
+
+        {/* Overview (every gun, tap to pick) and reviews are available on both the short and
+            long card — no separate screen needed to see them. */}
+        <StationTabs active={tab} onChange={setTab} />
+
+        {tab === "overview" ? (
+          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
+        ) : (
+          <StationReviewsList reviews={reviews} />
+        )}
 
         {!visualExpanded && config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
@@ -195,35 +199,6 @@ export function StationDetailsSheet({
                   <p className="text-[11px] text-secondaryText">arrives right when you get to the charger</p>
                 </div>
               </button>
-            )}
-          </>
-        )}
-
-        {visualExpanded && config.showRangePrediction && (
-          <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
-        )}
-
-        {visualExpanded && (
-          <>
-            <div className="flex items-stretch">
-              <IconAction icon={Phone} label="call" onClick={() => {}} />
-              <div className="w-px bg-border my-2" />
-              <IconAction icon={Navigation2} label="navigate" onClick={onNavigate} />
-            </div>
-
-            <StationTabs active={tab} onChange={setTab} />
-
-            {tab === "overview" ? (
-              <div className="rounded-card bg-surfaceRaised border border-border px-3.5">
-                <div className="flex items-center gap-2.5 py-3 border-b border-border">
-                  <span className="text-[13px] font-semibold">available connectors</span>
-                </div>
-                {connectorGroups.map((group) => (
-                  <ConnectorGroupRow key={group.connector} group={group} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-[13px] text-secondaryText text-center py-8">no reviews yet</p>
             )}
           </>
         )}

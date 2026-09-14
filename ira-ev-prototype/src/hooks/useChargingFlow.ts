@@ -10,6 +10,7 @@ const initialState: ChargingFlowState = {
   amount: null,
   units: null,
   selectedPaymentMethodId: null,
+  fromRoutePlanner: false,
 };
 
 const STORAGE_KEY = "ira-ev-charging-flow";
@@ -47,13 +48,19 @@ export interface ChargingFlowApi extends ChargingFlowState {
   startPayment: () => void;
   completePayment: () => void;
   startSimplifiedFlow: (stationId: string) => void;
-  startChargingSession: (stationId: string, chargerId: string, step: FlowStep) => void;
+  startChargingSession: (stationId: string, chargerId: string, step: FlowStep, fromRoutePlanner?: boolean) => void;
   goToNavigation: () => void;
   reset: () => void;
   canGoBack: boolean;
 }
 
-export function useChargingFlow(): ChargingFlowApi {
+/**
+ * @param onExitRoutePlannerSession Called when `back()` is pressed on the very first screen of
+ * a session started via `startChargingSession(..., fromRoutePlanner: true)` — lets the caller
+ * switch back to the route planner instead of leaving the driver looking at the unrelated
+ * station map underneath.
+ */
+export function useChargingFlow(onExitRoutePlannerSession?: () => void): ChargingFlowApi {
   const [state, setState] = useState<ChargingFlowState>(loadPersistedState);
 
   useEffect(() => {
@@ -69,13 +76,26 @@ export function useChargingFlow(): ChargingFlowApi {
   }, []);
 
   const back = useCallback(() => {
+    if (state.history.length === 0) return;
+
+    if (state.history.length === 1 && state.fromRoutePlanner) {
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+      setState(initialState);
+      onExitRoutePlannerSession?.();
+      return;
+    }
+
     setState((prev) => {
       if (prev.history.length === 0) return prev;
       const history = [...prev.history];
       const previousStep = history.pop() as FlowStep;
       return { ...prev, history, step: previousStep };
     });
-  }, []);
+  }, [state.history.length, state.fromRoutePlanner, onExitRoutePlannerSession]);
 
   const selectStation = useCallback(
     (stationId: string) => {
@@ -84,6 +104,11 @@ export function useChargingFlow(): ChargingFlowApi {
         history: [...prev.history, prev.step],
         step: "station-details",
         selectedStationId: stationId,
+        // A gun id is only unique per-station — carrying a selection over to a different
+        // station could otherwise highlight an unrelated charger that happens to share an id.
+        ...(stationId !== prev.selectedStationId
+          ? { selectedChargerId: null, chargeType: null, amount: null, units: null }
+          : {}),
       }));
     },
     []
@@ -151,13 +176,14 @@ export function useChargingFlow(): ChargingFlowApi {
    * driver already knows exactly which charger they want (e.g. "go to charging screen" from
    * a route-planner stop), skipping the map lookup and charger-selection screen entirely. */
   const startChargingSession = useCallback(
-    (stationId: string, chargerId: string, step: FlowStep) => {
+    (stationId: string, chargerId: string, step: FlowStep, fromRoutePlanner = false) => {
       setState((prev) => ({
         ...prev,
         history: [...prev.history, prev.step],
         step,
         selectedStationId: stationId,
         selectedChargerId: chargerId,
+        fromRoutePlanner,
       }));
     },
     []

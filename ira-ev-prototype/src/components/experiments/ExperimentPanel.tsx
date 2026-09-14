@@ -20,6 +20,7 @@ const toggleDefs: { key: keyof ExperimentConfig; label: string }[] = [
   { key: "showZomatoOrdering", label: "Order food at charger (Zomato)" },
   { key: "showChargingInProgress", label: "Enhanced charging-in-progress screen" },
   { key: "quickPayFlow", label: "Quick pay — minimal taps to start charging" },
+  { key: "showPayNudge", label: "Nudge drivers to pay & start via iRA.ev" },
   { key: "compactStationCards", label: "Compact station cards" },
   { key: "stickyCTA", label: "Sticky CTA" },
   { key: "simplifiedChargingFlow", label: "Simplified charging flow" },

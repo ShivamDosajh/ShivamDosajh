@@ -4,6 +4,7 @@ import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
 import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
+import { PayTrustLine } from "../../components/payment/PayTrustLine";
 import { getStationById, getChargerById } from "../../data/stations";
 import { useExperiments } from "../../hooks/useExperiments";
 import { amountFromUnits, unitsFromAmount, formatCurrency, formatUnits, fullChargeUnits } from "../../utils/pricing";
@@ -144,6 +145,7 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
       </div>
 
       <StickyFooter sticky={config.stickyCTA}>
+        {config.showPayNudge && <PayTrustLine />}
         <Button disabled={!isValid} onClick={handleContinue}>
           done
         </Button>

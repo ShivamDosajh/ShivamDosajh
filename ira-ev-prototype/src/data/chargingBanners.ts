@@ -1,4 +1,4 @@
-import { Lightbulb, Sparkles, Tag, Bell, Leaf, ShieldCheck, type LucideIcon } from "lucide-react";
+import { Lightbulb, Sparkles, Tag, Bell, Leaf, ShieldCheck, Smartphone, type LucideIcon } from "lucide-react";
 
 export type ChargingBannerKind = "tip" | "feature" | "offer" | "nudge";
 
@@ -45,6 +45,13 @@ export const chargingBanners: ChargingBanner[] = [
     icon: Bell,
     title: "Planning a long trip?",
     subtitle: "Try the Routes tab — it plans your charging stops for you.",
+  },
+  {
+    id: "nudge-paid-in-app",
+    kind: "nudge",
+    icon: Smartphone,
+    title: "No card reader, no queue",
+    subtitle: "You paid & started right from iRA.ev this time — same next time too.",
   },
   {
     id: "tip-eco-impact",

@@ -7,6 +7,7 @@ import { OfferCard } from "../../components/payment/OfferCard";
 import { OfferModal } from "../../components/payment/OfferModal";
 import { TermsModal } from "../../components/payment/TermsModal";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
+import { PayTrustLine } from "../../components/payment/PayTrustLine";
 import { getStationById, getChargerById } from "../../data/stations";
 import { offers } from "../../data/offers";
 import { computeCostBreakdown } from "../../utils/pricing";
@@ -66,6 +67,7 @@ export function RechargeCalculationScreen({ flow }: { flow: ChargingFlowApi }) {
       </div>
 
       <StickyFooter sticky={config.stickyCTA}>
+        {config.showPayNudge && <PayTrustLine />}
         <Button disabled={!flow.selectedPaymentMethodId} onClick={handlePay}>
           pay {`₹${breakdown.approximateValue.toFixed(2)}`}
         </Button>

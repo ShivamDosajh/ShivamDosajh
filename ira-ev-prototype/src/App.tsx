@@ -21,10 +21,12 @@ import { getStationById } from "./data/stations";
 import { routeStationId, routeConnectorId } from "./utils/routeChargerBridge";
 
 function AppShell() {
-  const flow = useChargingFlow();
+  const [tab, setTab] = useState<BottomTab>("station");
+  // Backing out of a route-planner-originated charging session returns to the Routes tab
+  // rather than surfacing the (unrelated) station map underneath it.
+  const flow = useChargingFlow(() => setTab("routes"));
   const { config } = useExperiments();
   const { clearOrder } = useZomatoOrder();
-  const [tab, setTab] = useState<BottomTab>("station");
 
   const handleResetPrototype = () => {
     flow.reset();
@@ -35,16 +37,23 @@ function AppShell() {
   const handleSelectCharger = () => {
     if (config.simplifiedChargingFlow && flow.selectedStationId) {
       flow.startSimplifiedFlow(flow.selectedStationId);
+    } else if (flow.selectedChargerId) {
+      // A gun was already picked directly from the station card's overview tab — skip the
+      // separate charger-selection screen and go straight to configuring the charge.
+      flow.confirmChargerSelection();
     } else {
       flow.goToChargerSelection();
     }
   };
 
-  // Quick-pay: picking a gun straight from the station short card selects it and jumps
-  // directly to the combined charge-type + payment screen — no separate charger-selection step.
-  const handleQuickSelectCharger = (chargerId: string) => {
+  // Tapping a gun in the station card's overview tab (short or long card) selects it, and
+  // with quick-pay on, jumps straight to the combined charge-type + payment screen — no
+  // separate charger-selection step either way.
+  const handleOverviewSelectCharger = (chargerId: string) => {
     flow.selectCharger(chargerId);
-    flow.goTo("quick-pay");
+    if (config.quickPayFlow) {
+      flow.goTo("quick-pay");
+    }
   };
 
   // A route-planner stop always has exactly one connector, so there's no real charger
@@ -55,7 +64,8 @@ function AppShell() {
     flow.startChargingSession(
       routeStationId(routeChargerId),
       routeConnectorId(routeChargerId),
-      config.quickPayFlow ? "quick-pay" : "charging-type"
+      config.quickPayFlow ? "quick-pay" : "charging-type",
+      true
     );
     flow.setChargeType("amount");
     flow.setUnits(prefill.units);
@@ -97,52 +107,55 @@ function AppShell() {
 
   return (
     <div className="h-app-shell w-full flex flex-col bg-background text-text overflow-hidden">
-      {tab !== "station" && (
+      {/* Kept mounted (hidden via CSS, not unmounted) whenever another tab is active, so the
+          route planner's itinerary — including scroll position — survives jumping away to
+          charge a stop and coming back, instead of resetting to a blank setup screen. */}
+      <div className={`flex-1 min-h-0 flex-col ${tab === "routes" ? "flex" : "hidden"}`}>
+        <RoutesTabScreen onExit={() => setTab("station")} onStartCharging={handleStartChargingFromRoute} />
+        <BottomNavigation active={tab} onChange={setTab} />
+      </div>
+
+      {tab === "history" && (
         <div className="flex-1 min-h-0 flex flex-col">
-          {tab === "routes" && (
-            <div className="flex-1 min-h-0 flex flex-col">
-              <RoutesTabScreen onExit={() => setTab("station")} onStartCharging={handleStartChargingFromRoute} />
-            </div>
-          )}
-          {tab === "history" && (
-            <PlaceholderScreen icon={History} title="history" description="Your past charging sessions will appear here." />
-          )}
-          {tab === "feedback" && (
-            <PlaceholderScreen icon={MessageSquareText} title="feedback" description="Share feedback on your charging experience." />
-          )}
+          <PlaceholderScreen icon={History} title="history" description="Your past charging sessions will appear here." />
+          <BottomNavigation active={tab} onChange={setTab} />
+        </div>
+      )}
+      {tab === "feedback" && (
+        <div className="flex-1 min-h-0 flex flex-col">
+          <PlaceholderScreen icon={MessageSquareText} title="feedback" description="Share feedback on your charging experience." />
           <BottomNavigation active={tab} onChange={setTab} />
         </div>
       )}
 
-      {tab === "station" && (
-        <div className="flex-1 min-h-0 flex flex-col relative">
-          <div className="flex-1 min-h-0 relative">
-            <StationMapScreen flow={flow} />
+      <div className={`flex-1 min-h-0 flex-col relative ${tab === "station" ? "flex" : "hidden"}`}>
+        <div className="flex-1 min-h-0 relative">
+          <StationMapScreen flow={flow} />
 
-            {flow.step === "station-details" && (
-              <StationDetailsSheet
-                station={getStationById(flow.selectedStationId)}
-                onClose={flow.closeStationDetails}
-                onNavigate={flow.goToNavigation}
-                onSelectCharger={handleSelectCharger}
-                onQuickSelectCharger={handleQuickSelectCharger}
-              />
-            )}
-          </div>
-
-          {showBottomNav && <BottomNavigation active={tab} onChange={setTab} />}
-
-          {flow.step === "navigating" && (
-            <div className="absolute inset-0 z-30 bg-background animate-fade-in">
-              <NavigatingScreen flow={flow} />
-            </div>
-          )}
-
-          {showChargingFlowScreen && (
-            <div className="absolute inset-0 z-30 bg-background animate-slide-in">{flowScreen}</div>
+          {flow.step === "station-details" && (
+            <StationDetailsSheet
+              station={getStationById(flow.selectedStationId)}
+              selectedChargerId={flow.selectedChargerId}
+              onClose={flow.closeStationDetails}
+              onNavigate={flow.goToNavigation}
+              onSelectCharger={handleSelectCharger}
+              onSelectGun={handleOverviewSelectCharger}
+            />
           )}
         </div>
-      )}
+
+        {showBottomNav && <BottomNavigation active={tab} onChange={setTab} />}
+
+        {flow.step === "navigating" && (
+          <div className="absolute inset-0 z-30 bg-background animate-fade-in">
+            <NavigatingScreen flow={flow} />
+          </div>
+        )}
+
+        {showChargingFlowScreen && (
+          <div className="absolute inset-0 z-30 bg-background animate-slide-in">{flowScreen}</div>
+        )}
+      </div>
 
       <ExperimentPanel onResetPrototype={handleResetPrototype} />
     </div>
