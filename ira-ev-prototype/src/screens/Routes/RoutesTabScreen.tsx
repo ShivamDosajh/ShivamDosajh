@@ -27,7 +27,7 @@ function RouteNavigatingScreen({ destinationLabel, onEnd }: { destinationLabel: 
 interface RoutesTabScreenProps {
   /** Leaves the Routes tab entirely (back to the map) — only reachable from the setup screen, since results has its own "edit trip" back-step. */
   onExit: () => void;
-  onStartCharging: (routeChargerId: string) => void;
+  onStartCharging: (routeChargerId: string, prefill: { units: number; amount: number }) => void;
 }
 
 export function RoutesTabScreen({ onExit, onStartCharging }: RoutesTabScreenProps) {

@@ -40,15 +40,26 @@ function AppShell() {
     }
   };
 
+  // Quick-pay: picking a gun straight from the station short card selects it and jumps
+  // directly to the combined charge-type + payment screen — no separate charger-selection step.
+  const handleQuickSelectCharger = (chargerId: string) => {
+    flow.selectCharger(chargerId);
+    flow.goTo("quick-pay");
+  };
+
   // A route-planner stop always has exactly one connector, so there's no real charger
   // choice to make — jump straight past station lookup and charger-selection into whatever
-  // the current charging-flow experiment expects next.
-  const handleStartChargingFromRoute = (routeChargerId: string) => {
+  // the current charging-flow experiment expects next, pre-filled with the amount the route
+  // plan already calculated for this stop rather than defaulting to a full charge.
+  const handleStartChargingFromRoute = (routeChargerId: string, prefill: { units: number; amount: number }) => {
     flow.startChargingSession(
       routeStationId(routeChargerId),
       routeConnectorId(routeChargerId),
       config.quickPayFlow ? "quick-pay" : "charging-type"
     );
+    flow.setChargeType("amount");
+    flow.setUnits(prefill.units);
+    flow.setAmount(prefill.amount);
     setTab("station");
   };
 
@@ -114,6 +125,7 @@ function AppShell() {
                 onClose={flow.closeStationDetails}
                 onNavigate={flow.goToNavigation}
                 onSelectCharger={handleSelectCharger}
+                onQuickSelectCharger={handleQuickSelectCharger}
               />
             )}
           </div>

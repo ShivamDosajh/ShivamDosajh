@@ -56,7 +56,7 @@ interface ChargeLegRowProps {
   leg: ChargeLeg;
   /** Present only on the route-planner itinerary — jumps straight into the real charging
    * flow for this stop instead of making the driver find the charger on the map again. */
-  onStartCharging?: (routeChargerId: string) => void;
+  onStartCharging?: (routeChargerId: string, prefill: { units: number; amount: number }) => void;
 }
 
 export function ChargeLegRow({ leg, onStartCharging }: ChargeLegRowProps) {
@@ -132,10 +132,12 @@ export function ChargeLegRow({ leg, onStartCharging }: ChargeLegRowProps) {
 
         {onStartCharging && (
           <button
-            onClick={() => onStartCharging(leg.charger.id)}
+            onClick={() =>
+              onStartCharging(leg.charger.id, { units: leg.energyAddedKwh, amount: leg.costEstimate })
+            }
             className="w-full flex items-center justify-center gap-1.5 rounded-button bg-primary text-black text-[12px] font-semibold h-9 mt-2.5"
           >
-            go to charging screen
+            charge now
             <ArrowRight size={13} />
           </button>
         )}

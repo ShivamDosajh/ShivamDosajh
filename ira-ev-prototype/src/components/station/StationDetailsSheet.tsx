@@ -10,6 +10,7 @@ import { ChargerSummary } from "./ChargerSummary";
 import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
 import { ConnectorGroupRow } from "./ConnectorGroupRow";
+import { GunQuickSelectList } from "./GunQuickSelectList";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useSheetDrag } from "../../hooks/useSheetDrag";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
@@ -24,6 +25,9 @@ interface StationDetailsSheetProps {
   onClose: () => void;
   onNavigate: () => void;
   onSelectCharger: () => void;
+  /** Quick-pay experiment only — picking a gun right from this card jumps straight into
+   * charging for it, skipping the separate charger-selection screen entirely. */
+  onQuickSelectCharger: (chargerId: string) => void;
 }
 
 const COLLAPSED_VH = 64;
@@ -36,7 +40,13 @@ function formatLastUsed(minutes: number | null): string {
   return `${hours} hr ago`;
 }
 
-export function StationDetailsSheet({ station, onClose, onNavigate, onSelectCharger }: StationDetailsSheetProps) {
+export function StationDetailsSheet({
+  station,
+  onClose,
+  onNavigate,
+  onSelectCharger,
+  onQuickSelectCharger,
+}: StationDetailsSheetProps) {
   const { config } = useExperiments();
   const { order, clearOrder } = useZomatoOrder();
   const [expanded, setExpanded] = useState(false);
@@ -72,9 +82,11 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           <Button variant="outline" onClick={visualExpanded ? () => setExpanded(false) : onNavigate}>
             {visualExpanded ? "check in" : "navigate"}
           </Button>
-          <Button variant="primary" onClick={onSelectCharger}>
-            select charger
-          </Button>
+          {!config.quickPayFlow && (
+            <Button variant="primary" onClick={onSelectCharger}>
+              select charger
+            </Button>
+          )}
         </div>
       }
     >
@@ -149,7 +161,12 @@ export function StationDetailsSheet({ station, onClose, onNavigate, onSelectChar
           </div>
         )}
 
-        {!visualExpanded && <ChargerSummary chargers={station.chargers} showSpeed={config.showChargingSpeed} />}
+        {!visualExpanded &&
+          (config.quickPayFlow ? (
+            <GunQuickSelectList chargers={station.chargers} onSelect={onQuickSelectCharger} />
+          ) : (
+            <ChargerSummary chargers={station.chargers} showSpeed={config.showChargingSpeed} />
+          ))}
 
         {!visualExpanded && config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />

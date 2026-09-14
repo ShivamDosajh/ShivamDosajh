@@ -17,7 +17,7 @@ const READING_LINE_OFFSET_PX = 96;
 interface RouteResultsScreenProps {
   planner: RoutePlannerApi;
   onStartNavigation: () => void;
-  onStartCharging: (routeChargerId: string) => void;
+  onStartCharging: (routeChargerId: string, prefill: { units: number; amount: number }) => void;
 }
 
 export function RouteResultsScreen({ planner, onStartNavigation, onStartCharging }: RouteResultsScreenProps) {
@@ -84,6 +84,16 @@ export function RouteResultsScreen({ planner, onStartNavigation, onStartCharging
         }
         km = rowKm[i + 1] ?? km;
       }
+
+      // The reading-line heuristic above can't reach 100%: once the destination row is the
+      // last thing in the scrollable content, there's nothing below it to push its top up to
+      // the reading line, so the loop stalls short of the full distance. Scrolled-to-bottom is
+      // an unambiguous "trip complete" signal on its own — use it directly instead.
+      const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 4;
+      if (atBottom) {
+        km = rowKm[rowKm.length - 1] ?? km;
+      }
+
       setCoveredKm(km);
     });
   }, [rowKm]);
