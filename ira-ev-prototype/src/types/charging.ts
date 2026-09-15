@@ -69,6 +69,10 @@ export interface ChargingFlowState {
   amount: number | null;
   units: number | null;
   selectedPaymentMethodId: string | null;
+  /** iRA Cash actually applied to this transaction, set right before payment is submitted —
+   * downstream success/in-progress screens subtract it from the recomputed cost so the "paid"
+   * amount they show matches what the driver actually agreed to pay. */
+  walletDiscount: number | null;
   /** True for a session started from a route-planner stop — lets the very first "back" press
    * exit to the route planner instead of surfacing the (unrelated) station map underneath. */
   fromRoutePlanner: boolean;

@@ -6,13 +6,21 @@ interface Row {
   value: string;
 }
 
-export function CostBreakdown({ data }: { data: CostBreakdownData }) {
+interface CostBreakdownProps {
+  data: CostBreakdownData;
+  /** iRA Cash applied to this transaction, if any — shown as its own line item, with the
+   * pre-discount total struck through above the amount actually payable. */
+  discount?: number;
+}
+
+export function CostBreakdown({ data, discount = 0 }: CostBreakdownProps) {
   const rows: Row[] = [
     { label: "cost of recharge", value: formatCurrency(data.costOfRecharge) },
     { label: "number of units", value: formatUnits(data.units) },
     { label: "convenience fee", value: formatCurrency(data.convenienceFee) },
     { label: "tax", value: formatCurrency(data.tax) },
   ];
+  const payable = Math.max(0, data.approximateValue - discount);
 
   return (
     <div className="rounded-card bg-surfaceRaised border border-border p-4">
@@ -24,11 +32,22 @@ export function CostBreakdown({ data }: { data: CostBreakdownData }) {
             <span className="text-text font-medium">{row.value}</span>
           </div>
         ))}
+        {discount > 0 && (
+          <div className="flex items-center justify-between text-[13px]">
+            <span className="text-primary lowercase">iRA cash discount</span>
+            <span className="text-primary font-medium">-{formatCurrency(discount)}</span>
+          </div>
+        )}
       </div>
       <div className="h-px bg-border my-3" />
       <div className="flex items-center justify-between">
-        <span className="text-[14px] font-semibold lowercase">approximate value</span>
-        <span className="text-[16px] font-bold text-primary">{formatCurrency(data.approximateValue)}</span>
+        <span className="text-[14px] font-semibold lowercase">{discount > 0 ? "amount payable" : "approximate value"}</span>
+        <div className="text-right">
+          {discount > 0 && (
+            <p className="text-[11px] text-secondaryText line-through leading-tight">{formatCurrency(data.approximateValue)}</p>
+          )}
+          <span className="text-[16px] font-bold text-primary">{formatCurrency(payable)}</span>
+        </div>
       </div>
     </div>
   );

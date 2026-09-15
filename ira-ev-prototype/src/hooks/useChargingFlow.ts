@@ -10,6 +10,7 @@ const initialState: ChargingFlowState = {
   amount: null,
   units: null,
   selectedPaymentMethodId: null,
+  walletDiscount: null,
   fromRoutePlanner: false,
 };
 
@@ -45,6 +46,7 @@ export interface ChargingFlowApi extends ChargingFlowState {
   setUnits: (units: number | null) => void;
   confirmChargingType: () => void;
   selectPaymentMethod: (methodId: string) => void;
+  setWalletDiscount: (amount: number | null) => void;
   startPayment: () => void;
   completePayment: () => void;
   startSimplifiedFlow: (stationId: string) => void;
@@ -113,7 +115,7 @@ export function useChargingFlow(onExitRoutePlannerSession?: () => void): Chargin
         // A gun id is only unique per-station — carrying a selection over to a different
         // station could otherwise highlight an unrelated charger that happens to share an id.
         ...(stationId !== prev.selectedStationId
-          ? { selectedChargerId: null, chargeType: null, amount: null, units: null }
+          ? { selectedChargerId: null, chargeType: null, amount: null, units: null, walletDiscount: null }
           : {}),
       }));
     },
@@ -159,6 +161,10 @@ export function useChargingFlow(onExitRoutePlannerSession?: () => void): Chargin
 
   const selectPaymentMethod = useCallback((methodId: string) => {
     setState((prev) => ({ ...prev, selectedPaymentMethodId: methodId }));
+  }, []);
+
+  const setWalletDiscount = useCallback((amount: number | null) => {
+    setState((prev) => ({ ...prev, walletDiscount: amount }));
   }, []);
 
   const startPayment = useCallback(() => {
@@ -229,6 +235,7 @@ export function useChargingFlow(onExitRoutePlannerSession?: () => void): Chargin
       setUnits,
       confirmChargingType,
       selectPaymentMethod,
+      setWalletDiscount,
       startPayment,
       completePayment,
       startSimplifiedFlow,
@@ -251,6 +258,7 @@ export function useChargingFlow(onExitRoutePlannerSession?: () => void): Chargin
       setUnits,
       confirmChargingType,
       selectPaymentMethod,
+      setWalletDiscount,
       startPayment,
       completePayment,
       startSimplifiedFlow,

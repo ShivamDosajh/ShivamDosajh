@@ -7,16 +7,19 @@ import { OfferCard } from "../../components/payment/OfferCard";
 import { OfferModal } from "../../components/payment/OfferModal";
 import { TermsModal } from "../../components/payment/TermsModal";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
+import { WalletDiscountCard } from "../../components/wallet/WalletDiscountCard";
 import { getStationById, getChargerById } from "../../data/stations";
 import { offers } from "../../data/offers";
 import { primaryPaymentMethods } from "../../data/payments";
 import { computeCostBreakdown } from "../../utils/pricing";
 import { useExperiments } from "../../hooks/useExperiments";
+import { useWallet } from "../../hooks/useWallet";
 import type { ChargingFlowApi } from "../../hooks/useChargingFlow";
 import type { Offer } from "../../types/charging";
 
 export function RechargeCalculationScreen({ flow }: { flow: ChargingFlowApi }) {
   const { config } = useExperiments();
+  const wallet = useWallet();
   const station = getStationById(flow.selectedStationId);
   const charger = getChargerById(station, flow.selectedChargerId);
   const [termsOpen, setTermsOpen] = useState(false);
@@ -33,8 +36,14 @@ export function RechargeCalculationScreen({ flow }: { flow: ChargingFlowApi }) {
   if (!station || !charger || !flow.units) return null;
 
   const breakdown = computeCostBreakdown(flow.units, charger.pricePerKwh);
+  const discount = wallet.previewDiscount(breakdown.approximateValue);
+  const payable = Math.max(0, breakdown.approximateValue - discount);
 
   const handlePay = () => {
+    if (discount > 0) {
+      flow.setWalletDiscount(discount);
+      wallet.redeem(discount);
+    }
     flow.startPayment();
   };
 
@@ -43,7 +52,9 @@ export function RechargeCalculationScreen({ flow }: { flow: ChargingFlowApi }) {
       <ScreenHeader title="recharge calculation" onBack={flow.back} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <div className="flex flex-col gap-4 py-4">
-          <CostBreakdown data={breakdown} />
+          <CostBreakdown data={breakdown} discount={discount} />
+
+          <WalletDiscountCard transactionValue={breakdown.approximateValue} />
 
           <div className="text-[12px] text-secondaryText leading-relaxed">
             <p>* any excess amount deducted will be refunded.</p>
@@ -76,7 +87,7 @@ export function RechargeCalculationScreen({ flow }: { flow: ChargingFlowApi }) {
 
       <StickyFooter sticky={config.stickyCTA}>
         <Button disabled={!flow.selectedPaymentMethodId} onClick={handlePay}>
-          pay {`₹${breakdown.approximateValue.toFixed(2)}`}
+          pay {`₹${payable.toFixed(2)}`}
         </Button>
       </StickyFooter>
 

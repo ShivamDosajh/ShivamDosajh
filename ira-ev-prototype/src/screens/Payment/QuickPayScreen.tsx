@@ -7,9 +7,11 @@ import { StationSummaryHeader } from "../../components/station/StationSummaryHea
 import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
+import { WalletDiscountCard } from "../../components/wallet/WalletDiscountCard";
 import { getStationById, getChargerById } from "../../data/stations";
 import { primaryPaymentMethods } from "../../data/payments";
 import { useExperiments } from "../../hooks/useExperiments";
+import { useWallet } from "../../hooks/useWallet";
 import {
   amountFromUnits,
   unitsFromAmount,
@@ -38,6 +40,7 @@ const quickUnits = [5, 10, 15, 20];
  */
 export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
   const { config } = useExperiments();
+  const wallet = useWallet();
   const station = getStationById(flow.selectedStationId);
   const charger = getChargerById(station, flow.selectedChargerId);
   const chargeType = flow.chargeType ?? "full-charge";
@@ -58,6 +61,8 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
   const displayUnits =
     chargeType === "full-charge" ? fullUnits : chargeType === "units" ? flow.units ?? 0 : flow.amount ? unitsFromAmount(flow.amount, charger.pricePerKwh) : 0;
   const breakdown = computeCostBreakdown(displayUnits, charger.pricePerKwh);
+  const discount = wallet.previewDiscount(breakdown.approximateValue);
+  const payable = Math.max(0, breakdown.approximateValue - discount);
 
   const isChargeValid =
     chargeType === "full-charge"
@@ -75,6 +80,10 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
       flow.setUnits(unitsFromAmount(flow.amount, charger.pricePerKwh));
     } else if (chargeType === "units" && flow.units) {
       flow.setAmount(amountFromUnits(flow.units, charger.pricePerKwh));
+    }
+    if (discount > 0) {
+      flow.setWalletDiscount(discount);
+      wallet.redeem(discount);
     }
     flow.startPayment();
   };
@@ -151,6 +160,10 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
           ) : null}
         </div>
 
+        <div className="mt-3">
+          <WalletDiscountCard transactionValue={breakdown.approximateValue} />
+        </div>
+
         <div className="h-px bg-border my-4" />
 
         <p className="text-[14px] mb-3">choose your UPI app</p>
@@ -163,8 +176,14 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
       </div>
 
       <StickyFooter sticky={config.stickyCTA}>
+        {discount > 0 && (
+          <p className="text-center text-[12px] text-secondaryText mb-2">
+            <span className="line-through">{formatCurrency(breakdown.approximateValue)}</span>{" "}
+            <span className="text-primary font-medium">{formatCurrency(payable)}</span> after iRA Cash
+          </p>
+        )}
         <Button disabled={!isValid} onClick={handlePayAndStart}>
-          pay {formatCurrency(breakdown.approximateValue)} &amp; start charging
+          pay {formatCurrency(payable)} &amp; start charging
         </Button>
       </StickyFooter>
     </div>

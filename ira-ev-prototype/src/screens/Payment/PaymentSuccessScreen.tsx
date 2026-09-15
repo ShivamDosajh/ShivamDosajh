@@ -13,16 +13,19 @@ export function PaymentSuccessScreen({ flow }: { flow: ChargingFlowApi }) {
   const station = getStationById(flow.selectedStationId);
   const charger = getChargerById(station, flow.selectedChargerId);
   const breakdown = charger && flow.units ? computeCostBreakdown(flow.units, charger.pricePerKwh) : null;
+  // The wallet discount was already deducted from what the driver agreed to pay at the
+  // payment screen — carry it through so "amount paid" here matches that, not the full price.
+  const amountPaid = breakdown ? Math.max(0, breakdown.approximateValue - (flow.walletDiscount ?? 0)) : null;
   const { order, clearOrder } = useZomatoOrder();
   const orderForThisStation = order && station && order.stationId === station.id ? order : null;
 
-  if (config.showChargingInProgress && station && charger && flow.units && breakdown) {
+  if (config.showChargingInProgress && station && charger && flow.units && breakdown && amountPaid !== null) {
     return (
       <ChargingInProgressScreen
         station={station}
         charger={charger}
         units={flow.units}
-        approximateCost={breakdown.approximateValue}
+        approximateCost={amountPaid}
         onDone={flow.reset}
       />
     );
@@ -35,9 +38,9 @@ export function PaymentSuccessScreen({ flow }: { flow: ChargingFlowApi }) {
       </div>
       <div className="text-center">
         <p className="text-[19px] font-semibold">Payment successful</p>
-        {breakdown && (
+        {amountPaid !== null && (
           <p className="text-[14px] text-secondaryText mt-2">
-            {formatCurrency(breakdown.approximateValue)} paid to {station?.name}
+            {formatCurrency(amountPaid)} paid to {station?.name}
           </p>
         )}
         <p className="text-[13px] text-secondaryText mt-1">charging session will start shortly</p>

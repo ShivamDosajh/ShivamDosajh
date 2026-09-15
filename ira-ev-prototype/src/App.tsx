@@ -17,6 +17,7 @@ import { ExperimentPanel } from "./components/experiments/ExperimentPanel";
 import { useChargingFlow } from "./hooks/useChargingFlow";
 import { useExperiments } from "./hooks/useExperiments";
 import { useZomatoOrder } from "./hooks/useZomatoOrder";
+import { useWallet } from "./hooks/useWallet";
 import { getStationById } from "./data/stations";
 import { routeStationId, routeConnectorId } from "./utils/routeChargerBridge";
 
@@ -27,10 +28,12 @@ function AppShell() {
   const flow = useChargingFlow(() => setTab("routes"));
   const { config } = useExperiments();
   const { clearOrder } = useZomatoOrder();
+  const wallet = useWallet();
 
   const handleResetPrototype = () => {
     flow.reset();
     clearOrder();
+    wallet.resetWallet();
     setTab("station");
   };
 
