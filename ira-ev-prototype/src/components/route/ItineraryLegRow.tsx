@@ -14,6 +14,7 @@ import {
   Undo2,
   ChevronDown,
   ChevronUp,
+  Minus,
 } from "lucide-react";
 import type { Amenity, DriveLeg, ChargeLeg, RouteCharger } from "../../types/route";
 import { formatDuration } from "../../utils/routePlanner";
@@ -85,9 +86,12 @@ interface ChargeLegRowProps {
   /** Original charger id -> backup charger id for stops the driver has already swapped. */
   chargerSwaps?: Record<string, string>;
   onSwapCharger?: (originalChargerId: string, backupChargerId: string | undefined) => void;
+  /** Removes this stop from the itinerary entirely and re-plans the trip around it — omitted
+   * for restaurant stops, which are removed via the trip's stop list instead. */
+  onRemoveStop?: (chargerId: string) => void;
 }
 
-export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, onSwapCharger }: ChargeLegRowProps) {
+export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, onSwapCharger, onRemoveStop }: ChargeLegRowProps) {
   const { config } = useExperiments();
   const { order } = useZomatoOrder();
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -144,7 +148,18 @@ export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, 
               </>
             )}
           </div>
-          <span className="text-[11px] text-secondaryText shrink-0">ETA {leg.etaClock}</span>
+          <span className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[11px] text-secondaryText">ETA {leg.etaClock}</span>
+            {onRemoveStop && !leg.restaurantId && (
+              <button
+                onClick={() => onRemoveStop(leg.charger.id)}
+                aria-label={`remove stop at ${leg.charger.name}`}
+                className="w-5 h-5 rounded-full bg-error/15 text-error flex items-center justify-center shrink-0"
+              >
+                <Minus size={11} />
+              </button>
+            )}
+          </span>
         </div>
         {leg.charger.amenities.length > 0 && (
           <div className="flex items-center gap-2.5 mt-1.5">

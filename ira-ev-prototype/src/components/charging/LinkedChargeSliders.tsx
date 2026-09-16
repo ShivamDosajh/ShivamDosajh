@@ -1,6 +1,15 @@
-import { Battery, IndianRupee, Clock } from "lucide-react";
-import { amountFromUnits, unitsFromAmount, estimateChargeDurationMin, formatCurrency, formatUnits } from "../../utils/pricing";
+import { Battery, IndianRupee, Clock, BatteryCharging } from "lucide-react";
+import {
+  amountFromUnits,
+  unitsFromAmount,
+  estimateChargeDurationMin,
+  unitsForTargetSoc,
+  socForUnits,
+  formatCurrency,
+  formatUnits,
+} from "../../utils/pricing";
 import { formatDuration } from "../../utils/routePlanner";
+import { myConnectedVehicle } from "../../data/vehicles";
 import type { Charger } from "../../types/charging";
 
 const UNITS_SLIDER_MAX = 75;
@@ -18,11 +27,12 @@ const sliderStyle = { accentColor: "#0fbfa8" };
 const sliderClassName = "w-full h-2 rounded-pill bg-surfaceRaised accent-primary min-h-[28px]";
 
 /**
- * A "full charge" checkbox plus two interlinked sliders — dragging either one recomputes the
- * other from the charger's price/kWh, so units and cost always agree, and ticking "full
- * charge" sets both directly rather than requiring a drag. Both sliders derive from the same
- * `units` value the parent owns, so there's a single source of truth instead of the two
- * numbers drifting apart from independent rounding.
+ * A "full charge" checkbox plus three interlinked sliders (units, cost, target SoC%) —
+ * dragging any one recomputes the others from the charger's price/kWh and the connected
+ * vehicle's battery capacity, so they always agree, and ticking "full charge" sets them all
+ * directly rather than requiring a drag. Every slider derives its display from the same
+ * `units` value the parent owns, so there's a single source of truth instead of the numbers
+ * drifting apart from independent rounding.
  */
 export function LinkedChargeSliders({
   charger,
@@ -91,6 +101,27 @@ export function LinkedChargeSliders({
           className={sliderClassName}
           style={sliderStyle}
         />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-1.5 text-[14px] text-text">
+            <BatteryCharging size={15} className="text-secondaryText" />
+            charge to
+          </span>
+          <span className="text-[14px] font-semibold text-primary">{Math.round(socForUnits(units))}%</span>
+        </div>
+        <input
+          type="range"
+          min={Math.ceil(myConnectedVehicle.currentSocPercent)}
+          max={100}
+          step={1}
+          value={Math.round(socForUnits(units))}
+          onChange={(e) => onChangeUnits(unitsForTargetSoc(Number(e.target.value)))}
+          className={sliderClassName}
+          style={sliderStyle}
+        />
+        <p className="text-[11px] text-secondaryText">current battery: {myConnectedVehicle.currentSocPercent}%</p>
       </div>
 
       <div className="rounded-card bg-surfaceRaised border border-border px-4 py-3 flex items-center gap-2.5">

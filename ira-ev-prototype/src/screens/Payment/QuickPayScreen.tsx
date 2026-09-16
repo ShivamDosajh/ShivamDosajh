@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IndianRupee, Battery } from "lucide-react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
@@ -6,11 +6,13 @@ import { StickyFooter } from "../../components/common/StickyFooter";
 import { StationSummaryHeader } from "../../components/station/StationSummaryHeader";
 import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
+import { Slider } from "../../components/common/Slider";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
 import { WalletDiscountCard } from "../../components/wallet/WalletDiscountCard";
 import { LinkedChargeSliders } from "../../components/charging/LinkedChargeSliders";
 import { getStationById, getChargerById } from "../../data/stations";
 import { primaryPaymentMethods } from "../../data/payments";
+import { myConnectedVehicle } from "../../data/vehicles";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useWallet } from "../../hooks/useWallet";
 import {
@@ -20,6 +22,7 @@ import {
   formatCurrency,
   formatUnits,
   fullChargeUnits,
+  unitsForTargetSoc,
 } from "../../utils/pricing";
 import type { ChargingFlowApi } from "../../hooks/useChargingFlow";
 import type { ChargeType } from "../../types/charging";
@@ -28,6 +31,7 @@ const chargeTypeOptions: { value: ChargeType; label: string }[] = [
   { value: "full-charge", label: "full charge" },
   { value: "amount", label: "amount" },
   { value: "units", label: "units" },
+  { value: "soc", label: "SoC %" },
 ];
 
 const quickAmounts = [250, 500, 750, 1000];
@@ -45,6 +49,9 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
   const station = getStationById(flow.selectedStationId);
   const charger = getChargerById(station, flow.selectedChargerId);
   const chargeType = flow.chargeType ?? "full-charge";
+  const [targetSocPercent, setTargetSocPercent] = useState(() =>
+    Math.min(100, myConnectedVehicle.currentSocPercent + 20)
+  );
 
   // Pre-select the driver's preferred payment method so "pay & start charging" is tappable
   // right away instead of forcing a redundant tap on the method they'd have picked anyway.
@@ -60,7 +67,13 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
   const fullCost = amountFromUnits(fullUnits, charger.pricePerKwh);
 
   const displayUnits =
-    chargeType === "full-charge" ? fullUnits : chargeType === "units" ? flow.units ?? 0 : flow.amount ? unitsFromAmount(flow.amount, charger.pricePerKwh) : 0;
+    chargeType === "full-charge"
+      ? fullUnits
+      : chargeType === "units" || chargeType === "soc"
+      ? flow.units ?? 0
+      : flow.amount
+      ? unitsFromAmount(flow.amount, charger.pricePerKwh)
+      : 0;
   const breakdown = computeCostBreakdown(displayUnits, charger.pricePerKwh);
   const discount = wallet.previewDiscount(breakdown.approximateValue);
   const payable = Math.max(0, breakdown.approximateValue - discount);
@@ -104,6 +117,14 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
     } else {
       flow.setChargeType("units");
     }
+  };
+
+  const handleSocSliderChange = (nextSoc: number) => {
+    setTargetSocPercent(nextSoc);
+    flow.setChargeType("soc");
+    const units = unitsForTargetSoc(nextSoc);
+    flow.setUnits(units);
+    flow.setAmount(amountFromUnits(units, charger.pricePerKwh));
   };
 
   return (
@@ -173,6 +194,19 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
                     onSelect={(v) => flow.setUnits(v)}
                   />
                 </div>
+              )}
+
+              {chargeType === "soc" && (
+                <Slider
+                  label="charge to"
+                  value={targetSocPercent}
+                  onChange={handleSocSliderChange}
+                  min={Math.ceil(myConnectedVehicle.currentSocPercent)}
+                  max={100}
+                  step={1}
+                  unit="%"
+                  helperText={`current battery: ${myConnectedVehicle.currentSocPercent}%`}
+                />
               )}
 
               {chargeType === "full-charge" && (

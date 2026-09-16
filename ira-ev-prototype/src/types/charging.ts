@@ -32,7 +32,7 @@ export interface Station {
   coordinates: { x: number; y: number }; // position on mock map, 0-100 percent
 }
 
-export type ChargeType = "amount" | "units" | "full-charge";
+export type ChargeType = "amount" | "units" | "full-charge" | "soc";
 
 export interface PaymentMethod {
   id: string;
@@ -105,4 +105,6 @@ export interface ExperimentConfig {
   /** Alternate charge-amount UI: a "full charge" checkbox plus interlinked units/cost sliders,
    * instead of the amount/units/full-charge segmented picker. */
   sliderChargeAmountUI: boolean;
+  /** The big "payment enabled/unavailable/coming soon" banner at the top of the station sheet. */
+  showPaymentStatusBanner: boolean;
 }

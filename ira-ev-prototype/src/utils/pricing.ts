@@ -50,6 +50,18 @@ export function estimateChargeDurationMin(units: number, chargerPowerKw: number)
   return (units / effectiveChargeRateKw) * 60;
 }
 
+/** kWh needed to take the connected vehicle from its current SoC to `targetSocPercent`. */
+export function unitsForTargetSoc(targetSocPercent: number): number {
+  const deltaPercent = Math.max(0, targetSocPercent - myConnectedVehicle.currentSocPercent);
+  return (deltaPercent / 100) * myConnectedVehicle.batteryCapacityKwh;
+}
+
+/** The SoC% `units` of charge would leave the connected vehicle at, from its current SoC. */
+export function socForUnits(units: number): number {
+  const deltaPercent = (Math.max(0, units) / myConnectedVehicle.batteryCapacityKwh) * 100;
+  return Math.min(100, myConnectedVehicle.currentSocPercent + deltaPercent);
+}
+
 export function formatCurrency(value: number): string {
   return `₹${value.toFixed(2)}`;
 }

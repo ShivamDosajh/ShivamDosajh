@@ -167,6 +167,7 @@ export function RouteResultsScreen({ planner, onStartNavigation, onStartCharging
                       allChargers={routeChargers}
                       chargerSwaps={planner.chargerSwaps}
                       onSwapCharger={planner.swapCharger}
+                      onRemoveStop={planner.removeChargerStop}
                     />
                   )}
                 </div>

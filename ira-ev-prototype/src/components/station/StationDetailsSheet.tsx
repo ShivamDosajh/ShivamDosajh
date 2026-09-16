@@ -102,7 +102,7 @@ export function StationDetailsSheet({
     >
       <div className="flex flex-col gap-3 pb-2">
         {/* Common area: identifying info the driver needs regardless of which tab is open. */}
-        <PaymentStatus status={station.paymentStatus} />
+        {config.showPaymentStatusBanner && <PaymentStatus status={station.paymentStatus} />}
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -169,8 +169,6 @@ export function StationDetailsSheet({
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
 
-        <ChargerWorkingPrompt station={station} />
-
         {/* Tabs: each panel shows only its own content — the overview tab is the actual
             gun picker (glowing to draw the eye), open by default so it's visible the moment
             the sheet opens, without needing to drag it up first. */}
@@ -179,6 +177,7 @@ export function StationDetailsSheet({
         {tab === "overview" && (
           <>
             <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
+            {selectedGun && <ChargerWorkingPrompt key={selectedGun.id} station={station} charger={selectedGun} />}
             {config.oneClickCharging && selectedGun && (
               <GunConnectPrompt
                 stationId={station.id}

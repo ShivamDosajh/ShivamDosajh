@@ -22,6 +22,7 @@ const toggleDefs: { key: keyof ExperimentConfig; label: string }[] = [
   { key: "quickPayFlow", label: "Quick pay — minimal taps to start charging" },
   { key: "oneClickCharging", label: "One-click charging — OCPI gun-connect verification" },
   { key: "sliderChargeAmountUI", label: "Linked units/cost sliders for charge amount" },
+  { key: "showPaymentStatusBanner", label: "Payment status banner on station sheet" },
   { key: "compactStationCards", label: "Compact station cards" },
   { key: "stickyCTA", label: "Sticky CTA" },
   { key: "simplifiedChargingFlow", label: "Simplified charging flow" },

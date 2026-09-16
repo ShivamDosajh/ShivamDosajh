@@ -1,13 +1,23 @@
+import { useState } from "react";
 import { IndianRupee, Battery } from "lucide-react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
 import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
+import { Slider } from "../../components/common/Slider";
 import { LinkedChargeSliders } from "../../components/charging/LinkedChargeSliders";
 import { getStationById, getChargerById } from "../../data/stations";
+import { myConnectedVehicle } from "../../data/vehicles";
 import { useExperiments } from "../../hooks/useExperiments";
-import { amountFromUnits, unitsFromAmount, formatCurrency, formatUnits, fullChargeUnits } from "../../utils/pricing";
+import {
+  amountFromUnits,
+  unitsFromAmount,
+  formatCurrency,
+  formatUnits,
+  fullChargeUnits,
+  unitsForTargetSoc,
+} from "../../utils/pricing";
 import type { ChargingFlowApi } from "../../hooks/useChargingFlow";
 import type { ChargeType } from "../../types/charging";
 
@@ -18,6 +28,7 @@ interface ChargingTypeScreenProps {
 const chargeTypeOptions: { value: ChargeType; label: string }[] = [
   { value: "amount", label: "amount" },
   { value: "units", label: "units" },
+  { value: "soc", label: "SoC %" },
   { value: "full-charge", label: "full charge" },
 ];
 
@@ -29,6 +40,9 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
   const station = getStationById(flow.selectedStationId);
   const charger = getChargerById(station, flow.selectedChargerId);
   const chargeType = flow.chargeType ?? "amount";
+  const [targetSocPercent, setTargetSocPercent] = useState(() =>
+    Math.min(100, myConnectedVehicle.currentSocPercent + 20)
+  );
 
   if (!station || !charger) return null;
 
@@ -59,6 +73,14 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
     flow.setChargeType("units");
     flow.setUnits(clamped);
     flow.setAmount(amountFromUnits(clamped, charger.pricePerKwh));
+  };
+
+  const handleSocSliderChange = (nextSoc: number) => {
+    setTargetSocPercent(nextSoc);
+    flow.setChargeType("soc");
+    const units = unitsForTargetSoc(nextSoc);
+    flow.setUnits(units);
+    flow.setAmount(amountFromUnits(units, charger.pricePerKwh));
   };
 
   const handleToggleFullCharge = (checked: boolean) => {
@@ -152,6 +174,26 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
               {config.showEstimatedCost && flow.units ? (
                 <p className="text-[13px] text-secondaryText">
                   ≈ {formatCurrency(amountFromUnits(flow.units, charger.pricePerKwh))}
+                </p>
+              ) : null}
+            </div>
+          )}
+
+          {chargeType === "soc" && (
+            <div className="flex flex-col gap-3">
+              <Slider
+                label="charge to"
+                value={targetSocPercent}
+                onChange={handleSocSliderChange}
+                min={Math.ceil(myConnectedVehicle.currentSocPercent)}
+                max={100}
+                step={1}
+                unit="%"
+                helperText={`current battery: ${myConnectedVehicle.currentSocPercent}%`}
+              />
+              {config.showEstimatedCost && flow.units ? (
+                <p className="text-[13px] text-secondaryText">
+                  ≈ {formatUnits(flow.units)} · {formatCurrency(amountFromUnits(flow.units, charger.pricePerKwh))}
                 </p>
               ) : null}
             </div>
