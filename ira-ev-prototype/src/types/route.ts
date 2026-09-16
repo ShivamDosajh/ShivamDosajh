@@ -65,6 +65,15 @@ export interface RouteStopPoint {
   chargerId?: string;
 }
 
+/** One named time-of-day the driver wants a charging stop to land near — "lunch" and "12:30"
+ * by default, but freely added, removed, or renamed ("breakfast", a kids' snack break, etc.). */
+export interface MealStopPreference {
+  id: string;
+  label: string;
+  /** "HH:MM", 24h clock. */
+  time: string;
+}
+
 export interface RoutePreferences {
   startSocPercent: number;
   targetArrivalSocPercent: number;
@@ -77,10 +86,9 @@ export interface RoutePreferences {
   /** Sticks to surface roads instead of the highway — also means no tolls. */
   avoidHighways: boolean;
   chargeStopStrategy: ChargeStopStrategy;
-  /** Only used when chargeStopStrategy is "amenities" — "HH:MM" 24h clock. */
-  lunchTime: string;
-  dinnerTime: string;
-  snackTime: string;
+  /** Only used when chargeStopStrategy is "amenities" — an empty list just falls back to
+   * fewest-stops-style charger picking. */
+  mealStops: MealStopPreference[];
 }
 
 export interface DriveLeg {
@@ -109,8 +117,9 @@ export interface ChargeLeg {
   etaClock: string;
   /** Set when this stop is a restaurant the user picked — lets the itinerary offer "order food" for that exact place. */
   restaurantId?: string;
-  /** Set when this stop was chosen (under the "amenities" strategy) to land near a meal time. */
-  mealStop?: boolean;
+  /** Set to the matched meal stop's label (e.g. "lunch") when this stop was chosen under the
+   * "amenities" strategy to land near that time. */
+  mealStopLabel?: string;
 }
 
 export type RouteLeg = DriveLeg | ChargeLeg;

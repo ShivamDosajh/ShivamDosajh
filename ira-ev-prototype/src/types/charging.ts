@@ -102,4 +102,7 @@ export interface ExperimentConfig {
   quickPayFlow: boolean;
   /** Simulated OCPI gun-connect verification + push notification -> one-tap quick charge. */
   oneClickCharging: boolean;
+  /** Alternate charge-amount UI: a "full charge" checkbox plus interlinked units/cost sliders,
+   * instead of the amount/units/full-charge segmented picker. */
+  sliderChargeAmountUI: boolean;
 }

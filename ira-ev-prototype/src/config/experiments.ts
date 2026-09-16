@@ -19,6 +19,7 @@ export const defaultExperimentConfig: ExperimentConfig = {
   showConnectorAvailability: true,
   quickPayFlow: false,
   oneClickCharging: false,
+  sliderChargeAmountUI: false,
 };
 
 export const EXPERIMENT_STORAGE_KEY = "ira-ev-experiment-config";

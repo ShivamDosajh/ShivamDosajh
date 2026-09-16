@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon, IndianRupee, Timer, Milestone, Utensils } from "lucide-react";
+import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon, IndianRupee, Timer, Milestone, Utensils, Plus, Trash2 } from "lucide-react";
 import { Chip } from "../common/Chip";
 import { SegmentedControl } from "../common/SegmentedControl";
 import { Toggle } from "../common/Toggle";
@@ -39,8 +39,24 @@ function toggleInArray(list: string[], value: string): string[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
+let mealStopIdCounter = 0;
+function newMealStopId(): string {
+  mealStopIdCounter += 1;
+  return `meal-custom-${Date.now()}-${mealStopIdCounter}`;
+}
+
 export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsPanelProps) {
   const [open, setOpen] = useState(false);
+
+  const updateMealStop = (id: string, patch: Partial<{ label: string; time: string }>) => {
+    onChange({ mealStops: preferences.mealStops.map((m) => (m.id === id ? { ...m, ...patch } : m)) });
+  };
+  const removeMealStop = (id: string) => {
+    onChange({ mealStops: preferences.mealStops.filter((m) => m.id !== id) });
+  };
+  const addMealStop = () => {
+    onChange({ mealStops: [...preferences.mealStops, { id: newMealStopId(), label: "stop", time: "16:00" }] });
+  };
 
   return (
     <div className="rounded-card bg-surfaceRaised border border-border overflow-hidden">
@@ -138,34 +154,44 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
             </div>
 
             {preferences.chargeStopStrategy === "amenities" && (
-              <div className="grid grid-cols-3 gap-2 mt-3">
-                <label className="flex flex-col gap-1">
-                  <span className="text-[11px] text-secondaryText lowercase">lunch</span>
-                  <input
-                    type="time"
-                    value={preferences.lunchTime}
-                    onChange={(e) => onChange({ lunchTime: e.target.value })}
-                    className="h-9 rounded-button bg-background border border-border px-2 text-[13px] outline-none"
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-[11px] text-secondaryText lowercase">snack</span>
-                  <input
-                    type="time"
-                    value={preferences.snackTime}
-                    onChange={(e) => onChange({ snackTime: e.target.value })}
-                    className="h-9 rounded-button bg-background border border-border px-2 text-[13px] outline-none"
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-[11px] text-secondaryText lowercase">dinner</span>
-                  <input
-                    type="time"
-                    value={preferences.dinnerTime}
-                    onChange={(e) => onChange({ dinnerTime: e.target.value })}
-                    className="h-9 rounded-button bg-background border border-border px-2 text-[13px] outline-none"
-                  />
-                </label>
+              <div className="flex flex-col gap-2 mt-3">
+                <p className="text-[11px] text-secondaryText lowercase">stop times — add, remove, or rename freely</p>
+                {preferences.mealStops.map((stop) => (
+                  <div key={stop.id} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={stop.label}
+                      onChange={(e) => updateMealStop(stop.id, { label: e.target.value })}
+                      placeholder="label"
+                      className="flex-1 min-w-0 h-9 rounded-button bg-background border border-border px-2.5 text-[12px] outline-none"
+                    />
+                    <input
+                      type="time"
+                      value={stop.time}
+                      onChange={(e) => updateMealStop(stop.id, { time: e.target.value })}
+                      className="h-9 rounded-button bg-background border border-border px-2 text-[12px] outline-none shrink-0"
+                    />
+                    <button
+                      onClick={() => removeMealStop(stop.id)}
+                      className="text-secondaryText shrink-0 p-1.5 -m-1.5"
+                      aria-label={`remove ${stop.label}`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                {preferences.mealStops.length === 0 && (
+                  <p className="text-[11px] text-secondaryText">
+                    no stop times set — charger picks fall back to fewest-stops-style selection
+                  </p>
+                )}
+                <button
+                  onClick={addMealStop}
+                  className="flex items-center justify-center gap-1.5 h-9 rounded-button border border-dashed border-primary/40 text-primary text-[12px] font-medium mt-1"
+                >
+                  <Plus size={13} />
+                  add stop
+                </button>
               </div>
             )}
           </div>

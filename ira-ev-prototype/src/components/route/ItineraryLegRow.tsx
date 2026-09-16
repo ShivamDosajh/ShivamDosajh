@@ -32,7 +32,10 @@ const AMENITY_ICON: Record<Amenity, typeof UtensilsCrossed> = {
 };
 
 /** How far from the original charger a station can be and still count as a "backup" for it. */
-const NEARBY_BACKUP_RADIUS_KM = 120;
+/** Consecutive route chargers sit roughly 40-80km apart, so this covers "the next station
+ * over" in either direction without reaching two hops away — anything past that isn't a
+ * realistic detour, it's a different leg of the trip. */
+const NEARBY_BACKUP_RADIUS_KM = 70;
 const MAX_BACKUP_OPTIONS = 3;
 
 export function DriveLegRow({ leg }: { leg: DriveLeg }) {
@@ -130,10 +133,10 @@ export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, 
               </>
             ) : (
               <>
-                {leg.mealStop && (
+                {leg.mealStopLabel && (
                   <p className="text-[13px] text-primary flex items-center gap-1">
                     <UtensilsCrossed size={11} />
-                    near mealtime
+                    near {leg.mealStopLabel}
                   </p>
                 )}
                 <p className="text-[13px] text-secondaryText">{leg.charger.cpo}</p>

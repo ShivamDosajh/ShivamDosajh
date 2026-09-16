@@ -8,6 +8,7 @@ import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
 import { PaymentMethodList } from "../../components/payment/PaymentMethodList";
 import { WalletDiscountCard } from "../../components/wallet/WalletDiscountCard";
+import { LinkedChargeSliders } from "../../components/charging/LinkedChargeSliders";
 import { getStationById, getChargerById } from "../../data/stations";
 import { primaryPaymentMethods } from "../../data/payments";
 import { useExperiments } from "../../hooks/useExperiments";
@@ -88,6 +89,23 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
     flow.startPayment();
   };
 
+  const handleSliderUnitsChange = (nextUnits: number) => {
+    const clamped = Math.max(0, nextUnits);
+    flow.setChargeType("units");
+    flow.setUnits(clamped);
+    flow.setAmount(amountFromUnits(clamped, charger.pricePerKwh));
+  };
+
+  const handleToggleFullCharge = (checked: boolean) => {
+    if (checked) {
+      flow.setChargeType("full-charge");
+      flow.setUnits(fullUnits);
+      flow.setAmount(fullCost);
+    } else {
+      flow.setChargeType("units");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ScreenHeader title="quick charge" onBack={flow.back} />
@@ -97,68 +115,81 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
           {charger.connector}({charger.name}) · {charger.power.toFixed(1)} kW
         </p>
 
-        <p className="text-[14px] mb-3">choose charge type</p>
-        <SegmentedControl options={chargeTypeOptions} value={chargeType} onChange={(t) => flow.setChargeType(t)} />
+        {config.sliderChargeAmountUI ? (
+          <LinkedChargeSliders
+            charger={charger}
+            units={chargeType === "full-charge" ? fullUnits : flow.units ?? 0}
+            isFullCharge={chargeType === "full-charge"}
+            fullChargeUnits={fullUnits}
+            onChangeUnits={handleSliderUnitsChange}
+            onToggleFullCharge={handleToggleFullCharge}
+          />
+        ) : (
+          <>
+            <p className="text-[14px] mb-3">choose charge type</p>
+            <SegmentedControl options={chargeTypeOptions} value={chargeType} onChange={(t) => flow.setChargeType(t)} />
 
-        <div className="mt-4">
-          {chargeType === "amount" && (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 h-14 rounded-button bg-surfaceRaised border border-border px-4">
-                <IndianRupee size={18} className="text-secondaryText" />
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  value={flow.amount ?? ""}
-                  onChange={(e) => flow.setAmount(e.target.value ? Number(e.target.value) : null)}
-                  placeholder="0"
-                  className="bg-transparent outline-none border-none w-full text-[18px]"
-                />
-              </div>
-              <QuickSelectRow
-                values={quickAmounts}
-                prefix="₹"
-                activeValue={flow.amount}
-                onSelect={(v) => flow.setAmount(v)}
-              />
+            <div className="mt-4">
+              {chargeType === "amount" && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 h-14 rounded-button bg-surfaceRaised border border-border px-4">
+                    <IndianRupee size={18} className="text-secondaryText" />
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={flow.amount ?? ""}
+                      onChange={(e) => flow.setAmount(e.target.value ? Number(e.target.value) : null)}
+                      placeholder="0"
+                      className="bg-transparent outline-none border-none w-full text-[18px]"
+                    />
+                  </div>
+                  <QuickSelectRow
+                    values={quickAmounts}
+                    prefix="₹"
+                    activeValue={flow.amount}
+                    onSelect={(v) => flow.setAmount(v)}
+                  />
+                </div>
+              )}
+
+              {chargeType === "units" && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 h-14 rounded-button bg-surfaceRaised border border-border px-4">
+                    <Battery size={18} className="text-secondaryText" />
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={flow.units ?? ""}
+                      onChange={(e) => flow.setUnits(e.target.value ? Number(e.target.value) : null)}
+                      placeholder="0"
+                      className="bg-transparent outline-none border-none w-full text-[18px]"
+                    />
+                    <span className="text-secondaryText text-[14px]">kWh</span>
+                  </div>
+                  <QuickSelectRow
+                    values={quickUnits}
+                    suffix=" kWh"
+                    activeValue={flow.units}
+                    onSelect={(v) => flow.setUnits(v)}
+                  />
+                </div>
+              )}
+
+              {chargeType === "full-charge" && (
+                <div className="rounded-card bg-surfaceRaised border border-border p-4 flex items-center justify-between">
+                  <p className="text-[12px] text-secondaryText lowercase">units required for full charge</p>
+                  <p className="text-[16px] font-semibold">{formatUnits(fullUnits)}</p>
+                </div>
+              )}
+
+              {config.showEstimatedCost && displayUnits > 0 ? (
+                <p className="text-[12px] text-secondaryText mt-2.5">
+                  ≈ {formatCurrency(breakdown.approximateValue)} incl. tax
+                </p>
+              ) : null}
             </div>
-          )}
-
-          {chargeType === "units" && (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 h-14 rounded-button bg-surfaceRaised border border-border px-4">
-                <Battery size={18} className="text-secondaryText" />
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  value={flow.units ?? ""}
-                  onChange={(e) => flow.setUnits(e.target.value ? Number(e.target.value) : null)}
-                  placeholder="0"
-                  className="bg-transparent outline-none border-none w-full text-[18px]"
-                />
-                <span className="text-secondaryText text-[14px]">kWh</span>
-              </div>
-              <QuickSelectRow
-                values={quickUnits}
-                suffix=" kWh"
-                activeValue={flow.units}
-                onSelect={(v) => flow.setUnits(v)}
-              />
-            </div>
-          )}
-
-          {chargeType === "full-charge" && (
-            <div className="rounded-card bg-surfaceRaised border border-border p-4 flex items-center justify-between">
-              <p className="text-[12px] text-secondaryText lowercase">units required for full charge</p>
-              <p className="text-[16px] font-semibold">{formatUnits(fullUnits)}</p>
-            </div>
-          )}
-
-          {config.showEstimatedCost && displayUnits > 0 ? (
-            <p className="text-[12px] text-secondaryText mt-2.5">
-              ≈ {formatCurrency(breakdown.approximateValue)} incl. tax
-            </p>
-          ) : null}
-        </div>
+          </>
+        )}
 
         <div className="mt-3">
           <WalletDiscountCard transactionValue={breakdown.approximateValue} />

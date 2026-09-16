@@ -4,6 +4,7 @@ import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
 import { SegmentedControl } from "../../components/common/SegmentedControl";
 import { QuickSelectRow } from "../../components/common/QuickSelectRow";
+import { LinkedChargeSliders } from "../../components/charging/LinkedChargeSliders";
 import { getStationById, getChargerById } from "../../data/stations";
 import { useExperiments } from "../../hooks/useExperiments";
 import { amountFromUnits, unitsFromAmount, formatCurrency, formatUnits, fullChargeUnits } from "../../utils/pricing";
@@ -53,6 +54,23 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
     flow.confirmChargingType();
   };
 
+  const handleSliderUnitsChange = (nextUnits: number) => {
+    const clamped = Math.max(0, nextUnits);
+    flow.setChargeType("units");
+    flow.setUnits(clamped);
+    flow.setAmount(amountFromUnits(clamped, charger.pricePerKwh));
+  };
+
+  const handleToggleFullCharge = (checked: boolean) => {
+    if (checked) {
+      flow.setChargeType("full-charge");
+      flow.setUnits(fullUnits);
+      flow.setAmount(fullCost);
+    } else {
+      flow.setChargeType("units");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ScreenHeader title="charging type" onBack={flow.back} />
@@ -67,6 +85,17 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
 
         <div className="h-px bg-border mb-4" />
 
+        {config.sliderChargeAmountUI ? (
+          <LinkedChargeSliders
+            charger={charger}
+            units={chargeType === "full-charge" ? fullUnits : flow.units ?? 0}
+            isFullCharge={chargeType === "full-charge"}
+            fullChargeUnits={fullUnits}
+            onChangeUnits={handleSliderUnitsChange}
+            onToggleFullCharge={handleToggleFullCharge}
+          />
+        ) : (
+          <>
         <p className="text-[14px] mb-3">choose charge type</p>
         <SegmentedControl options={chargeTypeOptions} value={chargeType} onChange={(t) => flow.setChargeType(t)} />
 
@@ -141,6 +170,8 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
 
       <StickyFooter sticky={config.stickyCTA}>

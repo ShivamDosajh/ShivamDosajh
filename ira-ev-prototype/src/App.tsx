@@ -60,10 +60,6 @@ function AppShell() {
     }
   };
 
-  // A route-planner stop always has exactly one connector, so there's no real charger
-  // choice to make — jump straight past station lookup and charger-selection into whatever
-  // the current charging-flow experiment expects next, pre-filled with the amount the route
-  // plan already calculated for this stop rather than defaulting to a full charge.
   // Tapping the simulated push notification jumps straight to the one-tap quick-charge
   // screen for the verified station+charger, wherever in the app the driver currently is.
   const handleOpenOneClickNotification = (stationId: string, chargerId: string) => {
@@ -71,11 +67,16 @@ function AppShell() {
     setTab("station");
   };
 
+  // A route-planner stop always has exactly one connector, so there's no real choice to
+  // make on the gun-selection screen — but it still shows (pre-selected, one tap through)
+  // rather than being skipped, so the driver sees the same connector/power confirmation
+  // step they'd get charging from the station map directly. Pre-filled with the amount the
+  // route plan already calculated for this stop rather than defaulting to a full charge.
   const handleStartChargingFromRoute = (routeChargerId: string, prefill: { units: number; amount: number }) => {
     flow.startChargingSession(
       routeStationId(routeChargerId),
       routeConnectorId(routeChargerId),
-      config.quickPayFlow ? "quick-pay" : "charging-type",
+      "charger-selection",
       true
     );
     flow.setChargeType("amount");

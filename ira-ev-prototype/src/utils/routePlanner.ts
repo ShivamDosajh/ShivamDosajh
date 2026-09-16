@@ -231,7 +231,7 @@ export function planRoute(
    * point at the current segIdx (so a stop at the edge of range can't strand the rest
    * of the journey), and tags the leg with `restaurantId` when this stop is one the
    * user picked, so the itinerary can offer ordering food there. */
-  const chargeAt = (charger: RouteCharger, restaurantId?: string, mealStop?: boolean) => {
+  const chargeAt = (charger: RouteCharger, restaurantId?: string, mealStopLabel?: string) => {
     const arrivalSoc = soc;
     const remainingAfterCharger = chainRemainingKm(segIdx, posKm);
     const socNeededForRest = (remainingAfterCharger * consumptionWhPerKm) / (vehicle.batteryCapacityKwh * 1000) * 100 + prefs.minChargeSocPercent;
@@ -262,7 +262,7 @@ export function planRoute(
       costEstimate: Math.round(cost),
       etaClock: formatClock(new Date(departureTime.getTime() + elapsedMin * 60_000)),
       restaurantId,
-      mealStop,
+      mealStopLabel,
     } satisfies ChargeLeg);
     totalChargeMin += chargeDurationMin;
     totalCost += cost;
@@ -307,18 +307,25 @@ export function planRoute(
       pool.reduce((best, c) => (Math.abs(c.distanceKm - reachTargetKm) < Math.abs(best.distanceKm - reachTargetKm) ? c : best));
 
     let charger: RouteCharger;
-    let mealStop = false;
+    let mealStopLabel: string | undefined;
 
     if (prefs.chargeStopStrategy === "amenities") {
-      const mealMinutes = [parseTimeToMinutes(prefs.lunchTime), parseTimeToMinutes(prefs.snackTime), parseTimeToMinutes(prefs.dinnerTime)];
-      const nearestMealDiff = (km: number) => {
+      const mealMinutes = prefs.mealStops.map((m) => ({ label: m.label, minute: parseTimeToMinutes(m.time) }));
+      const nearestMeal = (km: number) => {
         const arrivalMin = estimateArrivalMinuteOfDay(km);
-        return Math.min(...mealMinutes.map((m) => Math.abs(arrivalMin - m)));
+        return mealMinutes.reduce<{ label: string; diff: number } | null>((best, m) => {
+          const diff = Math.abs(arrivalMin - m.minute);
+          return !best || diff < best.diff ? { label: m.label, diff } : best;
+        }, null);
       };
-      const withinMealWindow = candidates.filter((c) => c.amenities.includes("food") && nearestMealDiff(c.distanceKm) <= MEAL_WINDOW_MIN);
+      const withinMealWindow = candidates
+        .filter((c) => c.amenities.includes("food"))
+        .map((c) => ({ charger: c, meal: nearestMeal(c.distanceKm) }))
+        .filter((c): c is { charger: RouteCharger; meal: { label: string; diff: number } } => !!c.meal && c.meal.diff <= MEAL_WINDOW_MIN);
       if (withinMealWindow.length > 0) {
-        charger = withinMealWindow.reduce((best, c) => (nearestMealDiff(c.distanceKm) < nearestMealDiff(best.distanceKm) ? c : best));
-        mealStop = true;
+        const best = withinMealWindow.reduce((best, c) => (c.meal.diff < best.meal.diff ? c : best));
+        charger = best.charger;
+        mealStopLabel = best.meal.label;
       } else {
         charger = byReachTarget(candidates);
       }
@@ -337,7 +344,7 @@ export function planRoute(
 
     driveSegment(charger.distanceKm, charger.name, false);
     advanceSegIdx();
-    chargeAt(charger, undefined, mealStop || undefined);
+    chargeAt(charger, undefined, mealStopLabel);
   }
 
   const stopCount = legs.filter((l) => l.kind === "charge").length;

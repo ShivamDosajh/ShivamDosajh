@@ -21,9 +21,11 @@ function buildDefaultPreferences(): RoutePreferences {
     climateControlOn: false,
     avoidHighways: false,
     chargeStopStrategy: "fewest-stops",
-    lunchTime: "13:00",
-    dinnerTime: "20:00",
-    snackTime: "17:00",
+    mealStops: [
+      { id: "meal-lunch", label: "lunch", time: "13:00" },
+      { id: "meal-snack", label: "snack", time: "17:00" },
+      { id: "meal-dinner", label: "dinner", time: "20:00" },
+    ],
   };
 }
 

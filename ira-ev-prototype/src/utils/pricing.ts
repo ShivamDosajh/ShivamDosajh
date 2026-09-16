@@ -1,6 +1,11 @@
+import { myConnectedVehicle } from "../data/vehicles";
+
 const TAX_RATE = 0.18;
 const CONVENIENCE_FEE = 0;
 const FULL_CHARGE_UNITS_REQUIRED = 2.75; // mock: units needed to top up to full
+/** Approximates real-world charging-curve taper (rated kW is rarely sustained end to end) —
+ * same figure used by ChargingInProgressScreen's live-session duration estimate. */
+const CHARGE_CURVE_EFFICIENCY = 0.75;
 
 export interface CostBreakdown {
   costOfRecharge: number;
@@ -34,6 +39,15 @@ export function computeCostBreakdown(units: number, pricePerKwh: number): CostBr
     tax,
     approximateValue,
   };
+}
+
+/** Minutes to add `units` kWh on a charger of `chargerPowerKw`, capped by the connected
+ * vehicle's own max charge rate. */
+export function estimateChargeDurationMin(units: number, chargerPowerKw: number): number {
+  if (units <= 0) return 0;
+  const effectiveChargeRateKw = Math.min(chargerPowerKw, myConnectedVehicle.maxChargeRateKw) * CHARGE_CURVE_EFFICIENCY;
+  if (effectiveChargeRateKw <= 0) return 0;
+  return (units / effectiveChargeRateKw) * 60;
 }
 
 export function formatCurrency(value: number): string {
