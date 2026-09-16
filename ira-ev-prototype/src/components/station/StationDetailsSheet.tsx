@@ -9,6 +9,7 @@ import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
 import { GunQuickSelectList } from "./GunQuickSelectList";
 import { GunConnectPrompt } from "../oneclick/GunConnectPrompt";
+import { ChargerWorkingPrompt } from "./ChargerWorkingPrompt";
 import { StationReviewsList } from "./StationReviewsList";
 import { StationAmenitiesList } from "./StationAmenitiesList";
 import { StationPhotoCarousel } from "./StationPhotoCarousel";
@@ -167,6 +168,8 @@ export function StationDetailsSheet({
         {config.showRangePrediction && (
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
+
+        <ChargerWorkingPrompt station={station} />
 
         {/* Tabs: each panel shows only its own content — the overview tab is the actual
             gun picker (glowing to draw the eye), open by default so it's visible the moment
