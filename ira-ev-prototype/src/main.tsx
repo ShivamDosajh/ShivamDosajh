@@ -4,6 +4,7 @@ import App from "./App";
 import { ExperimentProvider } from "./components/experiments/ExperimentProvider";
 import { ZomatoOrderProvider } from "./components/zomato/ZomatoOrderProvider";
 import { WalletProvider } from "./components/wallet/WalletProvider";
+import { OneClickChargingProvider } from "./components/oneclick/OneClickChargingProvider";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import "./index.css";
 
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")!).render(
       <ExperimentProvider>
         <ZomatoOrderProvider>
           <WalletProvider>
-            <App />
+            <OneClickChargingProvider>
+              <App />
+            </OneClickChargingProvider>
           </WalletProvider>
         </ZomatoOrderProvider>
       </ExperimentProvider>

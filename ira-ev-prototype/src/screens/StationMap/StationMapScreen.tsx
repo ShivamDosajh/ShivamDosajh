@@ -8,8 +8,6 @@ import { FiltersModal, type FilterKey } from "../../components/map/FiltersModal"
 import { Chip } from "../../components/common/Chip";
 import { StationCard } from "../../components/station/StationCard";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
-import { WalletBalancePill } from "../../components/wallet/WalletBalancePill";
-import { WalletInfoModal } from "../../components/wallet/WalletInfoModal";
 import { useExperiments } from "../../hooks/useExperiments";
 import type { ChargingFlowApi } from "../../hooks/useChargingFlow";
 
@@ -23,7 +21,6 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
   const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(new Set());
   const [legendOpen, setLegendOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [mapKey, setMapKey] = useState(0);
 
   const toggleFilter = (key: FilterKey) => {
@@ -77,7 +74,6 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
           </div>
 
           <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-            <WalletBalancePill onClick={() => setWalletModalOpen(true)} />
             <button
               onClick={() => setFiltersOpen(true)}
               className="flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-black/85 backdrop-blur text-white text-[13px] font-medium shrink-0 border border-white/10"
@@ -128,7 +124,6 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
       </div>
 
       <MapLegend open={legendOpen} onClose={() => setLegendOpen(false)} />
-      <WalletInfoModal open={walletModalOpen} onClose={() => setWalletModalOpen(false)} />
       <FiltersModal
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}

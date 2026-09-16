@@ -100,4 +100,6 @@ export interface ExperimentConfig {
   showChargingInProgress: boolean;
   showConnectorAvailability: boolean;
   quickPayFlow: boolean;
+  /** Simulated OCPI gun-connect verification + push notification -> one-tap quick charge. */
+  oneClickCharging: boolean;
 }

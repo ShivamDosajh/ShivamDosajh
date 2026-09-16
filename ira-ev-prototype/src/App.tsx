@@ -14,6 +14,7 @@ import { NavigatingScreen } from "./screens/Placeholder/NavigatingScreen";
 import { PlaceholderScreen } from "./screens/Placeholder/PlaceholderScreen";
 import { BottomNavigation, type BottomTab } from "./components/navigation/BottomNavigation";
 import { ExperimentPanel } from "./components/experiments/ExperimentPanel";
+import { PushNotificationBanner } from "./components/oneclick/PushNotificationBanner";
 import { useChargingFlow } from "./hooks/useChargingFlow";
 import { useExperiments } from "./hooks/useExperiments";
 import { useZomatoOrder } from "./hooks/useZomatoOrder";
@@ -63,6 +64,13 @@ function AppShell() {
   // choice to make — jump straight past station lookup and charger-selection into whatever
   // the current charging-flow experiment expects next, pre-filled with the amount the route
   // plan already calculated for this stop rather than defaulting to a full charge.
+  // Tapping the simulated push notification jumps straight to the one-tap quick-charge
+  // screen for the verified station+charger, wherever in the app the driver currently is.
+  const handleOpenOneClickNotification = (stationId: string, chargerId: string) => {
+    flow.startChargingSession(stationId, chargerId, "quick-pay", false);
+    setTab("station");
+  };
+
   const handleStartChargingFromRoute = (routeChargerId: string, prefill: { units: number; amount: number }) => {
     flow.startChargingSession(
       routeStationId(routeChargerId),
@@ -161,6 +169,7 @@ function AppShell() {
       </div>
 
       <ExperimentPanel onResetPrototype={handleResetPrototype} />
+      <PushNotificationBanner onOpen={handleOpenOneClickNotification} />
     </div>
   );
 }

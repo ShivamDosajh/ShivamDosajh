@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
-import type { RoutePlan, RoutePreferences } from "../types/route";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { RoutePlan, RoutePreferences, RouteStopPoint } from "../types/route";
 import { getLocationById } from "../data/routeLocations";
 import { myConnectedVehicle } from "../data/vehicles";
 import { routeChargers } from "../data/routeChargers";
@@ -20,7 +20,10 @@ function buildDefaultPreferences(): RoutePreferences {
     drivingStyle: "normal",
     climateControlOn: false,
     avoidHighways: false,
-    chargeStopStrategy: "optimal",
+    chargeStopStrategy: "fewest-stops",
+    lunchTime: "13:00",
+    dinnerTime: "20:00",
+    snackTime: "17:00",
   };
 }
 
@@ -32,6 +35,10 @@ export interface RoutePlannerApi {
   waypointRefs: string[];
   preferences: RoutePreferences;
   plan: RoutePlan | null;
+  /** Original charger id -> backup charger id, for stops the driver swapped because the
+   * original charger might not be working. Keyed off the original so it survives the
+   * original leg disappearing from the recomputed plan. */
+  chargerSwaps: Record<string, string>;
   setStartId: (id: string) => void;
   setDestinationId: (id: string) => void;
   addWaypoint: (ref: string) => void;
@@ -42,6 +49,9 @@ export interface RoutePlannerApi {
   planTrip: () => void;
   editTrip: () => void;
   reset: () => void;
+  /** Swaps a charge stop for a backup charger and re-plans the rest of the trip around it.
+   * Pass `undefined` as backupChargerId to undo a swap. */
+  swapCharger: (originalChargerId: string, backupChargerId: string | undefined) => void;
 }
 
 export function useRoutePlanner(): RoutePlannerApi {
@@ -51,6 +61,7 @@ export function useRoutePlanner(): RoutePlannerApi {
   const [waypointRefs, setWaypointRefs] = useState<string[]>([]);
   const [preferences, setPreferences] = useState<RoutePreferences>(buildDefaultPreferences);
   const [plan, setPlan] = useState<RoutePlan | null>(null);
+  const [chargerSwaps, setChargerSwaps] = useState<Record<string, string>>({});
 
   const addWaypoint = useCallback((ref: string) => {
     setWaypointRefs((prev) => (prev.includes(ref) ? prev : [...prev, ref]));
@@ -82,17 +93,62 @@ export function useRoutePlanner(): RoutePlannerApi {
     setPreferences((prev) => ({ ...prev, ...partial }));
   }, []);
 
-  const planTrip = useCallback(() => {
+  // Backup-charger swaps are modeled as extra pinned waypoints (reusing the same
+  // chargerId-pinning mechanism restaurant stops use) rather than special-cased in the
+  // planning algorithm itself — the greedy chain walk already treats a pinned chain point
+  // as a mandatory stop at that exact charger whenever it's reachable in one hop.
+  const buildPlan = useCallback(() => {
     const start = getLocationById(startId);
     const destination = getLocationById(destinationId);
-    if (!start || !destination) return;
+    if (!start || !destination) return null;
     const waypoints = waypointRefs.map(resolveStopPoint).filter((w): w is NonNullable<typeof w> => !!w);
-    const nextPlan = planRoute(start, destination, waypoints, myConnectedVehicle, preferences, routeChargers);
+    const swapWaypoints: RouteStopPoint[] = Object.values(chargerSwaps)
+      .map((backupChargerId): RouteStopPoint | null => {
+        const backup = routeChargers.find((c) => c.id === backupChargerId);
+        if (!backup) return null;
+        return {
+          ref: `swap:${backup.id}`,
+          kind: "location",
+          label: backup.name,
+          subtitle: "backup charger",
+          distanceKm: backup.distanceKm,
+          coordinates: backup.coordinates,
+          elevationM: backup.elevationM,
+          chargerId: backup.id,
+        };
+      })
+      .filter((w): w is RouteStopPoint => !!w);
+    return planRoute(start, destination, [...waypoints, ...swapWaypoints], myConnectedVehicle, preferences, routeChargers);
+  }, [startId, destinationId, waypointRefs, preferences, chargerSwaps]);
+
+  const planTrip = useCallback(() => {
+    const nextPlan = buildPlan();
+    if (!nextPlan) return;
     setPlan(nextPlan);
     setStep("results");
-  }, [startId, destinationId, waypointRefs, preferences]);
+  }, [buildPlan]);
+
+  // Re-plans automatically the moment a backup charger is chosen (or undone), so the rest
+  // of the itinerary always reflects the swap without a separate "re-plan" tap.
+  useEffect(() => {
+    if (step !== "results") return;
+    const nextPlan = buildPlan();
+    if (nextPlan) setPlan(nextPlan);
+    // Only react to swap changes here — buildPlan itself changes on every keystroke-level
+    // preference edit, which shouldn't silently re-plan a screen the driver isn't on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chargerSwaps]);
 
   const editTrip = useCallback(() => setStep("setup"), []);
+
+  const swapCharger = useCallback((originalChargerId: string, backupChargerId: string | undefined) => {
+    setChargerSwaps((prev) => {
+      const next = { ...prev };
+      if (backupChargerId) next[originalChargerId] = backupChargerId;
+      else delete next[originalChargerId];
+      return next;
+    });
+  }, []);
 
   const reset = useCallback(() => {
     setStep("setup");
@@ -100,6 +156,7 @@ export function useRoutePlanner(): RoutePlannerApi {
     setDestinationId("bengaluru");
     setWaypointRefs([]);
     setPreferences(buildDefaultPreferences());
+    setChargerSwaps({});
     setPlan(null);
   }, []);
 
@@ -111,6 +168,7 @@ export function useRoutePlanner(): RoutePlannerApi {
       waypointRefs,
       preferences,
       plan,
+      chargerSwaps,
       setStartId,
       setDestinationId,
       addWaypoint,
@@ -121,6 +179,7 @@ export function useRoutePlanner(): RoutePlannerApi {
       planTrip,
       editTrip,
       reset,
+      swapCharger,
     }),
     [
       step,
@@ -129,6 +188,7 @@ export function useRoutePlanner(): RoutePlannerApi {
       waypointRefs,
       preferences,
       plan,
+      chargerSwaps,
       addWaypoint,
       removeWaypoint,
       reorderWaypoints,
@@ -137,6 +197,7 @@ export function useRoutePlanner(): RoutePlannerApi {
       planTrip,
       editTrip,
       reset,
+      swapCharger,
     ]
   );
 }

@@ -12,7 +12,7 @@ export interface VehicleProfile {
 }
 
 export type DrivingStyle = "eco" | "normal" | "spirited";
-export type ChargeStopStrategy = "optimal" | "fewer" | "fewest";
+export type ChargeStopStrategy = "cheapest" | "fastest" | "fewest-stops" | "amenities";
 export type Amenity = "food" | "restroom" | "wifi";
 
 /** The user's actual EV, read from the app's live connected-car telemetry — never picked from a list. */
@@ -77,6 +77,10 @@ export interface RoutePreferences {
   /** Sticks to surface roads instead of the highway — also means no tolls. */
   avoidHighways: boolean;
   chargeStopStrategy: ChargeStopStrategy;
+  /** Only used when chargeStopStrategy is "amenities" — "HH:MM" 24h clock. */
+  lunchTime: string;
+  dinnerTime: string;
+  snackTime: string;
 }
 
 export interface DriveLeg {
@@ -105,6 +109,8 @@ export interface ChargeLeg {
   etaClock: string;
   /** Set when this stop is a restaurant the user picked — lets the itinerary offer "order food" for that exact place. */
   restaurantId?: string;
+  /** Set when this stop was chosen (under the "amenities" strategy) to land near a meal time. */
+  mealStop?: boolean;
 }
 
 export type RouteLeg = DriveLeg | ChargeLeg;

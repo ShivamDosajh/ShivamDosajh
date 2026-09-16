@@ -1,6 +1,21 @@
 import { useState } from "react";
-import { Car, Zap, MapPinned, IndianRupee, Mountain, Recycle, UtensilsCrossed, Wifi, Bath, ArrowRight } from "lucide-react";
-import type { Amenity, DriveLeg, ChargeLeg } from "../../types/route";
+import {
+  Car,
+  Zap,
+  MapPinned,
+  IndianRupee,
+  Mountain,
+  Recycle,
+  UtensilsCrossed,
+  Wifi,
+  Bath,
+  ArrowRight,
+  ShieldAlert,
+  Undo2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import type { Amenity, DriveLeg, ChargeLeg, RouteCharger } from "../../types/route";
 import { formatDuration } from "../../utils/routePlanner";
 import { useExperiments } from "../../hooks/useExperiments";
 import { useZomatoOrder } from "../../hooks/useZomatoOrder";
@@ -15,6 +30,10 @@ const AMENITY_ICON: Record<Amenity, typeof UtensilsCrossed> = {
   restroom: Bath,
   wifi: Wifi,
 };
+
+/** How far from the original charger a station can be and still count as a "backup" for it. */
+const NEARBY_BACKUP_RADIUS_KM = 120;
+const MAX_BACKUP_OPTIONS = 3;
 
 export function DriveLegRow({ leg }: { leg: DriveLeg }) {
   return (
@@ -57,18 +76,37 @@ interface ChargeLegRowProps {
   /** Present only on the route-planner itinerary — jumps straight into the real charging
    * flow for this stop instead of making the driver find the charger on the map again. */
   onStartCharging?: (routeChargerId: string, prefill: { units: number; amount: number }) => void;
+  /** All route chargers, for finding nearby backup options — omitted when backup-picking
+   * isn't wired up for this rendering context (e.g. a mid-charge summary). */
+  allChargers?: RouteCharger[];
+  /** Original charger id -> backup charger id for stops the driver has already swapped. */
+  chargerSwaps?: Record<string, string>;
+  onSwapCharger?: (originalChargerId: string, backupChargerId: string | undefined) => void;
 }
 
-export function ChargeLegRow({ leg, onStartCharging }: ChargeLegRowProps) {
+export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, onSwapCharger }: ChargeLegRowProps) {
   const { config } = useExperiments();
   const { order } = useZomatoOrder();
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [backupsOpen, setBackupsOpen] = useState(false);
 
   const pickedRestaurant = leg.restaurantId ? getRestaurantById(leg.restaurantId) : undefined;
   const fixedZomatoRestaurant = pickedRestaurant ? toZomatoRestaurant(pickedRestaurant) : undefined;
   const restaurantChoices = fixedZomatoRestaurant ? [fixedZomatoRestaurant] : getZomatoRestaurantsForStation(leg.charger.id);
   const activeOrderHere = order && order.stationId === leg.charger.id ? order : null;
   const chargerSubtitle = `${leg.charger.cpo} · ${leg.charger.connector} · ${leg.charger.powerKw}kW`;
+
+  const swapOriginalId = chargerSwaps
+    ? Object.entries(chargerSwaps).find(([, backupId]) => backupId === leg.charger.id)?.[0]
+    : undefined;
+  const backupOptions = allChargers
+    ? allChargers
+        .filter((c) => c.id !== leg.charger.id)
+        .map((c) => ({ charger: c, deltaKm: Math.abs(c.distanceKm - leg.charger.distanceKm) }))
+        .filter((c) => c.deltaKm <= NEARBY_BACKUP_RADIUS_KM)
+        .sort((a, b) => a.deltaKm - b.deltaKm)
+        .slice(0, MAX_BACKUP_OPTIONS)
+    : [];
 
   return (
     <div className="flex gap-3 py-2.5">
@@ -92,6 +130,12 @@ export function ChargeLegRow({ leg, onStartCharging }: ChargeLegRowProps) {
               </>
             ) : (
               <>
+                {leg.mealStop && (
+                  <p className="text-[13px] text-primary flex items-center gap-1">
+                    <UtensilsCrossed size={11} />
+                    near mealtime
+                  </p>
+                )}
                 <p className="text-[13px] text-secondaryText">{leg.charger.cpo}</p>
                 <p className="text-[14px] font-medium">{leg.charger.name}</p>
               </>
@@ -140,6 +184,66 @@ export function ChargeLegRow({ leg, onStartCharging }: ChargeLegRowProps) {
             charge now
             <ArrowRight size={13} />
           </button>
+        )}
+
+        {onSwapCharger && (allChargers || swapOriginalId) && (
+          <div className="mt-2">
+            {swapOriginalId ? (
+              <div className="flex items-center justify-between rounded-button bg-primary/10 px-2.5 py-2">
+                <span className="flex items-center gap-1.5 text-[11px] text-primary">
+                  <ShieldAlert size={12} />
+                  using backup charger
+                </span>
+                <button
+                  onClick={() => onSwapCharger(swapOriginalId, undefined)}
+                  className="flex items-center gap-1 text-[11px] font-medium text-primary"
+                >
+                  <Undo2 size={11} />
+                  undo
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setBackupsOpen((v) => !v)}
+                className="w-full flex items-center justify-between text-[11px] text-secondaryText py-1"
+              >
+                <span className="flex items-center gap-1.5">
+                  <ShieldAlert size={12} />
+                  charger not working? choose a backup
+                </span>
+                {backupsOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+              </button>
+            )}
+
+            {backupsOpen && !swapOriginalId && (
+              <div className="flex flex-col gap-1.5 mt-1.5">
+                {backupOptions.length === 0 && (
+                  <p className="text-[11px] text-secondaryText">no nearby backup chargers found</p>
+                )}
+                {backupOptions.map(({ charger: backup, deltaKm }) => (
+                  <button
+                    key={backup.id}
+                    onClick={() => {
+                      onSwapCharger(leg.charger.id, backup.id);
+                      setBackupsOpen(false);
+                    }}
+                    className="flex items-center justify-between rounded-button border border-border px-2.5 py-2 text-left"
+                  >
+                    <span>
+                      <span className="block text-[12px] font-medium text-text">{backup.name}</span>
+                      <span className="block text-[11px] text-secondaryText">
+                        {backup.connector} · {backup.powerKw}kW · ~{Math.round(deltaKm)}km away
+                      </span>
+                    </span>
+                    <span className="flex items-center gap-0.5 text-[11px] text-primary shrink-0">
+                      <IndianRupee size={10} />
+                      {backup.pricePerKwh}/kWh
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {config.showZomatoOrdering && (

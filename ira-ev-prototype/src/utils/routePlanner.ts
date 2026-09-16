@@ -21,10 +21,23 @@ const DRIVING_STYLE_CONSUMPTION_FACTOR: Record<DrivingStyle, number> = {
 
 /** Per-stop targets: [intermediate charge cap %, fraction of max range to push before stopping]. */
 const CHARGE_STRATEGY: Record<ChargeStopStrategy, { cap: number; reachFraction: number }> = {
-  optimal: { cap: 75, reachFraction: 0.85 },
-  fewer: { cap: 90, reachFraction: 0.93 },
-  fewest: { cap: 97, reachFraction: 0.98 },
+  cheapest: { cap: 90, reachFraction: 0.9 },
+  fastest: { cap: 70, reachFraction: 0.78 },
+  "fewest-stops": { cap: 97, reachFraction: 0.98 },
+  amenities: { cap: 85, reachFraction: 0.88 },
 };
+
+/** Minimum share of the remaining range a candidate must cover before it's considered for
+ * price/power-based picking — otherwise "cheapest"/"fastest" could pick a charger a few km
+ * away just because it's marginally cheaper/faster, forcing far more stops than needed. */
+const PROGRESS_FILTER_FRACTION = 0.4;
+/** How close to a meal time an arrival has to be to count as "near lunch/dinner/snack". */
+const MEAL_WINDOW_MIN = 90;
+
+function parseTimeToMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return (h % 24) * 60 + (m || 0);
+}
 
 const CLIMATE_CONSUMPTION_FACTOR = 1.1;
 /** Approximates real-world charging-curve taper (rated kW is rarely sustained end to end). */
@@ -204,11 +217,21 @@ export function planRoute(
     }
   };
 
+  /** Clock-minute-of-day the car would arrive at `toKm`, from the current position/elapsed
+   * time — used by the "amenities" strategy to judge whether a candidate charger lands near
+   * a meal time, without actually committing the drive leg yet. */
+  const estimateArrivalMinuteOfDay = (toKm: number) => {
+    const distanceKm = Math.abs(toKm - posKm) * distanceMultiplier;
+    const durationMin = ((distanceKm / avgSpeedKmh) * 60) * timeMultiplier;
+    const arrivalDate = new Date(departureTime.getTime() + (elapsedMin + durationMin) * 60_000);
+    return arrivalDate.getHours() * 60 + arrivalDate.getMinutes();
+  };
+
   /** Charges at `charger`, sized against everything left in the trip *after* the chain
    * point at the current segIdx (so a stop at the edge of range can't strand the rest
    * of the journey), and tags the leg with `restaurantId` when this stop is one the
    * user picked, so the itinerary can offer ordering food there. */
-  const chargeAt = (charger: RouteCharger, restaurantId?: string) => {
+  const chargeAt = (charger: RouteCharger, restaurantId?: string, mealStop?: boolean) => {
     const arrivalSoc = soc;
     const remainingAfterCharger = chainRemainingKm(segIdx, posKm);
     const socNeededForRest = (remainingAfterCharger * consumptionWhPerKm) / (vehicle.batteryCapacityKwh * 1000) * 100 + prefs.minChargeSocPercent;
@@ -239,6 +262,7 @@ export function planRoute(
       costEstimate: Math.round(cost),
       etaClock: formatClock(new Date(departureTime.getTime() + elapsedMin * 60_000)),
       restaurantId,
+      mealStop,
     } satisfies ChargeLeg);
     totalChargeMin += chargeDurationMin;
     totalCost += cost;
@@ -279,13 +303,41 @@ export function planRoute(
       break;
     }
 
-    const charger = candidates.reduce((best, c) =>
-      Math.abs(c.distanceKm - reachTargetKm) < Math.abs(best.distanceKm - reachTargetKm) ? c : best
-    );
+    const byReachTarget = (pool: RouteCharger[]) =>
+      pool.reduce((best, c) => (Math.abs(c.distanceKm - reachTargetKm) < Math.abs(best.distanceKm - reachTargetKm) ? c : best));
+
+    let charger: RouteCharger;
+    let mealStop = false;
+
+    if (prefs.chargeStopStrategy === "amenities") {
+      const mealMinutes = [parseTimeToMinutes(prefs.lunchTime), parseTimeToMinutes(prefs.snackTime), parseTimeToMinutes(prefs.dinnerTime)];
+      const nearestMealDiff = (km: number) => {
+        const arrivalMin = estimateArrivalMinuteOfDay(km);
+        return Math.min(...mealMinutes.map((m) => Math.abs(arrivalMin - m)));
+      };
+      const withinMealWindow = candidates.filter((c) => c.amenities.includes("food") && nearestMealDiff(c.distanceKm) <= MEAL_WINDOW_MIN);
+      if (withinMealWindow.length > 0) {
+        charger = withinMealWindow.reduce((best, c) => (nearestMealDiff(c.distanceKm) < nearestMealDiff(best.distanceKm) ? c : best));
+        mealStop = true;
+      } else {
+        charger = byReachTarget(candidates);
+      }
+    } else if (prefs.chargeStopStrategy === "cheapest" || prefs.chargeStopStrategy === "fastest") {
+      // Only pick by price/power among candidates that make meaningful progress — otherwise
+      // a marginally cheaper/faster charger a few km away would force far more stops.
+      const progressFiltered = candidates.filter((c) => (c.distanceKm - posKm) * direction >= maxReachable * PROGRESS_FILTER_FRACTION);
+      const pool = progressFiltered.length > 0 ? progressFiltered : candidates;
+      charger =
+        prefs.chargeStopStrategy === "cheapest"
+          ? pool.reduce((best, c) => (c.pricePerKwh < best.pricePerKwh ? c : best))
+          : pool.reduce((best, c) => (c.powerKw > best.powerKw ? c : best));
+    } else {
+      charger = byReachTarget(candidates);
+    }
 
     driveSegment(charger.distanceKm, charger.name, false);
     advanceSegIdx();
-    chargeAt(charger);
+    chargeAt(charger, undefined, mealStop || undefined);
   }
 
   const stopCount = legs.filter((l) => l.kind === "charge").length;

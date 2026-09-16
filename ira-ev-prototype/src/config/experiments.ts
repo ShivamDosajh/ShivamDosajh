@@ -18,6 +18,7 @@ export const defaultExperimentConfig: ExperimentConfig = {
   showChargingInProgress: true,
   showConnectorAvailability: true,
   quickPayFlow: false,
+  oneClickCharging: false,
 };
 
 export const EXPERIMENT_STORAGE_KEY = "ira-ev-experiment-config";

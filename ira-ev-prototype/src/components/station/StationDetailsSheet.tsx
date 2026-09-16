@@ -8,6 +8,7 @@ import { PaymentStatus } from "./PaymentStatus";
 import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
 import { GunQuickSelectList } from "./GunQuickSelectList";
+import { GunConnectPrompt } from "../oneclick/GunConnectPrompt";
 import { StationReviewsList } from "./StationReviewsList";
 import { StationAmenitiesList } from "./StationAmenitiesList";
 import { StationPhotoCarousel } from "./StationPhotoCarousel";
@@ -76,6 +77,7 @@ export function StationDetailsSheet({
   const amenityIcons = amenities.slice(0, 3);
   const zomatoRestaurants = getZomatoRestaurantsForStation(station.id);
   const zomatoAvailable = config.showZomatoOrdering && zomatoRestaurants.length > 0;
+  const selectedGun = station.chargers.find((c) => c.id === selectedChargerId) ?? null;
 
   return (
     <BottomSheet
@@ -172,7 +174,17 @@ export function StationDetailsSheet({
         <StationTabs active={tab} onChange={setTab} />
 
         {tab === "overview" && (
-          <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
+          <>
+            <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
+            {config.oneClickCharging && selectedGun && (
+              <GunConnectPrompt
+                stationId={station.id}
+                stationName={station.name}
+                chargerId={selectedGun.id}
+                chargerLabel={`${selectedGun.connector}(${selectedGun.name})`}
+              />
+            )}
+          </>
         )}
         {tab === "reviews" && <StationReviewsList reviews={reviews} />}
         {tab === "amenities" && <StationAmenitiesList amenities={amenities} />}

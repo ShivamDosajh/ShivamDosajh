@@ -7,6 +7,7 @@ import { RouteMapPreview } from "../../components/route/RouteMapPreview";
 import { TripSummaryCard } from "../../components/route/TripSummaryCard";
 import { TripProgressBar } from "../../components/route/TripProgressBar";
 import { DriveLegRow, ChargeLegRow } from "../../components/route/ItineraryLegRow";
+import { routeChargers } from "../../data/routeChargers";
 import type { RoutePlannerApi } from "../../hooks/useRoutePlanner";
 
 /** How far below the top of the scroll container the "reading line" sits — the point whose
@@ -160,7 +161,13 @@ export function RouteResultsScreen({ planner, onStartNavigation, onStartCharging
                   {leg.kind === "drive" ? (
                     <DriveLegRow leg={leg} />
                   ) : (
-                    <ChargeLegRow leg={leg} onStartCharging={onStartCharging} />
+                    <ChargeLegRow
+                      leg={leg}
+                      onStartCharging={onStartCharging}
+                      allChargers={routeChargers}
+                      chargerSwaps={planner.chargerSwaps}
+                      onSwapCharger={planner.swapCharger}
+                    />
                   )}
                 </div>
               ))}

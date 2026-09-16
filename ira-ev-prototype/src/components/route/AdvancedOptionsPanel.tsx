@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, Zap, Wind, Route as RouteIcon, IndianRupee, Timer, Milestone, Utensils } from "lucide-react";
 import { Chip } from "../common/Chip";
 import { SegmentedControl } from "../common/SegmentedControl";
 import { Toggle } from "../common/Toggle";
@@ -23,10 +23,16 @@ const DRIVING_STYLE_OPTIONS: { value: DrivingStyle; label: string }[] = [
   { value: "normal", label: "normal" },
   { value: "spirited", label: "spirited" },
 ];
-const CHARGE_STRATEGY_OPTIONS: { value: ChargeStopStrategy; label: string }[] = [
-  { value: "optimal", label: "optimal" },
-  { value: "fewer", label: "fewer stops" },
-  { value: "fewest", label: "fewest stops" },
+const CHARGE_STRATEGY_OPTIONS: {
+  value: ChargeStopStrategy;
+  label: string;
+  description: string;
+  icon: typeof IndianRupee;
+}[] = [
+  { value: "cheapest", label: "cheapest", description: "lowest cost chargers, even if a few extra stops", icon: IndianRupee },
+  { value: "fastest", label: "fastest", description: "highest-power chargers, quick top-ups", icon: Timer },
+  { value: "fewest-stops", label: "fewest stops", description: "charge closer to full each time to skip stations", icon: Milestone },
+  { value: "amenities", label: "amenities trip", description: "stop near food around your meal times", icon: Utensils },
 ];
 
 function toggleInArray(list: string[], value: string): string[] {
@@ -109,15 +115,59 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
 
           <div>
             <p className="text-[12px] text-secondaryText mb-2 lowercase">charging strategy</p>
-            <SegmentedControl
-              options={CHARGE_STRATEGY_OPTIONS}
-              value={preferences.chargeStopStrategy}
-              onChange={(v) => onChange({ chargeStopStrategy: v })}
-            />
-            <p className="text-[11px] text-secondaryText mt-1.5">
-              optimal balances stop count against charging time · fewer/fewest stops charge closer to full each
-              time to skip stations
-            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {CHARGE_STRATEGY_OPTIONS.map((opt) => {
+                const active = preferences.chargeStopStrategy === opt.value;
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => onChange({ chargeStopStrategy: opt.value })}
+                    className={`text-left rounded-button border px-3 py-2.5 flex flex-col gap-1 transition-colors ${
+                      active ? "border-primary bg-primary/10" : "border-border bg-background"
+                    }`}
+                  >
+                    <span className={`flex items-center gap-1.5 text-[13px] font-medium ${active ? "text-primary" : "text-text"}`}>
+                      <Icon size={14} />
+                      {opt.label}
+                    </span>
+                    <span className="text-[11px] text-secondaryText leading-snug">{opt.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {preferences.chargeStopStrategy === "amenities" && (
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-[11px] text-secondaryText lowercase">lunch</span>
+                  <input
+                    type="time"
+                    value={preferences.lunchTime}
+                    onChange={(e) => onChange({ lunchTime: e.target.value })}
+                    className="h-9 rounded-button bg-background border border-border px-2 text-[13px] outline-none"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-[11px] text-secondaryText lowercase">snack</span>
+                  <input
+                    type="time"
+                    value={preferences.snackTime}
+                    onChange={(e) => onChange({ snackTime: e.target.value })}
+                    className="h-9 rounded-button bg-background border border-border px-2 text-[13px] outline-none"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-[11px] text-secondaryText lowercase">dinner</span>
+                  <input
+                    type="time"
+                    value={preferences.dinnerTime}
+                    onChange={(e) => onChange({ dinnerTime: e.target.value })}
+                    className="h-9 rounded-button bg-background border border-border px-2 text-[13px] outline-none"
+                  />
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between">
