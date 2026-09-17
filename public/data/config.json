@@ -1,0 +1,12 @@
+{
+  "advisorName": "Rohan Kulkarni",
+  "dealership": "TATA.ev Pune Central",
+  "slaDays": 10,
+  "dueSoonDays": 3,
+  "incentives": {
+    "base": 300,
+    "onTimeBonus": 200,
+    "ratingBonusFull": 200,
+    "ratingBonusHalf": 100
+  }
+}

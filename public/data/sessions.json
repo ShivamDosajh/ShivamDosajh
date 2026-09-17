@@ -1,0 +1,68 @@
+[
+  { "customerId": "c1", "status": "PENDING", "dueDate": "2026-09-25", "currentStep": 0, "checklist": {} },
+  { "customerId": "c2", "status": "PENDING", "dueDate": "2026-09-18", "currentStep": 0, "checklist": {} },
+  { "customerId": "c3", "status": "PENDING", "dueDate": "2026-09-09", "currentStep": 0, "checklist": {} },
+  { "customerId": "c4", "status": "PENDING", "dueDate": "2026-09-22", "currentStep": 0, "checklist": {} },
+  { "customerId": "c5", "status": "PENDING", "dueDate": "2026-09-11", "currentStep": 0, "checklist": {} },
+
+  { "customerId": "c6", "status": "SCHEDULED", "dueDate": "2026-09-20", "currentStep": 0, "checklist": {}, "appointment": { "date": "2026-09-17", "time": "11:00", "notes": "Prefers morning slot" } },
+  { "customerId": "c7", "status": "SCHEDULED", "dueDate": "2026-09-24", "currentStep": 0, "checklist": {}, "appointment": { "date": "2026-09-17", "time": "15:30", "notes": "" } },
+  { "customerId": "c8", "status": "SCHEDULED", "dueDate": "2026-09-08", "currentStep": 0, "checklist": {}, "appointment": { "date": "2026-09-19", "time": "10:00", "notes": "Customer travelling, confirm before visit" } },
+  { "customerId": "c9", "status": "SCHEDULED", "dueDate": "2026-09-26", "currentStep": 0, "checklist": {}, "appointment": { "date": "2026-09-20", "time": "16:00", "notes": "" } },
+
+  { "customerId": "c10", "status": "IN_PROGRESS", "dueDate": "2026-09-21", "currentStep": 2, "checklist": {
+      "s1_ontime": true, "s1_intro": true, "s1_charge_range": true,
+      "s2_installed": true, "s2_linked": true, "s2_map": true, "s2_payment": true, "s2_status": true, "s2_explained": true,
+      "s3_picked": true
+    }, "appointment": { "date": "2026-09-17", "time": "09:30", "notes": "" } },
+
+  { "customerId": "c11", "status": "COMPLETED", "dueDate": "2026-09-07", "currentStep": 4, "checklist": {
+      "s1_ontime": true, "s1_intro": true, "s1_charge_range": true,
+      "s2_installed": true, "s2_linked": true, "s2_map": true, "s2_payment": true, "s2_status": true, "s2_explained": true,
+      "s3_picked": true, "s3_checked": true, "s3_drove": true,
+      "s4_plugged": true, "s4_started": true, "s4_explained": true, "s4_stopped": true, "s4_payment": true,
+      "s5_recap": true, "s5_helpline": true, "s5_questions": true, "s5_feedback": true
+    },
+    "charge": { "chargerName": "Statiq - Kothrud Mall", "startPct": 22, "endPct": 78, "kwh": 24.5, "amountInr": 490 },
+    "completedAt": "2026-09-05T12:30:00" },
+
+  { "customerId": "c12", "status": "COMPLETED", "dueDate": "2026-09-10", "currentStep": 4, "checklist": {
+      "s1_ontime": true, "s1_intro": true, "s1_charge_range": true,
+      "s2_installed": true, "s2_linked": true, "s2_map": true, "s2_payment": true, "s2_status": true, "s2_explained": true,
+      "s3_picked": true, "s3_checked": true, "s3_drove": true,
+      "s4_plugged": true, "s4_started": true, "s4_explained": true, "s4_stopped": true, "s4_payment": true,
+      "s5_recap": true, "s5_helpline": true, "s5_questions": true, "s5_feedback": true
+    },
+    "charge": { "chargerName": "Tata Power - Kondhwa", "startPct": 18, "endPct": 80, "kwh": 27.1, "amountInr": 542 },
+    "completedAt": "2026-09-09T14:00:00" },
+
+  { "customerId": "c13", "status": "COMPLETED", "dueDate": "2026-09-12", "currentStep": 4, "checklist": {
+      "s1_ontime": true, "s1_intro": true, "s1_charge_range": true,
+      "s2_installed": true, "s2_linked": true, "s2_map": true, "s2_payment": true, "s2_status": true, "s2_explained": true,
+      "s3_picked": true, "s3_checked": true, "s3_drove": true,
+      "s4_plugged": true, "s4_started": true, "s4_explained": true, "s4_stopped": true, "s4_payment": true,
+      "s5_recap": true, "s5_helpline": true, "s5_questions": true, "s5_feedback": true
+    },
+    "charge": { "chargerName": "Ather Grid - Magarpatta", "startPct": 25, "endPct": 75, "kwh": 21.0, "amountInr": 420 },
+    "completedAt": "2026-09-14T16:45:00" },
+
+  { "customerId": "c14", "status": "COMPLETED", "dueDate": "2026-09-14", "currentStep": 4, "checklist": {
+      "s1_ontime": true, "s1_intro": true, "s1_charge_range": true,
+      "s2_installed": true, "s2_linked": true, "s2_map": true, "s2_payment": true, "s2_status": true, "s2_explained": true,
+      "s3_picked": true, "s3_checked": true, "s3_drove": true,
+      "s4_plugged": true, "s4_started": true, "s4_explained": true, "s4_stopped": true, "s4_payment": true,
+      "s5_recap": true, "s5_helpline": true, "s5_questions": true, "s5_feedback": true
+    },
+    "charge": { "chargerName": "Statiq - Pimple Saudagar", "startPct": 20, "endPct": 80, "kwh": 26.4, "amountInr": 528 },
+    "completedAt": "2026-09-13T11:15:00" },
+
+  { "customerId": "c15", "status": "COMPLETED", "dueDate": "2026-09-16", "currentStep": 4, "checklist": {
+      "s1_ontime": true, "s1_intro": true, "s1_charge_range": true,
+      "s2_installed": true, "s2_linked": true, "s2_map": true, "s2_payment": true, "s2_status": true, "s2_explained": true,
+      "s3_picked": true, "s3_checked": true, "s3_drove": true,
+      "s4_plugged": true, "s4_started": true, "s4_explained": true, "s4_stopped": true, "s4_payment": true,
+      "s5_recap": true, "s5_helpline": true, "s5_questions": true, "s5_feedback": true
+    },
+    "charge": { "chargerName": "Tata Power - NIBM", "startPct": 24, "endPct": 79, "kwh": 23.8, "amountInr": 476 },
+    "completedAt": "2026-09-16T13:20:00" }
+]
