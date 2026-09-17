@@ -33,9 +33,9 @@ This repo includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) th
 1. In the repository, go to **Settings → Pages**.
 2. Under **Build and deployment → Source**, choose **GitHub Actions**.
 3. Push to `main` (or run the workflow manually from the **Actions** tab).
-4. The app will be published at `https://<owner>.github.io/chargeguide/`.
+4. The app will be published at `https://shivamdosajh.github.io/ShivamDosajh/`.
 
-`vite.config.ts` sets `base: '/chargeguide/'` — if you fork this under a different repository name, update that value (and the Pages URL) to match.
+`vite.config.ts` sets `base: '/ShivamDosajh/'` to match this repository's name — GitHub Pages project sites are served at `https://<owner>.github.io/<repo>/`, so if you fork this under a different repository name, update that value (and the Pages URL above) to match.
 
 ## Installing the app
 
