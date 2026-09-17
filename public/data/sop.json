@@ -1,0 +1,88 @@
+{
+  "steps": [
+    {
+      "id": 0,
+      "title": "Arrive & introduce",
+      "duration": "5 min",
+      "checklist": [
+        { "id": "s1_ontime", "label": "Reached customer's home on time" },
+        { "id": "s1_intro", "label": "Introduced self and the 2-hour plan" },
+        { "id": "s1_charge_range", "label": "Car charge is between 20% and 80%" }
+      ],
+      "tips": ["Present this as a free owner benefit, not a sales visit"]
+    },
+    {
+      "id": 1,
+      "title": "iRA.ev walkthrough",
+      "duration": "25 min",
+      "checklist": [
+        { "id": "s2_installed", "label": "App installed and logged in" },
+        { "id": "s2_linked", "label": "Car linked in app" },
+        { "id": "s2_map", "label": "Showed how to find chargers on the map" },
+        { "id": "s2_payment", "label": "Payment method added by customer" },
+        { "id": "s2_status", "label": "Showed charge status and trip planner" },
+        { "id": "s2_explained", "label": "Explained home charging and 20–80% habit" }
+      ],
+      "tips": ["Let the customer hold the phone and do every tap"]
+    },
+    {
+      "id": 2,
+      "title": "Drive to charger",
+      "duration": "15 min",
+      "checklist": [
+        { "id": "s3_picked", "label": "Customer picked a nearby charger in iRA.ev" },
+        { "id": "s3_checked", "label": "Checked the charger is available" },
+        { "id": "s3_drove", "label": "Customer drove there" }
+      ],
+      "tips": ["Keep a backup charger ready; no phone use while customer drives"]
+    },
+    {
+      "id": 3,
+      "title": "Public charge",
+      "duration": "30–45 min",
+      "checklist": [
+        { "id": "s4_plugged", "label": "Customer plugged in the connector" },
+        { "id": "s4_started", "label": "Customer started the session in iRA.ev" },
+        { "id": "s4_explained", "label": "Explained live charging screen" },
+        { "id": "s4_stopped", "label": "Customer stopped the session and unplugged" },
+        { "id": "s4_payment", "label": "Payment done and receipt shown in app" }
+      ],
+      "tips": ["Record charger name, start %, end %, kWh and ₹; if the charger fails, move to the backup"]
+    },
+    {
+      "id": 4,
+      "title": "Wrap-up",
+      "duration": "10 min",
+      "checklist": [
+        { "id": "s5_recap", "label": "Recapped key steps" },
+        { "id": "s5_helpline", "label": "Shared helpline number" },
+        { "id": "s5_questions", "label": "Answered all questions" },
+        { "id": "s5_feedback", "label": "Told customer a feedback link will come" }
+      ],
+      "tips": ["Don't ask for a 5-star rating"]
+    }
+  ],
+  "dos": [
+    "Be on time, and message the customer if you will be more than 10 minutes late.",
+    "Wear your ID and introduce yourself.",
+    "Let the customer operate the app. You guide.",
+    "Use simple words in the customer's language.",
+    "Check the charger in iRA.ev before leaving, and have a backup.",
+    "Tick the checklist as you go."
+  ],
+  "donts": [
+    "Don't drive the customer's car. The customer drives.",
+    "Don't ask for or type the customer's UPI PIN, card details, OTPs or passwords.",
+    "Don't pay for the charge yourself or promise free credits.",
+    "Don't sell accessories, insurance or other products during the visit.",
+    "Don't ask for a good rating.",
+    "Don't tick steps that weren't done.",
+    "Don't leave the customer at a failed charger without a next step."
+  ],
+  "faq": [
+    { "problem": "Charger offline", "action": "Go to the backup charger" },
+    { "problem": "Session won't start", "action": "Re-plug once, retry in the app, then try another connector" },
+    { "problem": "Payment fails", "action": "Customer tries another payment method; never use yours" },
+    { "problem": "Connector stuck", "action": "Stop the session in the app, lock and unlock the car, wait 30 s" }
+  ]
+}

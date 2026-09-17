@@ -1,0 +1,6 @@
+[
+  { "customerId": "c11", "rating": 5, "comment": "Very helpful, explained everything patiently.", "date": "2026-09-05" },
+  { "customerId": "c12", "rating": 4, "comment": "Good session, charger queue took a while.", "date": "2026-09-09" },
+  { "customerId": "c13", "rating": 2, "comment": "Visit was rushed and app kept crashing.", "date": "2026-09-14" },
+  { "customerId": "c14", "rating": 5, "comment": "Excellent, very knowledgeable advisor.", "date": "2026-09-13" }
+]
