@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowUpDown, BatteryCharging, BatteryFull, ChevronRight, Flag } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowUpDown, BatteryCharging, BatteryFull, ChevronRight, Flag, Zap } from "lucide-react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
@@ -8,12 +8,23 @@ import { LocationPickerModal } from "../../components/route/LocationPickerModal"
 import { ConnectedVehicleCard } from "../../components/route/ConnectedVehicleCard";
 import { AdvancedOptionsPanel } from "../../components/route/AdvancedOptionsPanel";
 import { getLocationById } from "../../data/routeLocations";
+import { myConnectedVehicle } from "../../data/vehicles";
+import { routeChargers } from "../../data/routeChargers";
+import { planRoute } from "../../utils/routePlanner";
 import type { LegByLegPlannerApi } from "../../hooks/useLegByLegPlanner";
 
 export function LegByLegSetupScreen({ planner, onBack }: { planner: LegByLegPlannerApi; onBack: () => void }) {
   const [pickerTarget, setPickerTarget] = useState<"start" | "destination" | null>(null);
   const startLoc = getLocationById(planner.startId);
   const destLoc = getLocationById(planner.destinationId);
+
+  /** A rough preview of how many charging stops this trip will likely need, computed with the
+   * same engine as the classic planner — so the driver knows what they're getting into before
+   * committing to build the trip leg by leg. */
+  const estimatedPlan = useMemo(() => {
+    if (!startLoc || !destLoc || startLoc.id === destLoc.id) return null;
+    return planRoute(startLoc, destLoc, [], myConnectedVehicle, planner.preferences, routeChargers);
+  }, [startLoc, destLoc, planner.preferences]);
 
   return (
     <div className="flex flex-col h-full">
@@ -83,6 +94,36 @@ export function LegByLegSetupScreen({ planner, onBack }: { planner: LegByLegPlan
           </div>
 
           <AdvancedOptionsPanel preferences={planner.preferences} onChange={planner.updatePreferences} />
+
+          {estimatedPlan && (
+            <div
+              className={`rounded-card border p-3.5 flex items-center gap-3 ${
+                estimatedPlan.feasible ? "bg-primary/10 border-primary" : "bg-warning/10 border-warning"
+              }`}
+            >
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                  estimatedPlan.feasible ? "bg-primary/15 text-primary" : "bg-warning/15 text-warning"
+                }`}
+              >
+                <Zap size={16} />
+              </div>
+              {estimatedPlan.feasible ? (
+                <p className="text-[13px] text-text">
+                  this trip will likely need about{" "}
+                  <span className="font-semibold">
+                    {estimatedPlan.stopCount} charging stop{estimatedPlan.stopCount !== 1 ? "s" : ""}
+                  </span>{" "}
+                  — you'll choose the charger for each one as you go.
+                </p>
+              ) : (
+                <p className="text-[13px] text-text">
+                  with your current filters, we can't find a fully reachable route — you may need to loosen your
+                  connector/network/power filters or minimum SoC once you start building.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-2 text-[12px] text-secondaryText">
             <BatteryCharging size={14} className="text-primary shrink-0" />

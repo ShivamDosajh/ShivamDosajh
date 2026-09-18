@@ -1,21 +1,24 @@
-import { IndianRupee, Star } from "lucide-react";
+import { ChevronRight, IndianRupee, Star } from "lucide-react";
 import type { LegChargerOption } from "../../types/legByLeg";
 import { formatDuration } from "../../utils/routePlanner";
 
 interface LegOptionCardProps {
   option: LegChargerOption;
-  onChoose: (chargerId: string) => void;
+  /** Opens the full charger-detail sheet — that's where selecting actually happens now, so the
+   * driver sees everything (photos, rating, amenities, full drive/charge breakdown) before
+   * committing rather than picking off this summary card alone. */
+  onOpenDetail: (option: LegChargerOption) => void;
 }
 
 /** One charger option for the leg currently being decided — the recommended pick or a
- * nearby backup, each shown with a full preview of the drive-there-and-charge it implies so
- * the driver can compare before committing. */
-export function LegOptionCard({ option, onChoose }: LegOptionCardProps) {
+ * nearby backup, each shown with a preview of the drive-there-and-charge it implies. Tapping
+ * it opens the full detail sheet rather than selecting immediately. */
+export function LegOptionCard({ option, onOpenDetail }: LegOptionCardProps) {
   const { charger, isRecommended, rerouteDistanceKm, driveLeg, chargeLeg } = option;
 
   return (
     <button
-      onClick={() => onChoose(charger.id)}
+      onClick={() => onOpenDetail(option)}
       className={`w-full text-left rounded-card border px-3.5 py-3 ${
         isRecommended ? "border-primary bg-primary/10" : "border-border bg-surfaceRaised"
       }`}
@@ -63,11 +66,12 @@ export function LegOptionCard({ option, onChoose }: LegOptionCardProps) {
       </div>
 
       <div
-        className={`mt-2.5 h-9 rounded-button flex items-center justify-center text-[12px] font-semibold ${
+        className={`mt-2.5 h-9 rounded-button flex items-center justify-center gap-1 text-[12px] font-semibold ${
           isRecommended ? "bg-primary text-black" : "border border-primary text-primary"
         }`}
       >
-        choose this charger
+        view details &amp; select
+        <ChevronRight size={13} />
       </div>
     </button>
   );

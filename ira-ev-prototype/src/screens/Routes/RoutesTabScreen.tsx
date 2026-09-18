@@ -33,7 +33,7 @@ function ClassicRoutesFlow({ onExit, onStartCharging }: RoutesTabScreenProps) {
 }
 
 /** The leg-by-leg builder — the driver picks a charger for each leg one at a time. */
-function LegByLegRoutesFlow({ onExit }: { onExit: () => void }) {
+function LegByLegRoutesFlow({ onExit, onStartCharging }: RoutesTabScreenProps) {
   const planner = useLegByLegPlanner();
   const [navigating, setNavigating] = useState(false);
 
@@ -42,7 +42,14 @@ function LegByLegRoutesFlow({ onExit }: { onExit: () => void }) {
   }
 
   if (planner.step !== "setup") {
-    return <LegByLegBuildScreen planner={planner} onBack={planner.editTrip} onStartNavigation={() => setNavigating(true)} />;
+    return (
+      <LegByLegBuildScreen
+        planner={planner}
+        onBack={planner.editTrip}
+        onStartNavigation={() => setNavigating(true)}
+        onStartCharging={onStartCharging}
+      />
+    );
   }
 
   return <LegByLegSetupScreen planner={planner} onBack={onExit} />;
@@ -52,7 +59,7 @@ export function RoutesTabScreen({ onExit, onStartCharging }: RoutesTabScreenProp
   const { config } = useExperiments();
 
   if (config.legByLegRoutePlanner) {
-    return <LegByLegRoutesFlow onExit={onExit} />;
+    return <LegByLegRoutesFlow onExit={onExit} onStartCharging={onStartCharging} />;
   }
 
   return <ClassicRoutesFlow onExit={onExit} onStartCharging={onStartCharging} />;

@@ -8,6 +8,15 @@ import { computeActiveLeg, buildPlanSummary } from "../utils/legByLegPlanner";
 
 export type LegByLegStep = "setup" | "building" | "complete";
 
+/** Snapshot of the build state right before a given leg's charger choice was made — lets a
+ * confirmed leg be reopened and re-decided without replaying the whole trip from scratch. */
+interface LegCheckpoint {
+  posKm: number;
+  fromLabel: string;
+  soc: number;
+  elapsedMin: number;
+}
+
 function buildDefaultPreferences(): RoutePreferences {
   return {
     startSocPercent: myConnectedVehicle.currentSocPercent,
@@ -47,6 +56,11 @@ export interface LegByLegPlannerApi {
   activeLeg: ActiveLeg | null;
   /** Commits one of the current leg's options and advances to the next leg. */
   chooseCharger: (chargerId: string) => void;
+  /** Reopens an already-confirmed leg (0-indexed) so its charger can be re-decided — discards
+   * that leg and every leg after it, and recomputes options from the state just before it. */
+  editLeg: (legIndex: number) => void;
+  /** How many charger choices have been confirmed so far — the number of legs `editLeg` can target. */
+  confirmedLegCount: number;
   /** Commits the final "no more charging needed" leg and completes the trip. */
   confirmFinalLeg: () => void;
   /** Only set once the trip is complete — a full RoutePlan-shaped summary of every leg. */
@@ -64,6 +78,7 @@ export function useLegByLegPlanner(): LegByLegPlannerApi {
   const [confirmedLegs, setConfirmedLegs] = useState<RouteLeg[]>([]);
   const [activeLeg, setActiveLeg] = useState<ActiveLeg | null>(null);
   const [plan, setPlan] = useState<RoutePlan | null>(null);
+  const [checkpoints, setCheckpoints] = useState<LegCheckpoint[]>([]);
 
   // Running build state — not exposed directly, only through the derived activeLeg/plan.
   const [posKm, setPosKm] = useState(0);
@@ -91,6 +106,7 @@ export function useLegByLegPlanner(): LegByLegPlannerApi {
     setElapsedMin(0);
     setConfirmedLegs([]);
     setPlan(null);
+    setCheckpoints([{ posKm: start.distanceKm, fromLabel: start.label, soc: preferences.startSocPercent, elapsedMin: 0 }]);
     const next = computeActiveLeg(
       start.distanceKm,
       start.label,
@@ -123,6 +139,10 @@ export function useLegByLegPlanner(): LegByLegPlannerApi {
       setPosKm(nextPosKm);
       setSoc(nextSoc);
       setElapsedMin(nextElapsedMin);
+      setCheckpoints((prev) => [
+        ...prev,
+        { posKm: nextPosKm, fromLabel: option.charger.name, soc: nextSoc, elapsedMin: nextElapsedMin },
+      ]);
 
       const next = computeActiveLeg(
         nextPosKm,
@@ -138,6 +158,36 @@ export function useLegByLegPlanner(): LegByLegPlannerApi {
       setActiveLeg(next);
     },
     [activeLeg, confirmedLegs, elapsedMin, destinationId, preferences, departureTime]
+  );
+
+  const editLeg = useCallback(
+    (legIndex: number) => {
+      const checkpoint = checkpoints[legIndex];
+      const destination = getLocationById(destinationId);
+      if (!checkpoint || !destination) return;
+
+      setConfirmedLegs((prev) => prev.slice(0, legIndex * 2));
+      setCheckpoints((prev) => prev.slice(0, legIndex + 1));
+      setPosKm(checkpoint.posKm);
+      setSoc(checkpoint.soc);
+      setElapsedMin(checkpoint.elapsedMin);
+      setPlan(null);
+      setStep("building");
+
+      const next = computeActiveLeg(
+        checkpoint.posKm,
+        checkpoint.fromLabel,
+        checkpoint.soc,
+        checkpoint.elapsedMin,
+        destination,
+        myConnectedVehicle,
+        preferences,
+        routeChargers,
+        departureTime
+      );
+      setActiveLeg(next);
+    },
+    [checkpoints, destinationId, preferences, departureTime]
   );
 
   const confirmFinalLeg = useCallback(() => {
@@ -163,6 +213,7 @@ export function useLegByLegPlanner(): LegByLegPlannerApi {
     setConfirmedLegs([]);
     setActiveLeg(null);
     setPlan(null);
+    setCheckpoints([]);
   }, []);
 
   const totalDistanceKm = useMemo(() => {
@@ -194,6 +245,8 @@ export function useLegByLegPlanner(): LegByLegPlannerApi {
       confirmedLegs,
       activeLeg,
       chooseCharger,
+      editLeg,
+      confirmedLegCount: checkpoints.length > 0 ? checkpoints.length - 1 : 0,
       confirmFinalLeg,
       plan,
       coveredKm,
@@ -212,6 +265,8 @@ export function useLegByLegPlanner(): LegByLegPlannerApi {
       confirmedLegs,
       activeLeg,
       chooseCharger,
+      editLeg,
+      checkpoints,
       confirmFinalLeg,
       plan,
       coveredKm,

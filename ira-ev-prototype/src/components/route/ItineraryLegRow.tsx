@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Car,
+  Check,
   Zap,
   MapPinned,
   IndianRupee,
@@ -15,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
   Minus,
+  Pencil,
 } from "lucide-react";
 import type { Amenity, DriveLeg, ChargeLeg, RouteCharger } from "../../types/route";
 import { formatDuration } from "../../utils/routePlanner";
@@ -89,9 +91,28 @@ interface ChargeLegRowProps {
   /** Removes this stop from the itinerary entirely and re-plans the trip around it — omitted
    * for restaurant stops, which are removed via the trip's stop list instead. */
   onRemoveStop?: (chargerId: string) => void;
+  /** Present only on the leg-by-leg builder — reopens this already-confirmed leg so its
+   * charger can be re-decided from the same list of recommended/backup options. */
+  onEdit?: () => void;
+  /** How many later legs would be discarded if this one is edited — shown as a warning next
+   * to the edit button when > 0. */
+  laterLegCount?: number;
+  /** Swaps the leg icon for a checkmark — used for legs already locked into the leg-by-leg
+   * itinerary, so "this stop is done" doesn't need a second overlapping badge. */
+  confirmed?: boolean;
 }
 
-export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, onSwapCharger, onRemoveStop }: ChargeLegRowProps) {
+export function ChargeLegRow({
+  leg,
+  onStartCharging,
+  allChargers,
+  chargerSwaps,
+  onSwapCharger,
+  onRemoveStop,
+  onEdit,
+  laterLegCount = 0,
+  confirmed = false,
+}: ChargeLegRowProps) {
   const { config } = useExperiments();
   const { order } = useZomatoOrder();
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -118,8 +139,12 @@ export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, 
   return (
     <div className="flex gap-3 py-2.5">
       <div className="w-9 flex flex-col items-center shrink-0">
-        <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary flex items-center justify-center text-primary">
-          <Zap size={13} />
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            confirmed ? "bg-success/20 border border-success text-success" : "bg-primary/15 border border-primary text-primary"
+          }`}
+        >
+          {confirmed ? <Check size={14} strokeWidth={3} /> : <Zap size={13} />}
         </div>
         <div className="w-px flex-1 bg-border mt-1" />
       </div>
@@ -150,6 +175,15 @@ export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, 
           </div>
           <span className="flex items-center gap-1.5 shrink-0">
             <span className="text-[11px] text-secondaryText">ETA {leg.etaClock}</span>
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                aria-label={`edit stop at ${leg.charger.name}`}
+                className="w-5 h-5 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0"
+              >
+                <Pencil size={10} />
+              </button>
+            )}
             {onRemoveStop && !leg.restaurantId && (
               <button
                 onClick={() => onRemoveStop(leg.charger.id)}
@@ -161,6 +195,11 @@ export function ChargeLegRow({ leg, onStartCharging, allChargers, chargerSwaps, 
             )}
           </span>
         </div>
+        {onEdit && laterLegCount > 0 && (
+          <p className="text-[10px] text-warning mt-0.5">
+            editing this stop will also clear {laterLegCount} later stop{laterLegCount > 1 ? "s" : ""}
+          </p>
+        )}
         {leg.charger.amenities.length > 0 && (
           <div className="flex items-center gap-2.5 mt-1.5">
             {leg.charger.amenities.map((a) => {

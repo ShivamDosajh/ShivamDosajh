@@ -13,9 +13,10 @@ import {
 } from "./routePlanner";
 
 /** How far a backup can be from the recommended charger and still be offered as a realistic
- * alternative for the same leg — consecutive route chargers sit roughly 40-80km apart. */
-const NEARBY_BACKUP_RADIUS_KM = 90;
-const MAX_BACKUP_OPTIONS = 3;
+ * alternative for the same leg — consecutive route chargers sit roughly 40-80km apart, so this
+ * comfortably covers the next couple of chargers in either direction. */
+const NEARBY_BACKUP_RADIUS_KM = 160;
+const MAX_BACKUP_OPTIONS = 5;
 
 /**
  * Figures out what the driver needs to decide next, from wherever they currently are: either

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { Check, Flag, Navigation } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Flag, Navigation } from "lucide-react";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { Button } from "../../components/common/Button";
 import { StickyFooter } from "../../components/common/StickyFooter";
@@ -7,21 +7,31 @@ import { TripProgressBar } from "../../components/route/TripProgressBar";
 import { TripSummaryCard } from "../../components/route/TripSummaryCard";
 import { LegByLegMapPreview } from "../../components/route/LegByLegMapPreview";
 import { LegOptionCard } from "../../components/route/LegOptionCard";
+import { LegChargerDetailSheet } from "../../components/route/LegChargerDetailSheet";
 import { DriveLegRow, ChargeLegRow } from "../../components/route/ItineraryLegRow";
 import { getLocationById } from "../../data/routeLocations";
 import { formatDuration } from "../../utils/routePlanner";
 import type { LegByLegPlannerApi } from "../../hooks/useLegByLegPlanner";
-import type { RoutePlan } from "../../types/route";
+import type { LegChargerOption } from "../../types/legByLeg";
+import type { RouteLeg, RoutePlan } from "../../types/route";
 
 interface LegByLegBuildScreenProps {
   planner: LegByLegPlannerApi;
   onBack: () => void;
   onStartNavigation: () => void;
+  onStartCharging?: (routeChargerId: string, prefill: { units: number; amount: number }) => void;
 }
 
-export function LegByLegBuildScreen({ planner, onBack, onStartNavigation }: LegByLegBuildScreenProps) {
+/** 0-indexed charge-leg number a given position in a flat `RouteLeg[]` (drive, charge, drive,
+ * charge, ...) belongs to — charge legs always land at odd indices. */
+function legIndexForChargeAt(i: number): number {
+  return Math.floor(i / 2);
+}
+
+export function LegByLegBuildScreen({ planner, onBack, onStartNavigation, onStartCharging }: LegByLegBuildScreenProps) {
   const startLoc = getLocationById(planner.startId);
   const destLoc = getLocationById(planner.destinationId);
+  const [detailOption, setDetailOption] = useState<LegChargerOption | null>(null);
 
   const stopMarkers = useMemo(() => {
     let cum = 0;
@@ -36,7 +46,15 @@ export function LegByLegBuildScreen({ planner, onBack, onStartNavigation }: LegB
   if (!startLoc || !destLoc) return null;
 
   if (planner.step === "complete" && planner.plan) {
-    return <LegByLegCompleteView plan={planner.plan} onEditTrip={planner.editTrip} onStartNavigation={onStartNavigation} />;
+    return (
+      <LegByLegCompleteView
+        plan={planner.plan}
+        onEditTrip={planner.editTrip}
+        onStartNavigation={onStartNavigation}
+        onEditLeg={planner.editLeg}
+        onStartCharging={onStartCharging}
+      />
+    );
   }
 
   const legNumber = Math.floor(planner.confirmedLegs.length / 2) + 1;
@@ -64,16 +82,24 @@ export function LegByLegBuildScreen({ planner, onBack, onStartNavigation }: LegB
           {planner.confirmedLegs.length > 0 && (
             <div className="flex flex-col gap-1">
               <p className="text-[12px] text-secondaryText lowercase">confirmed so far</p>
-              {planner.confirmedLegs.map((leg, i) => (
-                <div key={i} className="relative">
-                  {leg.kind === "drive" ? <DriveLegRow leg={leg} /> : <ChargeLegRow leg={leg} />}
-                  {leg.kind === "charge" && (
-                    <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-success flex items-center justify-center shadow z-10">
-                      <Check size={11} className="text-black" strokeWidth={3} />
-                    </span>
-                  )}
-                </div>
-              ))}
+              {planner.confirmedLegs.map((leg, i) => {
+                const legIndex = legIndexForChargeAt(i);
+                return (
+                  <div key={i}>
+                    {leg.kind === "drive" ? (
+                      <DriveLegRow leg={leg} />
+                    ) : (
+                      <ChargeLegRow
+                        leg={leg}
+                        confirmed
+                        onStartCharging={onStartCharging}
+                        onEdit={() => planner.editLeg(legIndex)}
+                        laterLegCount={planner.confirmedLegCount - legIndex - 1}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -82,8 +108,12 @@ export function LegByLegBuildScreen({ planner, onBack, onStartNavigation }: LegB
               <p className="text-[14px] font-medium">
                 leg {legNumber}: choose a charger from {planner.activeLeg.leg.fromLabel}
               </p>
+              <p className="text-[12px] text-secondaryText -mt-1.5">
+                {planner.activeLeg.leg.options.length} option{planner.activeLeg.leg.options.length > 1 ? "s" : ""} within range —
+                tap one to see full details
+              </p>
               {planner.activeLeg.leg.options.map((opt) => (
-                <LegOptionCard key={opt.charger.id} option={opt} onChoose={planner.chooseCharger} />
+                <LegOptionCard key={opt.charger.id} option={opt} onOpenDetail={setDetailOption} />
               ))}
             </div>
           )}
@@ -116,6 +146,13 @@ export function LegByLegBuildScreen({ planner, onBack, onStartNavigation }: LegB
           )}
         </div>
       </div>
+
+      <LegChargerDetailSheet
+        option={detailOption}
+        onClose={() => setDetailOption(null)}
+        onChoose={planner.chooseCharger}
+        onStartCharging={onStartCharging}
+      />
     </div>
   );
 }
@@ -124,11 +161,17 @@ function LegByLegCompleteView({
   plan,
   onEditTrip,
   onStartNavigation,
+  onEditLeg,
+  onStartCharging,
 }: {
   plan: RoutePlan;
   onEditTrip: () => void;
   onStartNavigation: () => void;
+  onEditLeg: (legIndex: number) => void;
+  onStartCharging?: (routeChargerId: string, prefill: { units: number; amount: number }) => void;
 }) {
+  const totalStops = plan.stopCount;
+
   return (
     <div className="flex flex-col h-full">
       <ScreenHeader title="your route" onBack={onEditTrip} />
@@ -154,9 +197,24 @@ function LegByLegCompleteView({
                 </div>
               </div>
 
-              {plan.legs.map((leg, i) => (
-                <div key={i}>{leg.kind === "drive" ? <DriveLegRow leg={leg} /> : <ChargeLegRow leg={leg} />}</div>
-              ))}
+              {plan.legs.map((leg: RouteLeg, i: number) => {
+                const legIndex = legIndexForChargeAt(i);
+                return (
+                  <div key={i}>
+                    {leg.kind === "drive" ? (
+                      <DriveLegRow leg={leg} />
+                    ) : (
+                      <ChargeLegRow
+                        leg={leg}
+                        confirmed
+                        onStartCharging={onStartCharging}
+                        onEdit={() => onEditLeg(legIndex)}
+                        laterLegCount={totalStops - legIndex - 1}
+                      />
+                    )}
+                  </div>
+                );
+              })}
 
               <div className="flex gap-3 py-2.5">
                 <div className="w-9 flex flex-col items-center shrink-0">
