@@ -107,4 +107,7 @@ export interface ExperimentConfig {
   sliderChargeAmountUI: boolean;
   /** The big "payment enabled/unavailable/coming soon" banner at the top of the station sheet. */
   showPaymentStatusBanner: boolean;
+  /** Swaps the route planner for the leg-by-leg builder — the driver picks a charger for
+   * each leg one at a time instead of getting one auto-optimized itinerary up front. */
+  legByLegRoutePlanner: boolean;
 }

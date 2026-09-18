@@ -1,28 +1,12 @@
 import { useState } from "react";
-import { Navigation2 } from "lucide-react";
+import { useExperiments } from "../../hooks/useExperiments";
 import { useRoutePlanner } from "../../hooks/useRoutePlanner";
+import { useLegByLegPlanner } from "../../hooks/useLegByLegPlanner";
+import { RouteNavigatingScreen } from "../../components/route/RouteNavigatingScreen";
 import { RouteSetupScreen } from "./RouteSetupScreen";
 import { RouteResultsScreen } from "./RouteResultsScreen";
-import { Button } from "../../components/common/Button";
-
-function RouteNavigatingScreen({ destinationLabel, onEnd }: { destinationLabel: string; onEnd: () => void }) {
-  return (
-    <div className="flex flex-col h-full items-center justify-center gap-5 px-6 text-center safe-top safe-bottom">
-      <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center animate-pulse">
-        <Navigation2 size={28} className="text-primary" />
-      </div>
-      <div>
-        <p className="text-[16px] font-medium">navigating to {destinationLabel}</p>
-        <p className="text-[12px] text-secondaryText mt-3">(mock navigation preview — turn-by-turn with live charger status would appear here)</p>
-      </div>
-      <div className="w-full max-w-xs">
-        <Button variant="outline" onClick={onEnd}>
-          end navigation
-        </Button>
-      </div>
-    </div>
-  );
-}
+import { LegByLegSetupScreen } from "./LegByLegSetupScreen";
+import { LegByLegBuildScreen } from "./LegByLegBuildScreen";
 
 interface RoutesTabScreenProps {
   /** Leaves the Routes tab entirely (back to the map) — only reachable from the setup screen, since results has its own "edit trip" back-step. */
@@ -30,7 +14,8 @@ interface RoutesTabScreenProps {
   onStartCharging: (routeChargerId: string, prefill: { units: number; amount: number }) => void;
 }
 
-export function RoutesTabScreen({ onExit, onStartCharging }: RoutesTabScreenProps) {
+/** The original route planner — one auto-optimized itinerary computed up front. */
+function ClassicRoutesFlow({ onExit, onStartCharging }: RoutesTabScreenProps) {
   const planner = useRoutePlanner();
   const [navigating, setNavigating] = useState(false);
 
@@ -45,4 +30,30 @@ export function RoutesTabScreen({ onExit, onStartCharging }: RoutesTabScreenProp
   }
 
   return <RouteSetupScreen planner={planner} onBack={onExit} />;
+}
+
+/** The leg-by-leg builder — the driver picks a charger for each leg one at a time. */
+function LegByLegRoutesFlow({ onExit }: { onExit: () => void }) {
+  const planner = useLegByLegPlanner();
+  const [navigating, setNavigating] = useState(false);
+
+  if (navigating && planner.plan) {
+    return <RouteNavigatingScreen destinationLabel={planner.plan.destinationLabel} onEnd={() => setNavigating(false)} />;
+  }
+
+  if (planner.step !== "setup") {
+    return <LegByLegBuildScreen planner={planner} onBack={planner.editTrip} onStartNavigation={() => setNavigating(true)} />;
+  }
+
+  return <LegByLegSetupScreen planner={planner} onBack={onExit} />;
+}
+
+export function RoutesTabScreen({ onExit, onStartCharging }: RoutesTabScreenProps) {
+  const { config } = useExperiments();
+
+  if (config.legByLegRoutePlanner) {
+    return <LegByLegRoutesFlow onExit={onExit} />;
+  }
+
+  return <ClassicRoutesFlow onExit={onExit} onStartCharging={onStartCharging} />;
 }

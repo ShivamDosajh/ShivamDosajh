@@ -21,6 +21,7 @@ export const defaultExperimentConfig: ExperimentConfig = {
   oneClickCharging: false,
   sliderChargeAmountUI: false,
   showPaymentStatusBanner: true,
+  legByLegRoutePlanner: false,
 };
 
 export const EXPERIMENT_STORAGE_KEY = "ira-ev-experiment-config";
