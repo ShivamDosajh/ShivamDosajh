@@ -25,12 +25,24 @@ export function LegByLegSetupScreen({ planner, onBack }: { planner: LegByLegPlan
     if (!startLoc || !destLoc || startLoc.id === destLoc.id) return null;
     return planRoute(startLoc, destLoc, [], myConnectedVehicle, planner.preferences, routeChargers);
   }, [startLoc, destLoc, planner.preferences]);
+  const rangeKm = Math.round(
+    (myConnectedVehicle.batteryCapacityKwh * (myConnectedVehicle.currentSocPercent / 100) * 1000) /
+      myConnectedVehicle.efficiencyWhPerKm
+  );
 
   return (
     <div className="flex flex-col h-full">
       <ScreenHeader title="build a trip leg by leg" onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <div className="flex flex-col gap-4 py-4">
+          <div className="flex items-center justify-between">
+            <p className="text-[16px] font-semibold">route details</p>
+            <span className="flex items-center gap-1.5 text-[14px] text-text">
+              <BatteryCharging size={18} />
+              {myConnectedVehicle.currentSocPercent}% - {rangeKm} km
+            </span>
+          </div>
+
           <div className="rounded-card bg-surfaceRaised border border-border overflow-hidden relative">
             <button
               onClick={planner.reverseTrip}

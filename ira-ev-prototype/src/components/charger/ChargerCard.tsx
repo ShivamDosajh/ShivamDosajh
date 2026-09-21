@@ -1,4 +1,4 @@
-import { Check, Plug, PlugZap } from "lucide-react";
+import { Plug, PlugZap } from "lucide-react";
 import type { Charger } from "../../types/charging";
 
 interface ChargerCardProps {
@@ -12,7 +12,7 @@ export function ChargerCard({ charger, selected, onSelect }: ChargerCardProps) {
 
   return (
     <div className="rounded-card bg-surface border border-border overflow-hidden">
-      <p className="text-[14px] text-secondaryText px-4 pt-3 pb-2">{charger.name}</p>
+      <p className="text-[16px] font-semibold px-4 pt-3.5 pb-2.5">{charger.name}</p>
       <div className="h-px bg-border" />
       <button
         onClick={onSelect}
@@ -21,29 +21,25 @@ export function ChargerCard({ charger, selected, onSelect }: ChargerCardProps) {
           disabled ? "opacity-50" : "active:bg-surfaceRaised"
         }`}
       >
-        <div className="w-11 h-11 rounded-full bg-surfaceRaised border border-border flex items-center justify-center shrink-0">
-          {charger.speed === "rapid" ? (
-            <PlugZap size={20} className="text-primary" />
-          ) : (
-            <Plug size={20} className="text-primary" />
-          )}
+        <div className="flex flex-col items-center gap-0.5 shrink-0">
+          {charger.speed === "rapid" ? <PlugZap size={28} className="text-text" /> : <Plug size={28} className="text-text" />}
+          <span className="text-[12px] leading-4 text-secondaryText">{charger.power.toFixed(0)} kW</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] text-secondaryText">{charger.power.toFixed(1)} kW</p>
           <p className="text-[16px] font-medium">
             {charger.connector}({charger.name})
           </p>
           <p className="text-[14px] text-secondaryText">
-            ₹{charger.pricePerKwh.toFixed(2)}/kWh • {charger.speed}
+            ₹{charger.pricePerKwh.toFixed(0)}/kWh • {charger.speed}
             {disabled ? " • in use" : ""}
           </p>
         </div>
         <div
           className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
-            selected ? "border-success bg-success" : "border-secondaryText"
+            selected ? "border-primary" : "border-secondaryText"
           }`}
         >
-          {selected && <Check size={14} className="text-black" strokeWidth={3} />}
+          {selected && <div className="w-3 h-3 rounded-full bg-primary" />}
         </div>
       </button>
     </div>

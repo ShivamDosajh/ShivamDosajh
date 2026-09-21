@@ -362,7 +362,7 @@ export function MockMap({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-[#dff0e4] touch-none select-none [overscroll-behavior:contain]"
+      className="relative w-full h-full overflow-hidden bg-[#f2f0ef] touch-none select-none [overscroll-behavior:contain]"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

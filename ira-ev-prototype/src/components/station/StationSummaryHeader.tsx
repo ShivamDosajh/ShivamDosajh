@@ -1,4 +1,5 @@
 import type { Station } from "../../types/charging";
+import { CallButton } from "../common/CallButton";
 import { CpoLogo } from "../common/CpoLogo";
 
 export function StationSummaryHeader({ station }: { station: Station }) {
@@ -9,7 +10,10 @@ export function StationSummaryHeader({ station }: { station: Station }) {
         <h2 className="text-[18px] font-semibold leading-snug mt-0.5">{station.name}</h2>
         <p className="text-[14px] text-secondaryText mt-1 leading-relaxed">{station.address}</p>
       </div>
-      <CpoLogo cpo={station.cpo} />
+      <div className="flex flex-col items-end gap-2 shrink-0">
+        <CpoLogo cpo={station.cpo} />
+        <CallButton />
+      </div>
     </div>
   );
 }

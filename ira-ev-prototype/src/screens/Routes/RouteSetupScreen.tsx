@@ -9,18 +9,31 @@ import { TripStopsList } from "../../components/route/TripStopsList";
 import { ConnectedVehicleCard } from "../../components/route/ConnectedVehicleCard";
 import { AdvancedOptionsPanel } from "../../components/route/AdvancedOptionsPanel";
 import { getLocationById } from "../../data/routeLocations";
+import { myConnectedVehicle } from "../../data/vehicles";
 import type { RoutePlannerApi } from "../../hooks/useRoutePlanner";
 
 export function RouteSetupScreen({ planner, onBack }: { planner: RoutePlannerApi; onBack: () => void }) {
   const [pickerTarget, setPickerTarget] = useState<"start" | "destination" | null>(null);
   const startLoc = getLocationById(planner.startId);
   const destLoc = getLocationById(planner.destinationId);
+  const rangeKm = Math.round(
+    (myConnectedVehicle.batteryCapacityKwh * (myConnectedVehicle.currentSocPercent / 100) * 1000) /
+      myConnectedVehicle.efficiencyWhPerKm
+  );
 
   return (
     <div className="flex flex-col h-full">
       <ScreenHeader title="plan a trip" onBack={onBack} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <div className="flex flex-col gap-4 py-4">
+          <div className="flex items-center justify-between">
+            <p className="text-[16px] font-semibold">route details</p>
+            <span className="flex items-center gap-1.5 text-[14px] text-text">
+              <BatteryCharging size={18} />
+              {myConnectedVehicle.currentSocPercent}% - {rangeKm} km
+            </span>
+          </div>
+
           <TripStopsList
             startLabel={startLoc?.label ?? "select start"}
             destinationLabel={destLoc?.label ?? "select destination"}

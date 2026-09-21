@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Car, Clock, Milestone, Plug, UtensilsCrossed } from "lucide-react";
+import { Car, Clock, Milestone, Phone, Plug, Send, UtensilsCrossed } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
@@ -9,6 +9,7 @@ import { PaymentStatus } from "./PaymentStatus";
 import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
 import { GunQuickSelectList } from "./GunQuickSelectList";
+import { ConnectorGroupRow } from "./ConnectorGroupRow";
 import { GunConnectPrompt } from "../oneclick/GunConnectPrompt";
 import { ChargerWorkingPrompt } from "./ChargerWorkingPrompt";
 import { StationReviewsList } from "./StationReviewsList";
@@ -20,6 +21,7 @@ import { useZomatoOrder } from "../../hooks/useZomatoOrder";
 import { getReviewsForStation } from "../../data/reviews";
 import { getAmenitiesForStation } from "../../data/amenities";
 import { getZomatoRestaurantsForStation } from "../../data/zomatoRestaurants";
+import { groupChargersByConnector } from "../../utils/connectors";
 import { foodStopCta } from "../../utils/foodStopWording";
 import { ZomatoOrderFlow } from "../zomato/ZomatoOrderFlow";
 import { ZomatoOrderStatusCard } from "../zomato/ZomatoOrderStatusCard";
@@ -80,6 +82,7 @@ export function StationDetailsSheet({
   const zomatoRestaurants = getZomatoRestaurantsForStation(station.id);
   const zomatoAvailable = config.showZomatoOrdering && zomatoRestaurants.length > 0;
   const selectedGun = station.chargers.find((c) => c.id === selectedChargerId) ?? null;
+  const connectorGroups = groupChargersByConnector(station.chargers);
 
   return (
     <BottomSheet
@@ -187,6 +190,20 @@ export function StationDetailsSheet({
           <RangePrediction currentRange={station.currentRangeKm} arrivalRange={station.arrivalRangeKm} />
         )}
 
+        <div className="flex items-stretch">
+          <button onClick={onNavigate} className="flex-1 flex flex-col items-center gap-1.5 py-1">
+            <Phone size={26} className="text-primary" />
+            <span className="text-[14px] text-text">call</span>
+          </button>
+          <div className="w-px bg-border" />
+          <button onClick={onNavigate} className="flex-1 flex flex-col items-center gap-1.5 py-1">
+            <div className="w-9 h-9 rounded-full border-2 border-primary flex items-center justify-center">
+              <Send size={16} className="text-primary" />
+            </div>
+            <span className="text-[14px] text-text">navigate</span>
+          </button>
+        </div>
+
         {/* Tabs: each panel shows only its own content — the overview tab is the actual
             gun picker (glowing to draw the eye), open by default so it's visible the moment
             the sheet opens, without needing to drag it up first. */}
@@ -194,6 +211,21 @@ export function StationDetailsSheet({
 
         {tab === "overview" && (
           <>
+            <div className="rounded-card bg-surfaceRaised overflow-hidden">
+              <div className="flex items-center gap-3 px-3.5 pt-3.5 pb-3">
+                <Plug size={22} className="text-secondaryText" />
+                <div>
+                  <p className="text-[16px] font-semibold leading-5">available connectors</p>
+                  <p className="text-[14px] text-secondaryText mt-0.5">{station.cpo}</p>
+                </div>
+              </div>
+              <div className="px-3.5">
+                {connectorGroups.map((group) => (
+                  <ConnectorGroupRow key={group.connector} group={group} />
+                ))}
+              </div>
+            </div>
+
             <GunQuickSelectList chargers={station.chargers} selectedId={selectedChargerId} onSelect={onSelectGun} />
             {selectedGun && <ChargerWorkingPrompt key={selectedGun.id} station={station} charger={selectedGun} />}
             {config.oneClickCharging && selectedGun && (

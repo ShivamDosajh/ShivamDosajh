@@ -10,7 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-primary text-textOnAction border-2 border-transparent active:border-textOnAction/30 disabled:bg-surfaceRaised disabled:text-secondaryText",
+    "bg-primary text-textOnAction border-2 border-transparent active:border-textOnAction/30 disabled:bg-surface disabled:text-primary disabled:border-primary",
   outline: "bg-surface border-2 border-primary text-primary active:bg-primary/10 disabled:border-border disabled:text-secondaryText",
 };
 

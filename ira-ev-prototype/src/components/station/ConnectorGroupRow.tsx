@@ -15,7 +15,7 @@ export function ConnectorGroupRow({ group }: { group: ConnectorGroup }) {
       </div>
       <div className="text-right text-[12px] shrink-0 leading-relaxed">
         <p className="text-success">available: {group.availableCount}</p>
-        <p className="text-secondaryText">in-use: {group.inUseCount}</p>
+        <p className="text-secondaryText">charging: {group.inUseCount}</p>
         <p className="text-secondaryText">unavailable: 0</p>
       </div>
     </div>

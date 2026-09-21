@@ -6,6 +6,7 @@ import { MapControls } from "../../components/map/MapControls";
 import { MapLegend } from "../../components/map/MapLegend";
 import { FiltersModal, type FilterKey } from "../../components/map/FiltersModal";
 import { Chip } from "../../components/common/Chip";
+import { CallButton } from "../../components/common/CallButton";
 import { StationCard } from "../../components/station/StationCard";
 import { ScreenHeader } from "../../components/navigation/ScreenHeader";
 import { useExperiments } from "../../hooks/useExperiments";
@@ -96,6 +97,8 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
             </Chip>
           </div>
         </div>
+
+        <CallButton className="absolute right-4 top-3 z-20" />
 
         <MapControls
           onVehicle={() => {}}
