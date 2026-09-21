@@ -22,7 +22,7 @@ export function ZomatoOrderStatusCard({ order, onDismiss }: ZomatoOrderStatusCar
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[12px] text-primary font-medium">food order · {order.restaurant.name}</p>
-          <p className="text-[13px] text-secondaryText mt-0.5">
+          <p className="text-[14px] text-secondaryText mt-0.5">
             {itemCount} item{itemCount > 1 ? "s" : ""} · ₹{order.totalPrice} · to {order.stationName}
           </p>
         </div>
@@ -47,7 +47,7 @@ export function ZomatoOrderStatusCard({ order, onDismiss }: ZomatoOrderStatusCar
                 <div
                   className={[
                     "w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                    reached ? "bg-primary text-black" : "bg-background text-secondaryText",
+                    reached ? "bg-primary text-textOnAction" : "bg-background text-secondaryText",
                   ].join(" ")}
                 >
                   <Icon size={13} />

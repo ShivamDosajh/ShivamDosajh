@@ -134,7 +134,7 @@ export function LegByLegBuildScreen({ planner, onBack, onStartNavigation, onStar
 
           {planner.activeLeg?.kind === "infeasible" && (
             <div className="rounded-card bg-error/10 border border-error p-3.5 flex flex-col gap-2">
-              <p className="text-[13px] text-error font-medium">no reachable charger found</p>
+              <p className="text-[14px] text-error font-medium">no reachable charger found</p>
               <p className="text-[12px] text-secondaryText">
                 nothing matching your filters is within about {planner.activeLeg.maxReachableKm}km from {planner.activeLeg.fromLabel}. try
                 loosening your connector/network/power filters, or lowering your minimum acceptable SoC.
@@ -190,7 +190,7 @@ function LegByLegCompleteView({
                   <div className="w-px flex-1 bg-border mt-1" />
                 </div>
                 <div className="pt-1">
-                  <p className="text-[13px] text-text">
+                  <p className="text-[14px] text-text">
                     start at <span className="font-medium">{plan.startLabel}</span>
                   </p>
                   <p className="text-[12px] text-secondaryText mt-0.5">SoC {plan.startSoc}%</p>
@@ -223,7 +223,7 @@ function LegByLegCompleteView({
                   </div>
                 </div>
                 <div className="pt-1">
-                  <p className="text-[13px] text-text">
+                  <p className="text-[14px] text-text">
                     arrive at <span className="font-medium">{plan.destinationLabel}</span>
                   </p>
                   <p className="text-[12px] text-secondaryText mt-0.5">SoC {plan.arrivalSoc}%</p>

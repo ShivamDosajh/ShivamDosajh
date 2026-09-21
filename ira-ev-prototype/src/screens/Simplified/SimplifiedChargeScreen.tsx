@@ -51,7 +51,7 @@ export function SimplifiedChargeScreen({ flow }: { flow: ChargingFlowApi }) {
 
         {charger && (
           <div className="flex flex-col gap-3 mb-4">
-            <p className="text-[13px] text-secondaryText">enter amount</p>
+            <p className="text-[14px] text-secondaryText">enter amount</p>
             <div className="flex items-center gap-2 h-14 rounded-button bg-surfaceRaised border border-border px-4">
               <IndianRupee size={18} className="text-secondaryText" />
               <input
@@ -70,7 +70,7 @@ export function SimplifiedChargeScreen({ flow }: { flow: ChargingFlowApi }) {
               onSelect={(v) => flow.setAmount(v)}
             />
             {config.showEstimatedCost && flow.amount ? (
-              <p className="text-[13px] text-secondaryText">
+              <p className="text-[14px] text-secondaryText">
                 ≈ {formatUnits(flow.amount / charger.pricePerKwh)} at ₹{charger.pricePerKwh}/kWh · taxes
                 applied at checkout
               </p>

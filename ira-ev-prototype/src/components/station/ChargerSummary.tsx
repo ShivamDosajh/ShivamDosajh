@@ -18,12 +18,12 @@ export function ChargerSummary({ chargers, showSpeed = true }: ChargerSummaryPro
             <Plug size={20} className="text-primary" />
           </div>
           <div>
-            <p className="text-[13px] text-secondaryText">
+            <p className="text-[14px] text-secondaryText">
               <span className="text-success font-semibold">
                 {group.availableCount}/{group.chargers.length}
               </span>
             </p>
-            <p className="text-[15px] font-semibold">
+            <p className="text-[16px] font-semibold">
               {group.power.toFixed(1)}kW
               {showSpeed ? <span className="text-secondaryText font-normal capitalize"> · {group.speed}</span> : null}
             </p>

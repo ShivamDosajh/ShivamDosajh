@@ -37,13 +37,13 @@ export function PaymentSuccessScreen({ flow }: { flow: ChargingFlowApi }) {
         <CheckCircle2 size={44} className="text-success" />
       </div>
       <div className="text-center">
-        <p className="text-[19px] font-semibold">Payment successful</p>
+        <p className="text-[18px] font-semibold">Payment successful</p>
         {amountPaid !== null && (
           <p className="text-[14px] text-secondaryText mt-2">
             {formatCurrency(amountPaid)} paid to {station?.name}
           </p>
         )}
-        <p className="text-[13px] text-secondaryText mt-1">charging session will start shortly</p>
+        <p className="text-[14px] text-secondaryText mt-1">charging session will start shortly</p>
       </div>
       {orderForThisStation && (
         <div className="w-full max-w-xs">

@@ -47,7 +47,7 @@ export function ScreenHeader({ title, onBack, showSupport = true }: ScreenHeader
         ) : (
           <div className="w-11 h-11" />
         )}
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-[17px] font-medium lowercase select-none">
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-[16px] font-medium lowercase select-none">
           {title}
         </h1>
         {showSupport ? (

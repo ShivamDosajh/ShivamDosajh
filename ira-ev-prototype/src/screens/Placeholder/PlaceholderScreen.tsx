@@ -14,7 +14,7 @@ export function PlaceholderScreen({ icon: Icon, title, description }: Placeholde
       </div>
       <div>
         <p className="text-[16px] font-medium lowercase">{title}</p>
-        <p className="text-[13px] text-secondaryText mt-1.5 leading-relaxed">{description}</p>
+        <p className="text-[14px] text-secondaryText mt-1.5 leading-relaxed">{description}</p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import type { LegChargerOption } from "../../types/legByLeg";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
 import { CpoLogo } from "../common/CpoLogo";
+import { Rating } from "../common/Rating";
 import { StationPhotoCarousel } from "../station/StationPhotoCarousel";
 import { PaymentStatus } from "../station/PaymentStatus";
 import { formatDuration } from "../../utils/routePlanner";
@@ -84,19 +85,16 @@ export function LegChargerDetailSheet({ option, onClose, onChoose, onStartChargi
                 ~{Math.round(rerouteDistanceKm)}km reroute from recommended
               </span>
             )}
-            <p className="text-[13px] text-secondaryText">{charger.cpo}</p>
-            <h2 className="text-[19px] font-semibold leading-snug mt-0.5">{charger.name}</h2>
+            <p className="text-[14px] text-secondaryText">{charger.cpo}</p>
+            <h2 className="text-[18px] font-semibold leading-snug mt-0.5">{charger.name}</h2>
           </div>
           <CpoLogo cpo={charger.cpo} />
         </div>
 
-        <div className="flex items-center justify-between text-[13px]">
+        <div className="flex items-center justify-between text-[14px]">
           <div className="flex items-center gap-1.5">
             <span className="text-primary font-medium">ev rating</span>
-            <span className="flex items-center gap-1 text-text">
-              <Star size={13} className="fill-warning text-warning" />
-              {rating.toFixed(1)}
-            </span>
+            <Rating value={rating} />
           </div>
           {charger.amenities.length > 0 && (
             <div className="flex items-center gap-2.5 text-secondaryText">
@@ -112,23 +110,23 @@ export function LegChargerDetailSheet({ option, onClose, onChoose, onStartChargi
 
         <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
           <div className="flex-1 text-center">
-            <p className="text-[11px] text-secondaryText lowercase">connector</p>
+            <p className="text-[12px] text-secondaryText lowercase">connector</p>
             <p className="text-[14px] font-semibold mt-0.5">{charger.connector}</p>
           </div>
           <div className="w-px bg-border" />
           <div className="flex-1 text-center">
-            <p className="text-[11px] text-secondaryText lowercase">power</p>
+            <p className="text-[12px] text-secondaryText lowercase">power</p>
             <p className="text-[14px] font-semibold mt-0.5">{charger.powerKw}kW</p>
           </div>
           <div className="w-px bg-border" />
           <div className="flex-1 text-center">
-            <p className="text-[11px] text-secondaryText lowercase">price</p>
+            <p className="text-[12px] text-secondaryText lowercase">price</p>
             <p className="text-[14px] font-semibold mt-0.5">₹{charger.pricePerKwh}/kWh</p>
           </div>
         </div>
 
         <div className="rounded-card bg-surfaceRaised border border-border p-3.5 flex flex-col gap-2.5">
-          <p className="text-[13px] font-medium flex items-center gap-1.5">
+          <p className="text-[14px] font-medium flex items-center gap-1.5">
             <Zap size={13} className="text-primary" />
             this leg
           </p>

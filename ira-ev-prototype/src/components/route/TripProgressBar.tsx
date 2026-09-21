@@ -20,7 +20,7 @@ export function TripProgressBar({ totalDistanceKm, coveredKm, stopMarkers, start
   const progress = totalDistanceKm > 0 ? Math.min(1, Math.max(0, coveredKm / totalDistanceKm)) : 0;
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 px-4 pt-2.5 pb-3 bg-background/95 backdrop-blur-sm border-b border-border">
+    <div className="sticky top-0 z-20 -mx-4 px-4 pt-2.5 pb-3 bg-background border-b border-border">
       <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] text-secondaryText truncate max-w-[30%]">{startLabel}</span>
         <span className="text-[12px] text-primary font-semibold tabular-nums shrink-0">

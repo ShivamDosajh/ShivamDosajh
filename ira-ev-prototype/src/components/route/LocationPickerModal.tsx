@@ -17,13 +17,13 @@ export function LocationPickerModal({ open, onClose, onSelect, title, excludeIds
 
   return (
     <Modal open={open} onClose={onClose} title={title}>
-      <div className="flex items-center gap-2 bg-surfaceRaised border border-border rounded-button h-11 px-3 mb-3 -mt-1">
+      <div className="flex items-center gap-2 bg-surfaceRaised border border-border rounded-button h-11 px-4 mb-3 -mt-1">
         <Search size={16} className="text-secondaryText shrink-0" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="search city or region"
-          className="bg-transparent outline-none border-none text-text placeholder:text-secondaryText w-full text-[14px]"
+          className="bg-transparent outline-none border-none text-text placeholder:text-placeholderText w-full text-[14px] leading-6"
           autoFocus
         />
       </div>
@@ -48,7 +48,7 @@ export function LocationPickerModal({ open, onClose, onSelect, title, excludeIds
           </button>
         ))}
         {results.length === 0 && (
-          <p className="text-[13px] text-secondaryText text-center py-6">no matching locations</p>
+          <p className="text-[14px] text-secondaryText text-center py-6">no matching locations</p>
         )}
       </div>
     </Modal>

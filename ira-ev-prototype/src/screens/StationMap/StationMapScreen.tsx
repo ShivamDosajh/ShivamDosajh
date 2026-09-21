@@ -62,13 +62,13 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
         />
 
         <div className="absolute inset-x-0 top-0 px-4 pt-3 flex flex-col gap-2.5 z-10">
-          <div className="flex items-center gap-2 bg-black/85 backdrop-blur rounded-button h-12 px-3.5 shadow-lg">
+          <div className="flex items-center gap-2 bg-surfaceRaised rounded-button h-11 px-4 shadow-md">
             <Search size={18} className="text-secondaryText shrink-0" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="search for location, station"
-              className="bg-transparent outline-none border-none text-white placeholder:text-secondaryText w-full text-[15px]"
+              className="bg-transparent outline-none border-none text-text placeholder:text-placeholderText w-full text-[14px] leading-6"
               inputMode="search"
             />
           </div>
@@ -76,7 +76,7 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
           <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
             <button
               onClick={() => setFiltersOpen(true)}
-              className="flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-black/85 backdrop-blur text-white text-[13px] font-medium shrink-0 border border-white/10"
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-surface text-text text-[14px] font-medium shrink-0 border border-border"
             >
               <SlidersHorizontal size={14} />
               filters
@@ -90,7 +90,7 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
             <Chip
               active={activeFilters.has("fast")}
               onClick={() => toggleFilter("fast")}
-              icon={<Zap size={13} />}
+              icon={<Zap size={24} />}
             >
               fast
             </Chip>
@@ -116,7 +116,7 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
 
         {filteredStations.length === 0 && (
           <div className="absolute inset-x-0 bottom-24 flex justify-center z-10">
-            <p className="bg-black/85 text-white text-[13px] px-4 py-2 rounded-pill">
+            <p className="bg-surface text-text text-[14px] px-4 py-2 rounded-pill">
               no stations match your search
             </p>
           </div>

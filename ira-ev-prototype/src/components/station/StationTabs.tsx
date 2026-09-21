@@ -18,8 +18,8 @@ export function StationTabs({ active, onChange }: StationTabsProps) {
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className={`flex-1 pb-2.5 pt-1 text-[14px] font-medium lowercase border-b-2 min-h-[44px] ${
-            active === tab.id ? "text-primary border-primary" : "text-secondaryText border-transparent"
+          className={`flex-1 h-[52px] pt-2.5 text-[16px] font-semibold leading-4 lowercase border-b-2 ${
+            active === tab.id ? "text-primary border-primary" : "text-secondaryText border-inactiveIndicator"
           }`}
         >
           {tab.label}

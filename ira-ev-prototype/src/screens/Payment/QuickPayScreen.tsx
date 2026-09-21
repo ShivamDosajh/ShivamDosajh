@@ -132,7 +132,7 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
       <ScreenHeader title="quick charge" onBack={flow.back} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <StationSummaryHeader station={station} />
-        <p className="text-[13px] text-secondaryText mb-4 -mt-2">
+        <p className="text-[14px] text-secondaryText mb-4 -mt-2">
           {charger.connector}({charger.name}) · {charger.power.toFixed(1)} kW
         </p>
 
@@ -234,7 +234,7 @@ export function QuickPayScreen({ flow }: { flow: ChargingFlowApi }) {
         <p className="text-[14px] mb-3">choose your UPI app</p>
         <PaymentMethodList selectedId={flow.selectedPaymentMethodId} onSelect={(id) => flow.selectPaymentMethod(id)} />
 
-        <p className="text-[11px] text-secondaryText leading-relaxed mt-4 pb-2">
+        <p className="text-[12px] text-secondaryText leading-relaxed mt-4 pb-2">
           includes {formatCurrency(breakdown.tax)} tax. any excess amount deducted will be refunded. by
           proceeding, you are agreeing to the Terms &amp; Conditions.
         </p>

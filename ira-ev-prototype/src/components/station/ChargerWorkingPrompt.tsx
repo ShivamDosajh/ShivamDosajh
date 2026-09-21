@@ -43,30 +43,30 @@ export function ChargerWorkingPrompt({ station, charger }: ChargerWorkingPromptP
   return (
     <div className="flex flex-col gap-2 mt-2.5">
       {hasIssueReports && (
-        <div className="flex items-center gap-2 rounded-button bg-warning/15 border border-warning/30 px-3 py-2">
-          <AlertTriangle size={13} className="text-warning shrink-0" />
-          <p className="text-[11px] text-warning">
+        <div className="flex items-center gap-3 rounded-card bg-surfaceRaised shadow-md pl-2 pr-4 py-2">
+          <AlertTriangle size={32} className="text-warning shrink-0" />
+          <p className="font-action font-medium text-[14px] leading-5 text-text">
             {counts.notWorking} drivers reported this charger isn't working
           </p>
         </div>
       )}
 
       {state === "reported" ? (
-        <div className="flex items-center gap-2 rounded-button bg-surfaceRaised border border-border px-3 py-2">
-          <CheckCircle2 size={13} className="text-success shrink-0" />
-          <p className="text-[11px] text-secondaryText">
+        <div className="flex items-center gap-3 rounded-card bg-surfaceRaised shadow-md pl-2 pr-4 py-2">
+          <CheckCircle2 size={32} className="text-success shrink-0" />
+          <p className="font-action font-medium text-[14px] leading-5 text-text">
             thanks — reported as {answer === "working" ? "working" : "not working"}
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2 rounded-button bg-primary/10 border border-primary/30 px-3 py-2.5">
-          <div className="flex items-center justify-between gap-2">
-            <p className="flex items-center gap-1.5 text-[12px] text-text font-medium">
-              <HelpCircle size={13} className="text-primary shrink-0" />
+        <div className="flex flex-col gap-3 rounded-card bg-surfaceRaised shadow-md pl-2 pr-4 py-2">
+          <div className="flex items-center justify-between gap-3">
+            <p className="flex items-center gap-3 font-action font-medium text-[14px] leading-5 text-text">
+              <HelpCircle size={32} className="text-primary shrink-0" />
               is this charger working?
             </p>
             <button onClick={() => setState("dismissed")} className="text-secondaryText shrink-0 p-1 -m-1" aria-label="dismiss">
-              <X size={12} />
+              <X size={16} />
             </button>
           </div>
           <div className="flex gap-2">

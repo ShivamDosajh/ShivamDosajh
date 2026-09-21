@@ -32,7 +32,7 @@ export function ConnectedVehicleCard() {
           <p className="text-[14px] font-semibold truncate">
             {vehicle.make} {vehicle.model}
           </p>
-          <p className="text-[11px] text-secondaryText flex items-center gap-1.5">
+          <p className="text-[12px] text-secondaryText flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
             connected · synced {vehicle.lastSyncedMinutesAgo} min ago
           </p>
@@ -57,7 +57,7 @@ export function ConnectedVehicleCard() {
         </div>
       </div>
 
-      <p className="text-[11px] text-secondaryText mt-2.5">
+      <p className="text-[12px] text-secondaryText mt-2.5">
         trip plan uses your car's live battery and its efficiency score from recent driving —
         no need to enter anything manually
       </p>

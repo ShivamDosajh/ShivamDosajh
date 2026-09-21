@@ -28,7 +28,7 @@ export function ZomatoRestaurantListModal({
         </div>
         <div className="min-w-0">
           <p className="text-[12px] text-text font-medium">{stationName}</p>
-          {chargerSubtitle && <p className="text-[11px] text-secondaryText mt-0.5">{chargerSubtitle}</p>}
+          {chargerSubtitle && <p className="text-[12px] text-secondaryText mt-0.5">{chargerSubtitle}</p>}
         </div>
       </div>
 

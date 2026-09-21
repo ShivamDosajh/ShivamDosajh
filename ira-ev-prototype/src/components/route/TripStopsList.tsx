@@ -170,15 +170,15 @@ export function TripStopsList({
       <div className="absolute left-[27px] top-[26px] bottom-[26px] w-px bg-border" />
 
       <div className="relative flex flex-col">
-        <button onClick={onStartClick} className="flex items-center gap-3 px-3.5 py-3 min-h-[44px] text-left pr-14">
+        <button onClick={onStartClick} className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-left pr-14">
           <div className="w-8 h-8 rounded-full bg-background border-2 border-black flex items-center justify-center shrink-0 relative z-10">
             <div className="w-2.5 h-2.5 rounded-full bg-black" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] text-secondaryText lowercase">from</p>
-            <p className="text-[15px] text-text font-medium truncate">{startLabel}</p>
+            <p className="text-[12px] text-secondaryText lowercase">from</p>
+            <p className="text-[16px] text-text font-medium truncate">{startLabel}</p>
           </div>
-          <ChevronRight size={16} className="text-secondaryText shrink-0" />
+          <ChevronRight size={24} className="text-secondaryText shrink-0" />
         </button>
 
         {waypointRefs.map((ref, index) => {
@@ -230,7 +230,7 @@ export function TripStopsList({
                 <p className="text-[14px] text-text truncate">{stop.label}</p>
                 {restaurant ? (
                   <>
-                    <p className="text-[11px] text-secondaryText truncate flex items-center gap-1.5">
+                    <p className="text-[12px] text-secondaryText truncate flex items-center gap-1.5">
                       {restaurant.cuisine}
                       <span className="flex items-center gap-0.5 text-warning shrink-0">
                         <Star size={9} className="fill-warning" />
@@ -245,7 +245,7 @@ export function TripStopsList({
                     )}
                   </>
                 ) : (
-                  <p className="text-[11px] text-secondaryText truncate">{stop.subtitle}</p>
+                  <p className="text-[12px] text-secondaryText truncate">{stop.subtitle}</p>
                 )}
               </div>
 
@@ -267,18 +267,18 @@ export function TripStopsList({
           <div className="w-8 h-8 rounded-full border-2 border-dashed border-primary/50 flex items-center justify-center shrink-0 relative z-10">
             <Plus size={14} />
           </div>
-          <span className="text-[13px] font-medium">add a stop</span>
+          <span className="text-[14px] font-medium">add a stop</span>
         </button>
 
-        <button onClick={onDestinationClick} className="flex items-center gap-3 px-3.5 py-3 min-h-[44px] text-left">
+        <button onClick={onDestinationClick} className="flex items-center gap-2 px-4 py-3 min-h-[44px] text-left">
           <div className="w-8 h-8 rounded-full bg-error border-2 border-white flex items-center justify-center shrink-0 relative z-10 shadow">
             <Flag size={13} className="text-white" fill="white" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] text-secondaryText lowercase">to</p>
-            <p className="text-[15px] text-text font-medium truncate">{destinationLabel}</p>
+            <p className="text-[12px] text-secondaryText lowercase">to</p>
+            <p className="text-[16px] text-text font-medium truncate">{destinationLabel}</p>
           </div>
-          <ChevronRight size={16} className="text-secondaryText shrink-0" />
+          <ChevronRight size={24} className="text-secondaryText shrink-0" />
         </button>
       </div>
 

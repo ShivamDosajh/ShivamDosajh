@@ -149,7 +149,7 @@ export function RouteResultsScreen({ planner, onStartNavigation, onStartCharging
                   <div className="w-px flex-1 bg-border mt-1" />
                 </div>
                 <div className="pt-1">
-                  <p className="text-[13px] text-text">
+                  <p className="text-[14px] text-text">
                     start at <span className="font-medium">{plan.startLabel}</span>
                   </p>
                   <p className="text-[12px] text-secondaryText mt-0.5">SoC {plan.startSoc}%</p>
@@ -183,7 +183,7 @@ export function RouteResultsScreen({ planner, onStartNavigation, onStartCharging
                   </div>
                 </div>
                 <div className="pt-1">
-                  <p className="text-[13px] text-text">
+                  <p className="text-[14px] text-text">
                     arrive at <span className="font-medium">{plan.destinationLabel}</span>
                   </p>
                   <p className="text-[12px] text-secondaryText mt-0.5">SoC {plan.arrivalSoc}%</p>

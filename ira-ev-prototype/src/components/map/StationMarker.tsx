@@ -36,8 +36,8 @@ export function StationMarker({ station, selected, onClick }: StationMarkerProps
           className={[
             "mb-1 px-1.5 h-[18px] rounded-pill text-[10px] font-semibold leading-none flex items-center shadow border",
             availableConnectors > 0
-              ? "bg-black/85 text-primary border-primary/40"
-              : "bg-black/85 text-secondaryText border-border",
+              ? "bg-surface text-primary border-primary/40"
+              : "bg-surface text-secondaryText border-border",
           ].join(" ")}
         >
           {availableConnectors}/{totalConnectors}
@@ -52,9 +52,9 @@ export function StationMarker({ station, selected, onClick }: StationMarkerProps
         ].join(" ")}
       >
         {station.available ? (
-          <Zap size={16} className="text-black" fill="black" />
+          <Zap size={16} className="text-textOnAction" fill="currentColor" />
         ) : (
-          <ZapOff size={16} className="text-black" />
+          <ZapOff size={16} className="text-textOnAction" />
         )}
       </div>
       <div

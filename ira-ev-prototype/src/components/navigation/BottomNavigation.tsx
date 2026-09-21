@@ -17,7 +17,7 @@ const tabs: { id: BottomTab; label: string; icon: typeof Zap }[] = [
 export function BottomNavigation({ active, onChange }: BottomNavigationProps) {
   return (
     <nav className="shrink-0 bg-background border-t border-border safe-bottom">
-      <div className="flex items-stretch h-16">
+      <div className="flex items-stretch h-[69px]">
         {tabs.map(({ id, label, icon: Icon }) => {
           const isActive = active === id;
           return (
@@ -27,9 +27,9 @@ export function BottomNavigation({ active, onChange }: BottomNavigationProps) {
               className="flex-1 flex flex-col items-center justify-center gap-1 min-h-[44px] active:opacity-70"
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={20} className={isActive ? "text-primary" : "text-secondaryText"} />
+              <Icon size={24} className={isActive ? "text-primary" : "text-secondaryText"} />
               <span
-                className={`text-[11px] lowercase ${
+                className={`text-[12px] leading-6 lowercase ${
                   isActive ? "text-primary font-medium" : "text-secondaryText"
                 }`}
               >

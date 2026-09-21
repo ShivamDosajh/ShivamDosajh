@@ -13,7 +13,7 @@ interface GunQuickSelectListProps {
 export function GunQuickSelectList({ chargers, selectedId, onSelect }: GunQuickSelectListProps) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-[13px] text-text">tap a gun to start</p>
+      <p className="text-[14px] text-text">tap a gun to start</p>
       {chargers.map((charger) => {
         const disabled = !charger.available;
         const selected = charger.id === selectedId;
@@ -53,7 +53,7 @@ export function GunQuickSelectList({ chargers, selectedId, onSelect }: GunQuickS
             {!disabled &&
               (selected ? (
                 <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                  <Check size={14} className="text-black" strokeWidth={3} />
+                  <Check size={14} className="text-textOnAction" strokeWidth={3} />
                 </div>
               ) : (
                 <ChevronRight size={16} className="text-secondaryText shrink-0" />

@@ -31,7 +31,7 @@ export function GunConnectPrompt({ stationId, stationName, chargerId, chargerLab
   if (notifiedHere) {
     return (
       <div className="rounded-card border border-primary/40 bg-primary/10 px-3.5 py-3">
-        <p className="flex items-center gap-2 text-[13px] font-medium text-primary">
+        <p className="flex items-center gap-2 text-[14px] font-medium text-primary">
           <CheckCircle2 size={15} />
           gun verified — check your notification
         </p>
@@ -52,7 +52,7 @@ export function GunConnectPrompt({ stationId, stationName, chargerId, chargerLab
             <div key={stage} className="flex items-center gap-2.5">
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                  done ? "bg-primary text-black" : active ? "bg-primary/20 text-primary animate-pulse" : "bg-surface text-secondaryText"
+                  done ? "bg-primary text-textOnAction" : active ? "bg-primary/20 text-primary animate-pulse" : "bg-surface text-secondaryText"
                 }`}
               >
                 <Icon size={12} />
@@ -74,8 +74,8 @@ export function GunConnectPrompt({ stationId, stationName, chargerId, chargerLab
         <PlugZap size={15} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] text-text font-medium">simulate: gun connected</p>
-        <p className="text-[11px] text-secondaryText">one-tap charging will verify &amp; notify you</p>
+        <p className="text-[14px] text-text font-medium">simulate: gun connected</p>
+        <p className="text-[12px] text-secondaryText">one-tap charging will verify &amp; notify you</p>
       </div>
     </button>
   );

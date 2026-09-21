@@ -38,7 +38,7 @@ export function LegOptionCard({ option, onOpenDetail }: LegOptionCardProps) {
           <p className="text-[12px] text-secondaryText">{charger.cpo}</p>
           <p className="text-[14px] font-medium truncate">{charger.name}</p>
         </div>
-        <span className="text-[11px] text-secondaryText shrink-0 text-right">
+        <span className="text-[12px] text-secondaryText shrink-0 text-right">
           {charger.connector}
           <br />
           {charger.powerKw}kW
@@ -67,7 +67,7 @@ export function LegOptionCard({ option, onOpenDetail }: LegOptionCardProps) {
 
       <div
         className={`mt-2.5 h-9 rounded-button flex items-center justify-center gap-1 text-[12px] font-semibold ${
-          isRecommended ? "bg-primary text-black" : "border border-primary text-primary"
+          isRecommended ? "bg-primary text-textOnAction" : "border border-primary text-primary"
         }`}
       >
         view details &amp; select

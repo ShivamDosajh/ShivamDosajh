@@ -25,14 +25,14 @@ export function TripSummaryCard({ plan }: { plan: RoutePlan }) {
               <Icon size={14} />
             </div>
             <div>
-              <p className="text-[11px] text-secondaryText lowercase">{label}</p>
-              <p className="text-[15px] font-semibold">{value}</p>
+              <p className="text-[12px] text-secondaryText lowercase">{label}</p>
+              <p className="text-[16px] font-semibold">{value}</p>
             </div>
           </div>
         ))}
       </div>
       <div className="h-px bg-border my-3.5" />
-      <div className="flex items-center justify-between text-[13px]">
+      <div className="flex items-center justify-between text-[14px]">
         <span className="text-secondaryText">
           drive {formatDuration(plan.totalDriveMin)} · charge {formatDuration(plan.totalChargeMin)}
         </span>

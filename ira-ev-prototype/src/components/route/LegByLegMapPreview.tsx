@@ -46,12 +46,12 @@ export function LegByLegMapPreview({ startCoordinates, destinationCoordinates, c
     <div className="relative w-full h-56 rounded-card overflow-hidden border border-border">
       <MockMapBackground />
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-        <path d={solidPathD} fill="none" stroke="#0a8f7e" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+        <path d={solidPathD} fill="none" stroke="#007F73" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
         {dashedPathD && (
           <path
             d={dashedPathD}
             fill="none"
-            stroke="#0fbfa8"
+            stroke="#00AF9E"
             strokeWidth="0.7"
             strokeDasharray="2.2 1.6"
             vectorEffect="non-scaling-stroke"
@@ -84,7 +84,7 @@ export function LegByLegMapPreview({ startCoordinates, destinationCoordinates, c
       {confirmedChargerPoints.map((p, i) => (
         <div key={i} style={{ left: `${p.x}%`, top: `${p.y}%` }} className="absolute -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="w-6 h-6 rounded-full bg-primary border-2 border-white flex items-center justify-center shadow">
-            <Check size={12} className="text-black" strokeWidth={3} />
+            <Check size={12} className="text-textOnAction" strokeWidth={3} />
           </div>
         </div>
       ))}
@@ -111,7 +111,7 @@ export function LegByLegMapPreview({ startCoordinates, destinationCoordinates, c
           <div className="relative flex items-center justify-center">
             <div className="absolute w-9 h-9 rounded-full bg-primary/30 animate-ping" />
             <div className="relative w-7 h-7 rounded-full bg-primary border-2 border-white flex items-center justify-center shadow">
-              <Zap size={13} className="text-black" fill="black" />
+              <Zap size={13} className="text-textOnAction" fill="currentColor" />
             </div>
           </div>
         </div>

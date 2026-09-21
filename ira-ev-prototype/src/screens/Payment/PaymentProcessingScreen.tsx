@@ -17,7 +17,7 @@ export function PaymentProcessingScreen({ flow }: { flow: ChargingFlowApi }) {
       <Loader2 size={40} className="text-primary animate-spin" />
       <div className="text-center">
         <p className="text-[16px] font-medium">Payment processing...</p>
-        <p className="text-[13px] text-secondaryText mt-1">please do not close the app</p>
+        <p className="text-[14px] text-secondaryText mt-1">please do not close the app</p>
       </div>
     </div>
   );

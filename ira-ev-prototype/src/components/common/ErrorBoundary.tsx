@@ -39,14 +39,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </div>
           <div>
             <p className="text-[16px] font-medium">Something went wrong</p>
-            <p className="text-[13px] text-secondaryText mt-1.5 leading-relaxed">
+            <p className="text-[14px] text-secondaryText mt-1.5 leading-relaxed">
               The prototype hit an unexpected error. Tap below to reset it back to the station map — no need
               to relaunch the app.
             </p>
           </div>
           <button
             onClick={this.handleReset}
-            className="h-12 px-6 rounded-button bg-primary text-black font-semibold text-[15px] min-h-[44px]"
+            className="h-12 px-6 rounded-button bg-primary text-textOnAction font-semibold text-[16px] min-h-[44px]"
           >
             Reset prototype
           </button>

@@ -8,7 +8,7 @@ export function CpoLogo({ cpo, size = 48 }: { cpo: string; size?: number }) {
   const style = cpoStyles[cpo] ?? { bg: "bg-surfaceRaised", text: "text-text", short: cpo.slice(0, 3).toUpperCase() };
   return (
     <div
-      className={`rounded-md ${style.bg} ${style.text} flex items-center justify-center font-bold shrink-0 border border-border/50`}
+      className={`rounded-card ${style.bg} ${style.text} flex items-center justify-center font-bold shrink-0 border border-border/50`}
       style={{ width: size, height: size, fontSize: size * 0.24 }}
     >
       {style.short}

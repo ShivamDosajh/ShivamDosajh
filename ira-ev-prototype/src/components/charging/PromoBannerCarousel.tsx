@@ -60,22 +60,22 @@ export function PromoBannerCarousel() {
             <Icon size={16} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] text-text font-medium truncate">{banner.title}</p>
-            <p className="text-[11px] text-secondaryText mt-0.5 leading-snug">{banner.subtitle}</p>
+            <p className="text-[14px] text-text font-medium truncate">{banner.title}</p>
+            <p className="text-[12px] text-secondaryText mt-0.5 leading-snug">{banner.subtitle}</p>
           </div>
         </div>
 
         <button
           onClick={goPrev}
           aria-label="Previous tip"
-          className="absolute left-0.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 flex items-center justify-center text-white"
+          className="absolute left-0.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-surface flex items-center justify-center text-white"
         >
           <ChevronLeft size={15} />
         </button>
         <button
           onClick={goNext}
           aria-label="Next tip"
-          className="absolute right-0.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 flex items-center justify-center text-white"
+          className="absolute right-0.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-surface flex items-center justify-center text-white"
         >
           <ChevronRight size={15} />
         </button>

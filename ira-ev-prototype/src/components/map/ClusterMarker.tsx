@@ -18,7 +18,7 @@ export function ClusterMarker({ count, x, y, onClick }: ClusterMarkerProps) {
       style={{ left: `${x}%`, top: `${y}%`, width: size, height: size }}
       className="absolute -translate-x-1/2 -translate-y-1/2 z-10 rounded-full bg-primary border-2 border-white shadow-lg flex items-center justify-center active:scale-95 transition-transform"
     >
-      <span className="text-black font-bold text-[15px]">{count}</span>
+      <span className="text-textOnAction font-bold text-[16px]">{count}</span>
     </button>
   );
 }

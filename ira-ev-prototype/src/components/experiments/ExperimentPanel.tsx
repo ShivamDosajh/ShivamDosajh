@@ -108,7 +108,7 @@ export function ExperimentPanel({ onResetPrototype }: ExperimentPanelProps) {
           onClick={() => {
             resetConfig();
           }}
-          className="text-secondaryText text-[13px] text-left"
+          className="text-secondaryText text-[14px] text-left"
         >
           reset experiment settings to default
         </button>

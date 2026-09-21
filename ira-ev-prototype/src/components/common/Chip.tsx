@@ -12,11 +12,9 @@ export function Chip({ children, active = false, onClick, icon }: ChipProps) {
     <button
       onClick={onClick}
       className={[
-        "flex items-center gap-1.5 h-9 px-3.5 rounded-pill text-[13px] font-medium whitespace-nowrap shrink-0",
-        "border transition-colors min-h-[36px]",
-        active
-          ? "bg-primary/15 border-primary text-primary"
-          : "bg-surfaceRaised border-border text-text",
+        "flex items-center gap-2 h-8 pl-1 pr-3 py-1 rounded-pill text-[12px] font-semibold leading-4 whitespace-nowrap shrink-0",
+        "border transition-colors min-h-[32px]",
+        active ? "bg-primary border-primary text-textOnChip" : "bg-surfaceRaised border-border text-text",
       ].join(" ")}
     >
       {icon}

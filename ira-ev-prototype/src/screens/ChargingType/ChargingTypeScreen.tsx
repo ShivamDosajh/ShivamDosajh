@@ -98,9 +98,9 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
       <ScreenHeader title="charging type" onBack={flow.back} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <div className="py-4">
-          <p className="text-[13px] text-secondaryText">{station.cpo}</p>
+          <p className="text-[14px] text-secondaryText">{station.cpo}</p>
           <h2 className="text-[16px] font-semibold leading-snug mt-0.5">{station.name}</h2>
-          <p className="text-[13px] text-secondaryText mt-2">
+          <p className="text-[14px] text-secondaryText mt-2">
             {charger.connector}({charger.name}) · {charger.power.toFixed(1)} kW
           </p>
         </div>
@@ -124,7 +124,7 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
         <div className="mt-5">
           {chargeType === "amount" && (
             <div className="flex flex-col gap-3">
-              <p className="text-[13px] text-secondaryText">enter amount</p>
+              <p className="text-[14px] text-secondaryText">enter amount</p>
               <div className="flex items-center gap-2 h-14 rounded-button bg-surfaceRaised border border-border px-4">
                 <IndianRupee size={18} className="text-secondaryText" />
                 <input
@@ -143,7 +143,7 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
                 onSelect={(v) => flow.setAmount(v)}
               />
               {config.showEstimatedCost && flow.amount ? (
-                <p className="text-[13px] text-secondaryText">
+                <p className="text-[14px] text-secondaryText">
                   ≈ {formatUnits(flow.amount / charger.pricePerKwh)} at ₹{charger.pricePerKwh}/kWh
                 </p>
               ) : null}
@@ -152,7 +152,7 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
 
           {chargeType === "units" && (
             <div className="flex flex-col gap-3">
-              <p className="text-[13px] text-secondaryText">enter units</p>
+              <p className="text-[14px] text-secondaryText">enter units</p>
               <div className="flex items-center gap-2 h-14 rounded-button bg-surfaceRaised border border-border px-4">
                 <Battery size={18} className="text-secondaryText" />
                 <input
@@ -172,7 +172,7 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
                 onSelect={(v) => flow.setUnits(v)}
               />
               {config.showEstimatedCost && flow.units ? (
-                <p className="text-[13px] text-secondaryText">
+                <p className="text-[14px] text-secondaryText">
                   ≈ {formatCurrency(amountFromUnits(flow.units, charger.pricePerKwh))}
                 </p>
               ) : null}
@@ -192,7 +192,7 @@ export function ChargingTypeScreen({ flow }: ChargingTypeScreenProps) {
                 helperText={`current battery: ${myConnectedVehicle.currentSocPercent}%`}
               />
               {config.showEstimatedCost && flow.units ? (
-                <p className="text-[13px] text-secondaryText">
+                <p className="text-[14px] text-secondaryText">
                   ≈ {formatUnits(flow.units)} · {formatCurrency(amountFromUnits(flow.units, charger.pricePerKwh))}
                 </p>
               ) : null}

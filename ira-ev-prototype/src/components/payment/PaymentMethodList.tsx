@@ -13,7 +13,7 @@ function MethodLogo({ id }: { id: string }) {
   const style = logoStyles[id] ?? { bg: "bg-surfaceRaised", text: "text-text", label: "?" };
   return (
     <div
-      className={`w-10 h-10 rounded-full ${style.bg} ${style.text} flex items-center justify-center font-bold text-[15px] shrink-0 border border-border/50`}
+      className={`w-10 h-10 rounded-full ${style.bg} ${style.text} flex items-center justify-center font-bold text-[16px] shrink-0 border border-border/50`}
     >
       {style.label}
     </div>

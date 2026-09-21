@@ -42,14 +42,14 @@ export function PushNotificationBanner({ onOpen }: PushNotificationBannerProps) 
         className="w-full max-w-md mx-auto flex items-start gap-2.5 rounded-2xl bg-[#1c1c1e]/95 backdrop-blur border border-white/10 shadow-2xl px-3 py-2.5 text-left animate-push-notification-in pointer-events-auto"
       >
         <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 mt-0.5">
-          <Zap size={18} className="text-black" fill="black" />
+          <Zap size={18} className="text-textOnAction" fill="currentColor" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[12px] font-semibold text-white/90">iRA.ev</span>
-            <span className="text-[11px] text-white/50 shrink-0">{relativeTime(notification.firedAt, now)}</span>
+            <span className="text-[12px] text-white/50 shrink-0">{relativeTime(notification.firedAt, now)}</span>
           </div>
-          <p className="text-[13px] font-semibold text-white mt-0.5">gun connected &amp; verified</p>
+          <p className="text-[14px] font-semibold text-white mt-0.5">gun connected &amp; verified</p>
           <p className="text-[12px] text-white/70 mt-0.5 leading-snug">
             {notification.chargerLabel} at {notification.stationName} — tap to start charging
           </p>

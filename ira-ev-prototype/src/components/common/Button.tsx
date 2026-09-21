@@ -1,31 +1,21 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "outline" | "ghost" | "danger";
-type Size = "md" | "lg";
+type Variant = "primary" | "outline";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
-  size?: Size;
   children: ReactNode;
   fullWidth?: boolean;
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-primary text-black active:bg-primaryDark disabled:bg-surfaceRaised disabled:text-secondaryText",
-  outline:
-    "border border-primary text-primary active:bg-primary/10 disabled:border-border disabled:text-secondaryText",
-  ghost: "text-primary active:bg-primary/10",
-  danger: "bg-error text-white active:opacity-90",
-};
-
-const sizeClasses: Record<Size, string> = {
-  md: "h-11 px-4 text-[15px]",
-  lg: "h-[52px] px-5 text-base",
+  primary:
+    "bg-primary text-textOnAction border-2 border-transparent active:border-textOnAction/30 disabled:bg-surfaceRaised disabled:text-secondaryText",
+  outline: "bg-surface border-2 border-primary text-primary active:bg-primary/10 disabled:border-border disabled:text-secondaryText",
 };
 
 export function Button({
   variant = "primary",
-  size = "lg",
   fullWidth = true,
   className = "",
   children,
@@ -35,10 +25,9 @@ export function Button({
   return (
     <button
       className={[
-        "rounded-button font-semibold tracking-wide transition-colors duration-150",
-        "flex items-center justify-center gap-2 select-none min-h-[44px]",
+        "rounded-button font-medium font-action transition-colors duration-150",
+        "flex items-center justify-center gap-2 select-none h-11 px-6 py-2.5 text-[16px] leading-6",
         variantClasses[variant],
-        sizeClasses[size],
         fullWidth ? "w-full" : "",
         disabled ? "opacity-60 cursor-not-allowed" : "",
         className,

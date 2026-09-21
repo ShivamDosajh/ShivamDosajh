@@ -41,7 +41,7 @@ export function RouteMapPreview({ plan, startId, destinationId, waypointRefs }: 
     <div className="relative w-full h-56 rounded-card overflow-hidden border border-border">
       <MockMapBackground />
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-        <path d={pathD} fill="none" stroke="#0a8f7e" strokeWidth="0.8" strokeDasharray="2 1.5" vectorEffect="non-scaling-stroke" />
+        <path d={pathD} fill="none" stroke="#007F73" strokeWidth="0.8" strokeDasharray="2 1.5" vectorEffect="non-scaling-stroke" />
       </svg>
       {points.map((p, i) => (
         <div
@@ -61,7 +61,7 @@ export function RouteMapPreview({ plan, startId, destinationId, waypointRefs }: 
           )}
           {p.kind === "charge" && (
             <div className="w-6 h-6 rounded-full bg-primary border-2 border-white flex items-center justify-center shadow">
-              <Zap size={11} className="text-black" fill="black" />
+              <Zap size={11} className="text-textOnAction" fill="currentColor" />
             </div>
           )}
           {p.kind === "waypoint" && (

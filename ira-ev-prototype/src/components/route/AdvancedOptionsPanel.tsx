@@ -112,7 +112,7 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
                   key={opt.value}
                   active={preferences.minChargerPowerKw === opt.value}
                   onClick={() => onChange({ minChargerPowerKw: opt.value })}
-                  icon={<Zap size={12} />}
+                  icon={<Zap size={24} />}
                 >
                   {opt.label}
                 </Chip>
@@ -143,11 +143,11 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
                       active ? "border-primary bg-primary/10" : "border-border bg-background"
                     }`}
                   >
-                    <span className={`flex items-center gap-1.5 text-[13px] font-medium ${active ? "text-primary" : "text-text"}`}>
+                    <span className={`flex items-center gap-1.5 text-[14px] font-medium ${active ? "text-primary" : "text-text"}`}>
                       <Icon size={14} />
                       {opt.label}
                     </span>
-                    <span className="text-[11px] text-secondaryText leading-snug">{opt.description}</span>
+                    <span className="text-[12px] text-secondaryText leading-snug">{opt.description}</span>
                   </button>
                 );
               })}
@@ -155,7 +155,7 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
 
             {preferences.chargeStopStrategy === "amenities" && (
               <div className="flex flex-col gap-2 mt-3">
-                <p className="text-[11px] text-secondaryText lowercase">stop times — add, remove, or rename freely</p>
+                <p className="text-[12px] text-secondaryText lowercase">stop times — add, remove, or rename freely</p>
                 {preferences.mealStops.map((stop) => (
                   <div key={stop.id} className="flex items-center gap-2">
                     <input
@@ -181,7 +181,7 @@ export function AdvancedOptionsPanel({ preferences, onChange }: AdvancedOptionsP
                   </div>
                 ))}
                 {preferences.mealStops.length === 0 && (
-                  <p className="text-[11px] text-secondaryText">
+                  <p className="text-[12px] text-secondaryText">
                     no stop times set — charger picks fall back to fewest-stops-style selection
                   </p>
                 )}

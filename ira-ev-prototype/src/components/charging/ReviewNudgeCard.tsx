@@ -14,14 +14,14 @@ export function ReviewNudgeCard({ stationName }: { stationName: string }) {
     return (
       <div className="w-full rounded-card bg-surfaceRaised border border-border px-4 py-5 flex flex-col items-center gap-2 text-center">
         <CheckCircle2 size={28} className="text-success" />
-        <p className="text-[13px] text-text font-medium">thank you for your feedback!</p>
+        <p className="text-[14px] text-text font-medium">thank you for your feedback!</p>
       </div>
     );
   }
 
   return (
     <div className="w-full rounded-card bg-surfaceRaised border border-border px-4 py-3.5">
-      <p className="text-[13px] font-medium text-center">how was charging at {stationName}?</p>
+      <p className="text-[14px] font-medium text-center">how was charging at {stationName}?</p>
       <div className="flex items-center justify-center gap-2 mt-2.5">
         {[1, 2, 3, 4, 5].map((i) => (
           <button
@@ -42,11 +42,11 @@ export function ReviewNudgeCard({ stationName }: { stationName: string }) {
             onChange={(e) => setComment(e.target.value)}
             placeholder="tell us more about your experience (optional)"
             rows={2}
-            className="w-full rounded-button bg-surface border border-border px-3 py-2.5 text-[13px] text-text placeholder:text-secondaryText outline-none resize-none"
+            className="w-full rounded-button bg-surface border border-border px-3 py-2.5 text-[14px] text-text placeholder:text-secondaryText outline-none resize-none"
           />
           <button
             onClick={() => setSubmitted(true)}
-            className="w-full h-10 rounded-button bg-primary text-black text-[13px] font-semibold mt-2.5"
+            className="w-full h-10 rounded-button bg-primary text-textOnAction text-[14px] font-semibold mt-2.5"
           >
             submit
           </button>

@@ -13,7 +13,7 @@ export function NavigatingScreen({ flow }: { flow: ChargingFlowApi }) {
       </div>
       <div>
         <p className="text-[16px] font-medium">navigating to {station?.name ?? "station"}</p>
-        <p className="text-[13px] text-secondaryText mt-1.5">
+        <p className="text-[14px] text-secondaryText mt-1.5">
           {station ? `${station.distance} km · ${station.eta} mins` : ""}
         </p>
         <p className="text-[12px] text-secondaryText mt-3">(mock navigation preview)</p>

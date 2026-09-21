@@ -27,13 +27,13 @@ export function CostBreakdown({ data, discount = 0 }: CostBreakdownProps) {
       <p className="text-[14px] font-medium mb-3 lowercase">approximate recharge calculation</p>
       <div className="flex flex-col gap-2.5">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between text-[13px]">
+          <div key={row.label} className="flex items-center justify-between text-[14px]">
             <span className="text-secondaryText lowercase">{row.label}</span>
             <span className="text-text font-medium">{row.value}</span>
           </div>
         ))}
         {discount > 0 && (
-          <div className="flex items-center justify-between text-[13px]">
+          <div className="flex items-center justify-between text-[14px]">
             <span className="text-primary lowercase">iRA cash discount</span>
             <span className="text-primary font-medium">-{formatCurrency(discount)}</span>
           </div>
@@ -44,7 +44,7 @@ export function CostBreakdown({ data, discount = 0 }: CostBreakdownProps) {
         <span className="text-[14px] font-semibold lowercase">{discount > 0 ? "amount payable" : "approximate value"}</span>
         <div className="text-right">
           {discount > 0 && (
-            <p className="text-[11px] text-secondaryText line-through leading-tight">{formatCurrency(data.approximateValue)}</p>
+            <p className="text-[12px] text-secondaryText line-through leading-tight">{formatCurrency(data.approximateValue)}</p>
           )}
           <span className="text-[16px] font-bold text-primary">{formatCurrency(payable)}</span>
         </div>

@@ -23,7 +23,7 @@ interface LinkedChargeSlidersProps {
   onToggleFullCharge: (checked: boolean) => void;
 }
 
-const sliderStyle = { accentColor: "#0fbfa8" };
+const sliderStyle = { accentColor: "#00AF9E" };
 const sliderClassName = "w-full h-2 rounded-pill bg-surfaceRaised accent-primary min-h-[28px]";
 
 /**
@@ -121,7 +121,7 @@ export function LinkedChargeSliders({
           className={sliderClassName}
           style={sliderStyle}
         />
-        <p className="text-[11px] text-secondaryText">current battery: {myConnectedVehicle.currentSocPercent}%</p>
+        <p className="text-[12px] text-secondaryText">current battery: {myConnectedVehicle.currentSocPercent}%</p>
       </div>
 
       <div className="rounded-card bg-surfaceRaised border border-border px-4 py-3 flex items-center gap-2.5">

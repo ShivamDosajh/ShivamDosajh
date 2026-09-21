@@ -18,9 +18,9 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         onClick={onClose}
         className="absolute inset-0 bg-black/70 animate-fade-in"
       />
-      <div className="relative w-full sm:max-w-sm max-h-[80dvh] bg-surface rounded-t-[24px] sm:rounded-card border border-border flex flex-col animate-sheet-up">
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border shrink-0">
-          <h2 className="text-base font-semibold">{title}</h2>
+      <div className="relative w-full sm:max-w-sm max-h-[80dvh] bg-surface rounded-t-sheet sm:rounded-card border border-border flex flex-col animate-sheet-up">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+          <h2 className="text-[16px] font-semibold leading-6">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Close modal"
@@ -29,7 +29,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
             <X size={18} />
           </button>
         </div>
-        <div className="overflow-y-auto no-scrollbar px-4 py-4 text-sm text-secondaryText leading-relaxed safe-bottom">
+        <div className="overflow-y-auto no-scrollbar px-6 py-4 text-[14px] leading-6 text-secondaryText safe-bottom">
           {children}
         </div>
       </div>

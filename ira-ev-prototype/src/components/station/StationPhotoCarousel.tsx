@@ -51,7 +51,7 @@ function ChargingBaySlide({ seed }: { seed: number }) {
       <g transform="translate(96,24)">
         <rect width="20" height="48" rx="4" fill={`url(#pillar-${seed})`} stroke="#9a9ea3" />
         <rect x="3" y="6" width="14" height="16" rx="1.5" fill="#123" />
-        <rect x="4.5" y="7.5" width="11" height="7" fill="#0fbfa8" opacity="0.85" />
+        <rect x="4.5" y="7.5" width="11" height="7" fill="#00AF9E" opacity="0.85" />
         <circle cx="10" cy="28" r="3.2" fill="#1b1b1b" />
         <circle cx={ledOn ? 15.5 : 15.5} cy="34" r="1.4" fill={ledOn ? "#3ddc72" : "#7a2020"} />
       </g>
@@ -77,7 +77,7 @@ function ConnectorCloseupSlide({ seed }: { seed: number }) {
       </defs>
       <rect width="140" height="88" fill={`url(#conn-bg-${seed})`} />
       {bokeh.map((b, i) => (
-        <circle key={i} cx={b.bx} cy={b.by} r={b.r} fill="#0fbfa8" opacity="0.12" />
+        <circle key={i} cx={b.bx} cy={b.by} r={b.r} fill="#00AF9E" opacity="0.12" />
       ))}
       <g transform="translate(30,14) rotate(-8)">
         <rect x="0" y="10" width="34" height="46" rx="10" fill="#20242a" stroke="#3a3f47" strokeWidth="1.5" />
@@ -151,7 +151,7 @@ function EntranceSlide({ seed }: { seed: number }) {
       <rect x="10" y="10" width="120" height="12" fill="#2f333a" />
       <rect x="10" y="10" width="120" height="12" fill="none" stroke="#1c1e22" />
       <g transform="translate(52,42)">
-        <rect width="36" height="20" fill="#0fbfa8" rx="1.5" />
+        <rect width="36" height="20" fill="#00AF9E" rx="1.5" />
         <path d="M18,4 L13,12 H17 L14,18 L23,9 H18 Z" fill="#0b2320" />
       </g>
       <rect x="55" y="62" width="30" height="26" fill="#26292e" />
@@ -183,7 +183,7 @@ export function StationPhotoCarousel({ stationId }: { stationId: string }) {
         >
           <Slide seed={seed + i * 7} />
           <div className="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1">
-            <p className="text-[11px] text-white capitalize truncate">{label}</p>
+            <p className="text-[12px] text-white capitalize truncate">{label}</p>
           </div>
         </div>
       ))}

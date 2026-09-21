@@ -12,7 +12,7 @@ export function ChargerCard({ charger, selected, onSelect }: ChargerCardProps) {
 
   return (
     <div className="rounded-card bg-surface border border-border overflow-hidden">
-      <p className="text-[13px] text-secondaryText px-4 pt-3 pb-2">{charger.name}</p>
+      <p className="text-[14px] text-secondaryText px-4 pt-3 pb-2">{charger.name}</p>
       <div className="h-px bg-border" />
       <button
         onClick={onSelect}
@@ -29,11 +29,11 @@ export function ChargerCard({ charger, selected, onSelect }: ChargerCardProps) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] text-secondaryText">{charger.power.toFixed(1)} kW</p>
-          <p className="text-[15px] font-medium">
+          <p className="text-[14px] text-secondaryText">{charger.power.toFixed(1)} kW</p>
+          <p className="text-[16px] font-medium">
             {charger.connector}({charger.name})
           </p>
-          <p className="text-[13px] text-secondaryText">
+          <p className="text-[14px] text-secondaryText">
             ₹{charger.pricePerKwh.toFixed(2)}/kWh • {charger.speed}
             {disabled ? " • in use" : ""}
           </p>

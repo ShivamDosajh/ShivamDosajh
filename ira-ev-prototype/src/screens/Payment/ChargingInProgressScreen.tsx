@@ -58,7 +58,7 @@ export function ChargingInProgressScreen({ station, charger, units, approximateC
     <div className="flex flex-col h-full safe-top safe-bottom">
       <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 flex flex-col items-center gap-5">
         <div className="text-center">
-          <p className="text-[13px] text-secondaryText">{complete ? "charging complete" : "charging in progress"}</p>
+          <p className="text-[14px] text-secondaryText">{complete ? "charging complete" : "charging in progress"}</p>
           <h1 className="text-[18px] font-semibold mt-0.5">{station.name}</h1>
         </div>
 
@@ -67,28 +67,28 @@ export function ChargingInProgressScreen({ station, charger, units, approximateC
         <div className="w-full grid grid-cols-3 gap-2.5">
           <div className="rounded-card bg-surfaceRaised border border-border px-2.5 py-2.5 flex flex-col items-center text-center gap-1">
             <Zap size={15} className="text-primary" />
-            <p className="text-[13px] font-semibold tabular-nums">{complete ? units.toFixed(1) : livePowerKw.toFixed(1)}</p>
+            <p className="text-[14px] font-semibold tabular-nums">{complete ? units.toFixed(1) : livePowerKw.toFixed(1)}</p>
             <p className="text-[10px] text-secondaryText lowercase leading-tight">{complete ? "kWh added" : "kW now"}</p>
           </div>
           <div className="rounded-card bg-surfaceRaised border border-border px-2.5 py-2.5 flex flex-col items-center text-center gap-1">
             <Clock size={15} className="text-primary" />
-            <p className="text-[13px] font-semibold tabular-nums">{complete ? "done" : `${remainingMin} min`}</p>
+            <p className="text-[14px] font-semibold tabular-nums">{complete ? "done" : `${remainingMin} min`}</p>
             <p className="text-[10px] text-secondaryText lowercase leading-tight">{complete ? "session" : "remaining"}</p>
           </div>
           <div className="rounded-card bg-surfaceRaised border border-border px-2.5 py-2.5 flex flex-col items-center text-center gap-1">
             <IndianRupee size={15} className="text-primary" />
-            <p className="text-[13px] font-semibold tabular-nums">{formatCurrency(approximateCost * fraction).replace("₹", "")}</p>
+            <p className="text-[14px] font-semibold tabular-nums">{formatCurrency(approximateCost * fraction).replace("₹", "")}</p>
             <p className="text-[10px] text-secondaryText lowercase leading-tight">spent so far</p>
           </div>
         </div>
 
         {complete && (
           <div className="flex flex-col items-center gap-1.5">
-            <div className="flex items-center gap-2 text-success text-[13px]">
+            <div className="flex items-center gap-2 text-success text-[14px]">
               <CheckCircle2 size={16} />
               {formatCurrency(approximateCost)} paid · {energyAddedKwh.toFixed(1)} kWh added
             </div>
-            <div className="flex items-center gap-2 text-primary text-[13px]">
+            <div className="flex items-center gap-2 text-primary text-[14px]">
               <Leaf size={16} />
               you saved {formatCo2(co2SavedKg(energyAddedKwh))} of CO₂ vs. petrol
             </div>

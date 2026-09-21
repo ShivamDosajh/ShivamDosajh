@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Star, UtensilsCrossed } from "lucide-react";
+import { UtensilsCrossed } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
 import { CpoLogo } from "../common/CpoLogo";
+import { Rating } from "../common/Rating";
 import { PaymentStatus } from "./PaymentStatus";
 import { RangePrediction } from "./RangePrediction";
 import { StationTabs } from "./StationTabs";
@@ -106,11 +107,11 @@ export function StationDetailsSheet({
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[13px] text-secondaryText">{station.cpo}</p>
-            <h2 className="text-[19px] font-semibold leading-snug mt-0.5">{station.name}</h2>
-            <p className="text-[13px] text-secondaryText mt-1 leading-relaxed">{station.address}</p>
+            <p className="text-[14px] text-secondaryText">{station.cpo}</p>
+            <h2 className="text-[18px] font-semibold leading-snug mt-0.5">{station.name}</h2>
+            <p className="text-[14px] text-secondaryText mt-1 leading-relaxed">{station.address}</p>
             {config.showMegaChargerBadge && station.isMegaCharger && (
-              <span className="inline-block mt-2 text-[11px] font-semibold text-orange-400 bg-orange-400/15 px-2 py-1 rounded-pill">
+              <span className="inline-block mt-2 text-[12px] font-semibold text-orange-400 bg-orange-400/15 px-2 py-1 rounded-pill">
                 TATA.ev Mega Charger
               </span>
             )}
@@ -118,19 +119,10 @@ export function StationDetailsSheet({
           <CpoLogo cpo={station.cpo} />
         </div>
 
-        <div className="flex items-center justify-between text-[13px]">
+        <div className="flex items-center justify-between text-[14px]">
           <div className="flex items-center gap-1.5">
             <span className="text-primary font-medium">ev rating</span>
-            <span className="text-secondaryText">
-              {station.rating !== null ? (
-                <span className="flex items-center gap-1 text-text">
-                  <Star size={13} className="fill-warning text-warning" />
-                  {station.rating.toFixed(1)}
-                </span>
-              ) : (
-                "--"
-              )}
-            </span>
+            <Rating value={station.rating} />
           </div>
           {amenityIcons.length > 0 && (
             <div className="flex items-center gap-2.5 text-secondaryText">
@@ -146,20 +138,20 @@ export function StationDetailsSheet({
 
         <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
           <div className="flex-1 text-center">
-            <p className="text-[11px] text-secondaryText lowercase">distance</p>
+            <p className="text-[12px] text-secondaryText lowercase">distance</p>
             <p className="text-[14px] font-semibold mt-0.5">{station.distance} km</p>
           </div>
           <div className="w-px bg-border" />
           <div className="flex-1 text-center">
-            <p className="text-[11px] text-secondaryText lowercase">ETA</p>
+            <p className="text-[12px] text-secondaryText lowercase">ETA</p>
             <p className="text-[14px] font-semibold mt-0.5">{station.eta} mins</p>
           </div>
           {config.showStationLastUsed && (
             <>
               <div className="w-px bg-border" />
               <div className="flex-1 text-center">
-                <p className="text-[11px] text-secondaryText lowercase">last used</p>
-                <p className="text-[13px] font-semibold mt-0.5">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
+                <p className="text-[12px] text-secondaryText lowercase">last used</p>
+                <p className="text-[14px] font-semibold mt-0.5">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
               </div>
             </>
           )}
@@ -204,8 +196,8 @@ export function StationDetailsSheet({
                   <UtensilsCrossed size={15} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] text-text font-medium">{foodStopCta(config.foodStopWording)}</p>
-                  <p className="text-[11px] text-secondaryText">arrives right when you get to the charger</p>
+                  <p className="text-[14px] text-text font-medium">{foodStopCta(config.foodStopWording)}</p>
+                  <p className="text-[12px] text-secondaryText">arrives right when you get to the charger</p>
                 </div>
               </button>
             )}

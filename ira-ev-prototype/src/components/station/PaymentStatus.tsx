@@ -27,7 +27,7 @@ export function PaymentStatus({ status }: PaymentStatusProps) {
   const c = config[status];
   return (
     <div
-      className={`w-full h-11 rounded-button flex items-center justify-center gap-1.5 font-medium text-[15px] lowercase ${c.classes}`}
+      className={`w-full h-11 rounded-button flex items-center justify-center gap-1.5 font-medium text-[16px] lowercase ${c.classes}`}
     >
       {c.icon === "rupee" ? <IndianRupee size={16} /> : <Clock size={16} />}
       {c.label}

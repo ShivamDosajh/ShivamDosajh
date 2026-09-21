@@ -55,7 +55,7 @@ export function BottomSheet({
         className="absolute inset-0 bg-black/60 animate-fade-in"
       />
       <div
-        className="relative bg-surface rounded-t-[24px] border-t border-border flex flex-col animate-sheet-up overflow-hidden"
+        className="relative bg-surface rounded-t-sheet border-t border-border flex flex-col animate-sheet-up overflow-hidden"
         style={{
           height: heightPx,
           transition: isDragging ? "none" : "height 0.28s cubic-bezier(0.22,1,0.36,1)",
@@ -65,11 +65,11 @@ export function BottomSheet({
           className="flex justify-center pt-2.5 pb-2 shrink-0 touch-none cursor-grab active:cursor-grabbing"
           {...dragHandleProps}
         >
-          <div className="w-10 h-1 rounded-pill bg-border" />
+          <div className="w-[31px] h-1 rounded-pill bg-border" />
         </div>
-        <div className="overflow-y-auto no-scrollbar px-4 pb-2 grow">{children}</div>
+        <div className="overflow-y-auto no-scrollbar px-6 pb-2 grow">{children}</div>
         {footer && (
-          <div className="shrink-0 px-4 pt-3 pb-4 safe-bottom border-t border-border bg-surface">
+          <div className="shrink-0 px-6 pt-3 pb-4 safe-bottom border-t border-border bg-surface">
             {footer}
           </div>
         )}

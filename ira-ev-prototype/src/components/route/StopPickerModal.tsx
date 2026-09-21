@@ -17,13 +17,13 @@ export function StopPickerModal({ open, onClose, onSelect, excludeRefs = [] }: S
 
   return (
     <Modal open={open} onClose={onClose} title="Add a stop">
-      <div className="flex items-center gap-2 bg-surfaceRaised border border-border rounded-button h-11 px-3 mb-3 -mt-1">
+      <div className="flex items-center gap-2 bg-surfaceRaised border border-border rounded-button h-11 px-4 mb-3 -mt-1">
         <Search size={16} className="text-secondaryText shrink-0" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="search a city, or a restaurant to eat at"
-          className="bg-transparent outline-none border-none text-text placeholder:text-secondaryText w-full text-[14px]"
+          className="bg-transparent outline-none border-none text-text placeholder:text-placeholderText w-full text-[14px] leading-6"
           autoFocus
         />
       </div>
@@ -65,7 +65,7 @@ export function StopPickerModal({ open, onClose, onSelect, excludeRefs = [] }: S
                       </span>
                     </p>
                     {charger && (
-                      <p className="text-[11px] text-primary truncate flex items-center gap-1 mt-0.5">
+                      <p className="text-[12px] text-primary truncate flex items-center gap-1 mt-0.5">
                         <Zap size={10} />
                         {charger.cpo} · {charger.connector} · {charger.powerKw}kW charger
                       </p>
@@ -79,7 +79,7 @@ export function StopPickerModal({ open, onClose, onSelect, excludeRefs = [] }: S
           );
         })}
         {results.length === 0 && (
-          <p className="text-[13px] text-secondaryText text-center py-6">no matching stops</p>
+          <p className="text-[14px] text-secondaryText text-center py-6">no matching stops</p>
         )}
       </div>
     </Modal>

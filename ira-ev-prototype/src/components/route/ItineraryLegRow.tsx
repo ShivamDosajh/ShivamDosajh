@@ -52,16 +52,16 @@ export function DriveLegRow({ leg }: { leg: DriveLeg }) {
       </div>
       <div className="flex-1 pb-1">
         <div className="flex items-center justify-between">
-          <p className="text-[13px] text-text">
+          <p className="text-[14px] text-text">
             drive to <span className="font-medium">{leg.toLabel}</span>
           </p>
-          <span className="text-[11px] text-secondaryText shrink-0">ETA {leg.etaClock}</span>
+          <span className="text-[12px] text-secondaryText shrink-0">ETA {leg.etaClock}</span>
         </div>
         <p className="text-[12px] text-secondaryText mt-0.5">
           {leg.distanceKm} km · {formatDuration(leg.durationMin)} · SoC {leg.socStart}% → {leg.socEnd}%
         </p>
         {(leg.elevationGainM > 0 || leg.elevationLossM > 0) && (
-          <p className="flex items-center gap-1.5 text-[11px] text-secondaryText mt-1">
+          <p className="flex items-center gap-1.5 text-[12px] text-secondaryText mt-1">
             <Mountain size={11} />
             +{leg.elevationGainM}m / -{leg.elevationLossM}m
             {leg.regenRecoveredKwh > 0 && (
@@ -153,28 +153,28 @@ export function ChargeLegRow({
           <div>
             {pickedRestaurant ? (
               <>
-                <p className="text-[13px] text-secondaryText flex items-center gap-1">
+                <p className="text-[14px] text-secondaryText flex items-center gap-1">
                   <UtensilsCrossed size={11} />
                   {config.foodStopWording === "eat" ? "eating at" : "ordering from"}
                 </p>
                 <p className="text-[14px] font-medium">{pickedRestaurant.name}</p>
-                <p className="text-[11px] text-secondaryText mt-0.5">charging at {leg.charger.name}</p>
+                <p className="text-[12px] text-secondaryText mt-0.5">charging at {leg.charger.name}</p>
               </>
             ) : (
               <>
                 {leg.mealStopLabel && (
-                  <p className="text-[13px] text-primary flex items-center gap-1">
+                  <p className="text-[14px] text-primary flex items-center gap-1">
                     <UtensilsCrossed size={11} />
                     near {leg.mealStopLabel}
                   </p>
                 )}
-                <p className="text-[13px] text-secondaryText">{leg.charger.cpo}</p>
+                <p className="text-[14px] text-secondaryText">{leg.charger.cpo}</p>
                 <p className="text-[14px] font-medium">{leg.charger.name}</p>
               </>
             )}
           </div>
           <span className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[11px] text-secondaryText">ETA {leg.etaClock}</span>
+            <span className="text-[12px] text-secondaryText">ETA {leg.etaClock}</span>
             {onEdit && (
               <button
                 onClick={onEdit}
@@ -205,7 +205,7 @@ export function ChargeLegRow({
             {leg.charger.amenities.map((a) => {
               const Icon = AMENITY_ICON[a];
               return (
-                <span key={a} className="flex items-center gap-1 text-[11px] text-secondaryText capitalize">
+                <span key={a} className="flex items-center gap-1 text-[12px] text-secondaryText capitalize">
                   <Icon size={11} />
                   {a}
                 </span>
@@ -236,7 +236,7 @@ export function ChargeLegRow({
             onClick={() =>
               onStartCharging(leg.charger.id, { units: leg.energyAddedKwh, amount: leg.costEstimate })
             }
-            className="w-full flex items-center justify-center gap-1.5 rounded-button bg-primary text-black text-[12px] font-semibold h-9 mt-2.5"
+            className="w-full flex items-center justify-center gap-1.5 rounded-button bg-primary text-textOnAction text-[12px] font-semibold h-9 mt-2.5"
           >
             charge now
             <ArrowRight size={13} />
@@ -247,13 +247,13 @@ export function ChargeLegRow({
           <div className="mt-2">
             {swapOriginalId ? (
               <div className="flex items-center justify-between rounded-button bg-primary/10 px-2.5 py-2">
-                <span className="flex items-center gap-1.5 text-[11px] text-primary">
+                <span className="flex items-center gap-1.5 text-[12px] text-primary">
                   <ShieldAlert size={12} />
                   using backup charger
                 </span>
                 <button
                   onClick={() => onSwapCharger(swapOriginalId, undefined)}
-                  className="flex items-center gap-1 text-[11px] font-medium text-primary"
+                  className="flex items-center gap-1 text-[12px] font-medium text-primary"
                 >
                   <Undo2 size={11} />
                   undo
@@ -262,7 +262,7 @@ export function ChargeLegRow({
             ) : (
               <button
                 onClick={() => setBackupsOpen((v) => !v)}
-                className="w-full flex items-center justify-between text-[11px] text-secondaryText py-1"
+                className="w-full flex items-center justify-between text-[12px] text-secondaryText py-1"
               >
                 <span className="flex items-center gap-1.5">
                   <ShieldAlert size={12} />
@@ -275,7 +275,7 @@ export function ChargeLegRow({
             {backupsOpen && !swapOriginalId && (
               <div className="flex flex-col gap-1.5 mt-1.5">
                 {backupOptions.length === 0 && (
-                  <p className="text-[11px] text-secondaryText">no nearby backup chargers found</p>
+                  <p className="text-[12px] text-secondaryText">no nearby backup chargers found</p>
                 )}
                 {backupOptions.map(({ charger: backup, deltaKm }) => (
                   <button
@@ -288,11 +288,11 @@ export function ChargeLegRow({
                   >
                     <span>
                       <span className="block text-[12px] font-medium text-text">{backup.name}</span>
-                      <span className="block text-[11px] text-secondaryText">
+                      <span className="block text-[12px] text-secondaryText">
                         {backup.connector} · {backup.powerKw}kW · ~{Math.round(deltaKm)}km away
                       </span>
                     </span>
-                    <span className="flex items-center gap-0.5 text-[11px] text-primary shrink-0">
+                    <span className="flex items-center gap-0.5 text-[12px] text-primary shrink-0">
                       <IndianRupee size={10} />
                       {backup.pricePerKwh}/kWh
                     </span>

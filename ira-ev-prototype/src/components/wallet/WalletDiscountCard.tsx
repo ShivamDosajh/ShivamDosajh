@@ -17,9 +17,9 @@ export function WalletDiscountCard({ transactionValue }: { transactionValue: num
     <div className="rounded-card bg-primary/10 border border-primary/30 px-3.5 py-3">
       <div className="flex items-center gap-2">
         <Wallet size={16} className="text-primary shrink-0" />
-        <p className="text-[13px] font-semibold text-primary">iRA Cash applied — {formatCurrency(discount)} off</p>
+        <p className="text-[14px] font-semibold text-primary">iRA Cash applied — {formatCurrency(discount)} off</p>
       </div>
-      <p className="text-[11px] text-secondaryText mt-1 leading-relaxed">
+      <p className="text-[12px] text-secondaryText mt-1 leading-relaxed">
         50% of this bill covered from your iRA Cash balance.{" "}
         {remainingAfter > 0
           ? `${formatCurrency(remainingAfter)} carries forward to your next charge.`

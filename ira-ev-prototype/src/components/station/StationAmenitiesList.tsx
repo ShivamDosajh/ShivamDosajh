@@ -6,7 +6,7 @@ function formatDistance(m: number): string {
 
 export function StationAmenitiesList({ amenities }: { amenities: StationAmenity[] }) {
   if (amenities.length === 0) {
-    return <p className="text-[13px] text-secondaryText text-center py-8">no amenities listed nearby</p>;
+    return <p className="text-[14px] text-secondaryText text-center py-8">no amenities listed nearby</p>;
   }
 
   return (
@@ -22,8 +22,8 @@ export function StationAmenitiesList({ amenities }: { amenities: StationAmenity[
               <Icon size={15} />
             </div>
             <div className="min-w-0">
-              <p className="text-[13px] text-text font-medium capitalize truncate">{amenity.label}</p>
-              <p className="text-[11px] text-secondaryText">{formatDistance(amenity.distanceM)} away</p>
+              <p className="text-[14px] text-text font-medium capitalize truncate">{amenity.label}</p>
+              <p className="text-[12px] text-secondaryText">{formatDistance(amenity.distanceM)} away</p>
             </div>
           </div>
         );

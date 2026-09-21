@@ -14,7 +14,7 @@ function StarRow({ rating }: { rating: number }) {
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          size={11}
+          size={12}
           className={i <= Math.round(rating) ? "fill-warning text-warning" : "text-border"}
         />
       ))}
@@ -24,21 +24,21 @@ function StarRow({ rating }: { rating: number }) {
 
 export function StationReviewsList({ reviews }: { reviews: StationReview[] }) {
   if (reviews.length === 0) {
-    return <p className="text-[13px] text-secondaryText text-center py-8">no reviews yet</p>;
+    return <p className="text-[14px] text-secondaryText text-center py-8">no reviews yet</p>;
   }
 
   return (
     <div className="flex flex-col gap-2.5">
       {reviews.map((review) => (
-        <div key={review.id} className="rounded-card bg-surfaceRaised border border-border px-3.5 py-3">
+        <div key={review.id} className="flex flex-col gap-2 rounded-card bg-surface border border-border p-2">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[13px] font-medium">{review.author}</p>
-            <span className="text-[11px] text-secondaryText shrink-0">{formatDaysAgo(review.daysAgo)}</span>
+            <p className="text-[12px] font-semibold leading-4">{review.author}</p>
+            <span className="text-[10px] font-light leading-4 text-metadataText shrink-0">
+              {formatDaysAgo(review.daysAgo)}
+            </span>
           </div>
-          <div className="mt-1">
-            <StarRow rating={review.rating} />
-          </div>
-          <p className="text-[12px] text-secondaryText mt-1.5 leading-relaxed">{review.comment}</p>
+          <StarRow rating={review.rating} />
+          <p className="text-[12px] font-light leading-4 text-secondaryText">{review.comment}</p>
         </div>
       ))}
     </div>

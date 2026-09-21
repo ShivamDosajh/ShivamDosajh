@@ -45,7 +45,7 @@ export function ChargingProgressRing({ percent, size = 176, complete }: Charging
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
         {!complete && <Zap size={16} className="text-primary mb-0.5" />}
         <span className="text-[30px] font-bold leading-none tabular-nums">{Math.round(clamped)}%</span>
-        <span className="text-[11px] text-secondaryText">{complete ? "charge complete" : "charging"}</span>
+        <span className="text-[12px] text-secondaryText">{complete ? "charge complete" : "charging"}</span>
       </div>
     </div>
   );

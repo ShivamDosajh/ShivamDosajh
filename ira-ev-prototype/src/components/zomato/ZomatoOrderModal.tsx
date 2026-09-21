@@ -53,7 +53,7 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, restau
       )}
       <div className="flex items-center justify-between mb-1">
         <div>
-          <p className="text-[15px] font-semibold text-text">{restaurant.name}</p>
+          <p className="text-[16px] font-semibold text-text">{restaurant.name}</p>
           <p className="text-[12px] text-secondaryText">{restaurant.cuisine}</p>
         </div>
         <span className="flex items-center gap-1 text-[12px] text-warning shrink-0">
@@ -61,7 +61,7 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, restau
           {restaurant.rating.toFixed(1)}
         </span>
       </div>
-      <p className="text-[11px] text-primary bg-primary/10 rounded-button px-2.5 py-2 mt-2 mb-3">
+      <p className="text-[12px] text-primary bg-primary/10 rounded-button px-2.5 py-2 mt-2 mb-3">
         order now — it'll be ready and delivered to your charging bay at {stationName}, right as you arrive (
         {arrivalLabel})
       </p>
@@ -69,7 +69,7 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, restau
       <div className="flex flex-col gap-4">
         {categories.map((category) => (
           <div key={category}>
-            <p className="text-[11px] text-secondaryText uppercase tracking-wide mb-1.5">{category}</p>
+            <p className="text-[12px] text-secondaryText uppercase tracking-wide mb-1.5">{category}</p>
             <div className="flex flex-col gap-2">
               {restaurant.menu
                 .filter((item) => item.category === category)
@@ -88,7 +88,7 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, restau
                         <div className={`w-1.5 h-1.5 rounded-full ${item.veg ? "bg-success" : "bg-error"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] text-text truncate">{item.name}</p>
+                        <p className="text-[14px] text-text truncate">{item.name}</p>
                         <p className="text-[12px] text-secondaryText">₹{item.price}</p>
                       </div>
                       {qty === 0 ? (
@@ -107,7 +107,7 @@ export function ZomatoOrderModal({ open, onClose, stationId, stationName, restau
                           >
                             <Minus size={13} />
                           </button>
-                          <span className="text-[13px] font-medium text-text w-3 text-center">{qty}</span>
+                          <span className="text-[14px] font-medium text-text w-3 text-center">{qty}</span>
                           <button
                             onClick={() => setQty(item, qty + 1)}
                             aria-label={`Add one more ${item.name}`}

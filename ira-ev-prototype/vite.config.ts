@@ -19,8 +19,8 @@ export default defineConfig({
         description: "iRA.ev public EV charging journey prototype",
         display: "standalone",
         orientation: "portrait",
-        theme_color: "#000000",
-        background_color: "#000000",
+        theme_color: "#090909",
+        background_color: "#090909",
         start_url: base,
         scope: base,
         icons: [

@@ -92,7 +92,7 @@ function CustomerVariant({
       <p className="text-[12px] text-secondaryText mt-0.5">
         {station.distance} km • {station.eta} min
       </p>
-      <p className="text-[13px] mt-1.5">
+      <p className="text-[14px] mt-1.5">
         <span className="text-primary font-medium">{maxPower}kW Fast Charger</span>
       </p>
       <p className={`text-[12px] mt-0.5 font-medium ${station.available ? "text-success" : "text-secondaryText"}`}>
@@ -105,7 +105,7 @@ function CustomerVariant({
         </div>
       )}
       <div className="mt-2.5">
-        <Button size="md" onClick={onSelect}>
+        <Button onClick={onSelect}>
           Select charger
         </Button>
       </div>
@@ -147,7 +147,7 @@ function ChargingVariant({
         {minPrice}/kWh
       </div>
       <div className="mt-2.5">
-        <Button size="md" onClick={onSelect}>
+        <Button onClick={onSelect}>
           Charge here
         </Button>
       </div>
