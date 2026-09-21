@@ -52,9 +52,9 @@ export function StationMarker({ station, selected, onClick }: StationMarkerProps
         ].join(" ")}
       >
         {station.available ? (
-          <Zap size={16} className="text-textOnAction" fill="currentColor" />
+          <Zap size={16} className="text-white" fill="white" />
         ) : (
-          <ZapOff size={16} className="text-textOnAction" />
+          <ZapOff size={16} className="text-white" />
         )}
       </div>
       <div

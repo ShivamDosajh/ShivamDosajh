@@ -61,7 +61,7 @@ export function RouteMapPreview({ plan, startId, destinationId, waypointRefs }: 
           )}
           {p.kind === "charge" && (
             <div className="w-6 h-6 rounded-full bg-primary border-2 border-white flex items-center justify-center shadow">
-              <Zap size={11} className="text-textOnAction" fill="currentColor" />
+              <Zap size={11} className="text-white" fill="white" />
             </div>
           )}
           {p.kind === "waypoint" && (

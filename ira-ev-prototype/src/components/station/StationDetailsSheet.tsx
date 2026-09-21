@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { UtensilsCrossed } from "lucide-react";
+import { Car, Clock, Milestone, Plug, UtensilsCrossed } from "lucide-react";
 import type { Station } from "../../types/charging";
 import { BottomSheet } from "../common/BottomSheet";
 import { Button } from "../common/Button";
@@ -136,25 +136,51 @@ export function StationDetailsSheet({
 
         <StationPhotoCarousel stationId={station.id} />
 
-        <div className="flex items-stretch justify-between rounded-card bg-surfaceRaised border border-border px-3 py-3">
-          <div className="flex-1 text-center">
-            <p className="text-[12px] text-secondaryText lowercase">distance</p>
-            <p className="text-[14px] font-semibold mt-0.5">{station.distance} km</p>
+        <div className="flex items-stretch">
+          <div className="flex-1 flex items-center gap-2 pr-2">
+            <Milestone size={24} className="text-text shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[14px] font-semibold leading-5 lowercase">distance</p>
+              <p className="text-[14px] leading-5 text-secondaryText">{station.distance} km</p>
+            </div>
           </div>
           <div className="w-px bg-border" />
-          <div className="flex-1 text-center">
-            <p className="text-[12px] text-secondaryText lowercase">ETA</p>
-            <p className="text-[14px] font-semibold mt-0.5">{station.eta} mins</p>
+          <div className="flex-1 flex items-center gap-2 px-2">
+            <Car size={24} className="text-text shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[14px] font-semibold leading-5 lowercase">ETA</p>
+              <p className="text-[14px] leading-5 text-secondaryText">{station.eta} mins</p>
+            </div>
           </div>
           {config.showStationLastUsed && (
             <>
               <div className="w-px bg-border" />
-              <div className="flex-1 text-center">
-                <p className="text-[12px] text-secondaryText lowercase">last used</p>
-                <p className="text-[14px] font-semibold mt-0.5">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
+              <div className="flex-1 flex items-center gap-2 pl-2">
+                <Clock size={24} className="text-text shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[14px] font-semibold leading-5 lowercase">last used</p>
+                  <p className="text-[14px] leading-5 text-secondaryText">{formatLastUsed(station.lastUsedMinutesAgo)}</p>
+                </div>
               </div>
             </>
           )}
+        </div>
+
+        <div className="flex items-center gap-4">
+          {Array.from(new Set(station.chargers.map((c) => c.power)))
+            .sort((a, b) => a - b)
+            .map((power) => {
+              const group = station.chargers.filter((c) => c.power === power);
+              const availableCount = group.filter((c) => c.available).length;
+              return (
+                <div key={power} className="flex flex-col items-center gap-1">
+                  <Plug size={24} className="text-text" />
+                  <span className="text-[12px] leading-4 text-text">
+                    {power.toFixed(1)}kW <span className="text-success">{availableCount}/{group.length}</span>
+                  </span>
+                </div>
+              );
+            })}
         </div>
 
         {config.showRangePrediction && (

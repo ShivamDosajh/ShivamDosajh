@@ -62,7 +62,7 @@ export function StationMapScreen({ flow }: StationMapScreenProps) {
         />
 
         <div className="absolute inset-x-0 top-0 px-4 pt-3 flex flex-col gap-2.5 z-10">
-          <div className="flex items-center gap-2 bg-surfaceRaised rounded-button h-11 px-4 shadow-md">
+          <div className="flex items-center gap-2 bg-surface rounded-button h-11 px-4 shadow-md">
             <Search size={18} className="text-secondaryText shrink-0" />
             <input
               value={query}

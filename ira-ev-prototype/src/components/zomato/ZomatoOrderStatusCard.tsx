@@ -47,7 +47,7 @@ export function ZomatoOrderStatusCard({ order, onDismiss }: ZomatoOrderStatusCar
                 <div
                   className={[
                     "w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                    reached ? "bg-primary text-textOnAction" : "bg-background text-secondaryText",
+                    reached ? "bg-primary text-white" : "bg-background text-secondaryText",
                   ].join(" ")}
                 >
                   <Icon size={13} />

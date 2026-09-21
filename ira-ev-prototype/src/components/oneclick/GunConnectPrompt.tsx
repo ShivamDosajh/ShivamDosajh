@@ -52,7 +52,7 @@ export function GunConnectPrompt({ stationId, stationName, chargerId, chargerLab
             <div key={stage} className="flex items-center gap-2.5">
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                  done ? "bg-primary text-textOnAction" : active ? "bg-primary/20 text-primary animate-pulse" : "bg-surface text-secondaryText"
+                  done ? "bg-primary text-white" : active ? "bg-primary/20 text-primary animate-pulse" : "bg-surface text-secondaryText"
                 }`}
               >
                 <Icon size={12} />

@@ -42,7 +42,7 @@ export function PushNotificationBanner({ onOpen }: PushNotificationBannerProps) 
         className="w-full max-w-md mx-auto flex items-start gap-2.5 rounded-2xl bg-[#1c1c1e]/95 backdrop-blur border border-white/10 shadow-2xl px-3 py-2.5 text-left animate-push-notification-in pointer-events-auto"
       >
         <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 mt-0.5">
-          <Zap size={18} className="text-textOnAction" fill="currentColor" />
+          <Zap size={18} className="text-white" fill="white" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">

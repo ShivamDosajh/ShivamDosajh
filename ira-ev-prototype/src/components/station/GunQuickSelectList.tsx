@@ -53,7 +53,7 @@ export function GunQuickSelectList({ chargers, selectedId, onSelect }: GunQuickS
             {!disabled &&
               (selected ? (
                 <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                  <Check size={14} className="text-textOnAction" strokeWidth={3} />
+                  <Check size={14} className="text-white" strokeWidth={3} />
                 </div>
               ) : (
                 <ChevronRight size={16} className="text-secondaryText shrink-0" />

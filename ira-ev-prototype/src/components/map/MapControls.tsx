@@ -21,7 +21,7 @@ function ControlButton({
     <button
       onClick={onClick}
       aria-label={label}
-      className="w-11 h-11 rounded-full bg-surface flex items-center justify-center text-white shadow-lg active:opacity-70"
+      className="w-11 h-11 rounded-card bg-surface flex items-center justify-center text-white shadow-lg active:opacity-70"
     >
       {children}
     </button>

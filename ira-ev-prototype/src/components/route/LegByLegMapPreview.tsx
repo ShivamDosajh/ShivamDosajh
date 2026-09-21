@@ -84,7 +84,7 @@ export function LegByLegMapPreview({ startCoordinates, destinationCoordinates, c
       {confirmedChargerPoints.map((p, i) => (
         <div key={i} style={{ left: `${p.x}%`, top: `${p.y}%` }} className="absolute -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="w-6 h-6 rounded-full bg-primary border-2 border-white flex items-center justify-center shadow">
-            <Check size={12} className="text-textOnAction" strokeWidth={3} />
+            <Check size={12} className="text-white" strokeWidth={3} />
           </div>
         </div>
       ))}
@@ -111,7 +111,7 @@ export function LegByLegMapPreview({ startCoordinates, destinationCoordinates, c
           <div className="relative flex items-center justify-center">
             <div className="absolute w-9 h-9 rounded-full bg-primary/30 animate-ping" />
             <div className="relative w-7 h-7 rounded-full bg-primary border-2 border-white flex items-center justify-center shadow">
-              <Zap size={13} className="text-textOnAction" fill="currentColor" />
+              <Zap size={13} className="text-white" fill="white" />
             </div>
           </div>
         </div>
