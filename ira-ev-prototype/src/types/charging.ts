@@ -110,4 +110,9 @@ export interface ExperimentConfig {
   /** Swaps the route planner for the leg-by-leg builder — the driver picks a charger for
    * each leg one at a time instead of getting one auto-optimized itinerary up front. */
   legByLegRoutePlanner: boolean;
+  /** The PRD v2 "Advanced Route Planner" — route alternatives, leg-by-leg with 3 ranked
+   * charger recommendations per leg, a trip summary, and a live-trip monitoring screen.
+   * Takes priority over legByLegRoutePlanner when both are on. Front-end only: the richer
+   * scoring/badges/live-monitoring are mocked, not a real energy model. */
+  advancedRoutePlannerV2: boolean;
 }
